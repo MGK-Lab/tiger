@@ -4,6 +4,9 @@
 #include "ModulesApp.h"
 #include "MooseSyntax.h"
 
+//Material
+#include "TigerFluidMaterialTP.h"
+
 template <>
 InputParameters
 validParams<TigerApp>()
@@ -49,8 +52,9 @@ TigerApp__registerObjects(Factory & factory)
   TigerApp::registerObjects(factory);
 }
 void
-TigerApp::registerObjects(Factory & /*factory*/)
+TigerApp::registerObjects(Factory & factory)
 {
+  registerMaterial(TigerFluidMaterialTP);
 }
 
 void
