@@ -4,8 +4,19 @@
 #include "ModulesApp.h"
 #include "MooseSyntax.h"
 
+//Kernels
+#include "TigerKernelH.h"
+
 //Material
 #include "TigerFluidMaterialTP.h"
+#include "TigerRockMaterial.h"
+
+//User Objects
+#include "TigerFluidPropertiesTP.h"
+#include "TigerWaterProperties.h"
+
+#include "TigerPermeability.h"
+#include "TigerPermeabilityRockConst.h"
 
 template <>
 InputParameters
@@ -55,6 +66,12 @@ void
 TigerApp::registerObjects(Factory & factory)
 {
   registerMaterial(TigerFluidMaterialTP);
+  registerMaterial(TigerRockMaterial);
+
+  registerUserObject(TigerWaterProperties);
+  registerUserObject(TigerPermeabilityRockConst);
+
+  registerKernel(TigerKernelH);
 }
 
 void

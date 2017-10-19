@@ -9,6 +9,7 @@
 #define TIGERFLUIDMATERIALTP_H
 
 #include "Material.h"
+#include "TigerFluidPropertiesTP.h"
 
 class TigerFluidMaterialTP;
 
@@ -26,13 +27,20 @@ public:
 protected:
   virtual void computeQpProperties() override;
 
-  Real _density;
-  Real _viscosity;
+  /// Pressure (Pa)
+  const VariableValue & _pressure;
+  /// Temperature (K)
+  const VariableValue & _temperature;
 
   /// Density (kg/m^3)
   MaterialProperty<Real> & _rho;
   /// Viscosity (Pa.s)
   MaterialProperty<Real> & _mu;
+  /// compressibility (1/Pa)
+  MaterialProperty<Real> & _beta;
+
+  /// Tiger Fluid properties UserObject
+ const TigerFluidPropertiesTP & _fluid_properties_UO;
 };
 
 #endif /* TIGERFLUIDMATERIALTP_H */

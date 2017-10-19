@@ -1,11 +1,35 @@
 [Mesh]
   type = GeneratedMesh
   dim = 2
-  nx = 10
+  nx = 100
   ny = 1
 []
 
+[Functions]
+  [./temp_func]
+    type =  ParsedFunction
+    value = '350.0*x'
+  [../]
+[]
+
+[ICs]
+  [./temp_ic]
+    type = FunctionIC
+    function = temp_func
+    variable = temp
+  [../]
+[]
+
 [AuxVariables]
+  [./press]
+    family = MONOMIAL
+    order = CONSTANT
+    initial_condition = 100e6
+  [../]
+  [./temp]
+    family = MONOMIAL
+    order = CONSTANT
+  [../]
   [./den]
     family = MONOMIAL
     order = CONSTANT
@@ -16,11 +40,18 @@
   [../]
 []
 
+[UserObjects]
+  [./water]
+    type =  TigerWaterProperties
+  [../]
+[]
+
 [Materials]
   [./water]
     type = TigerFluidMaterialTP
-    viscosity = 0.002
-    density = 1500
+    pressure = press
+    temperature = temp
+    fp = water 
   [../]
 []
 
@@ -58,4 +89,5 @@
 
 [Outputs]
   exodus = true
+  csv = true
 []

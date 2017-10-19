@@ -12,24 +12,28 @@ InputParameters
 validParams<TigerFluidMaterialTP>()
 {
   InputParameters params = validParams<Material>();
-  params.addParam<Real>("density", 1000.0, "doc");
-  params.addParam<Real>("viscosity", 1.0e-3, "doc");
+  params.addRequiredCoupledVar("pressure", "Fluid pressure (Pa)");
+  params.addRequiredCoupledVar("temperature", "Fluid temperature (C)");
+  params.addRequiredParam<UserObjectName>("fp_UO", "The name of the user object for fluid properties");
   params.addClassDescription("Fluid properties using the (pressure, temperature) formulation");
   return params;
 }
 
 TigerFluidMaterialTP::TigerFluidMaterialTP(const InputParameters & parameters)
   : Material(parameters),
-    _density(getParam<Real>("density")),
-    _viscosity(getParam<Real>("viscosity")),
+    _pressure(coupledValue("pressure")),
+    _temperature(coupledValue("temperature")),
     _rho(declareProperty<Real>("density")),
-    _mu(declareProperty<Real>("viscosity"))
+    _mu(declareProperty<Real>("viscosity")),
+    _beta(declareProperty<Real>("fluid_compressibility")),
+    _fluid_properties_UO(getUserObject<TigerFluidPropertiesTP>("fp_UO"))
 {
 }
 
 void
 TigerFluidMaterialTP::computeQpProperties()
 {
-  _rho[_qp] = _density;
-  _mu [_qp] = _viscosity;
+  _rho[_qp] = _fluid_properties_UO.rho (_pressure[_qp], _temperature[_qp]);
+  _mu [_qp] = _fluid_properties_UO.mu  (_temperature[_qp]);
+  _beta[_qp]= _fluid_properties_UO.beta(_pressure[_qp], _temperature[_qp]);
 }
