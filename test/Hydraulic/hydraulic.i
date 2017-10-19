@@ -1,9 +1,8 @@
 [Mesh]
   type = GeneratedMesh
-  dim = 3
+  dim = 2
   nx = 10
   ny = 1
-  nz = 1
 []
 
 [UserObjects]
@@ -18,7 +17,7 @@
 [Materials]
   [./water]
     type = TigerFluidMaterialTP
-    pressure = pressure
+    pressure = 1.0e6
     temperature = 100.0
     fp_UO = water_uo
   [../]
@@ -43,16 +42,20 @@
     type =  DirichletBC
     variable = pressure
     boundary = right
-    value = 1.0e6
+    value = 100
   [../]
 []
 
 [AuxVariables]
-  [./den]
+  [./vx]
     family = MONOMIAL
     order = CONSTANT
   [../]
-  [./vis]
+  [./vy]
+    family = MONOMIAL
+    order = CONSTANT
+  [../]
+  [./vz]
     family = MONOMIAL
     order = CONSTANT
   [../]
