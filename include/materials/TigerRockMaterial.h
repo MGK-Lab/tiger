@@ -49,8 +49,15 @@ protected:
   Real _n0;
   /// initial compressibility
   Real _beta0;
+  /// gravity option
+  bool _has_gravity;
+  /// gravity acceleration (m/s^2)
+  Real _g;
+  /// Gravity vector
+  RealVectorValue _gravity0;
 
-
+  /// Gravity vector for different component (well, fault, matrix)
+  MaterialProperty<RealVectorValue> & _gravity;
   /// Porosity ()
   MaterialProperty<Real> & _n;
   /// permeability tensor (m^2)

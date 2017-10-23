@@ -1,8 +1,9 @@
 [Mesh]
   type = GeneratedMesh
-  dim = 2
+  dim = 3
   nx = 10
-  ny = 1
+  ny = 10
+  nz = 10
 []
 
 [UserObjects]
@@ -23,9 +24,9 @@
   [../]
   [./rock]
     type = TigerRockMaterial
-    compressibility = 1.0e-8
+    compressibility = 1.0e-9
     permeability_type = isotropic
-    k0 = 1.0e-5
+    k0 = '1.0e-8'
     porosity = 0.4
     kf_UO = rock_uo
   [../]
@@ -35,13 +36,13 @@
   [./left]
     type =  DirichletBC
     variable = pressure
-    boundary = left
+    boundary = 'left'
     value = 0.0
   [../]
   [./right]
     type =  DirichletBC
     variable = pressure
-    boundary = right
+    boundary = 'right'
     value = 100
   [../]
 []
@@ -59,13 +60,30 @@
     family = MONOMIAL
     order = CONSTANT
   [../]
+  [./vis]
+    family = MONOMIAL
+    order = CONSTANT
+  [../]
 []
 
 [AuxKernels]
-  [./density]
-    type = MaterialRealAux
-    variable = den
-    property = density
+  [./vx_ker]
+    type = TigerDarcyVelocityComponent
+    gradient_variable = pressure
+    variable =  vx
+    component = x
+  [../]
+  [./vy_ker]
+    type = TigerDarcyVelocityComponent
+    gradient_variable = pressure
+    variable =  vy
+    component = y
+  [../]
+  [./vz_ker]
+    type = TigerDarcyVelocityComponent
+    gradient_variable = pressure
+    variable =  vz
+    component = z
   [../]
   [./viscosity]
     type = MaterialRealAux
@@ -84,10 +102,17 @@
     type = TigerKernelH
     variable = pressure
   [../]
+  #[./time]
+  #  type = TimeDerivative
+  #  variable = pressure
+  #[../]
 []
 
 [Executioner]
   type = Steady
+  #dt = 0.001
+  #num_steps = 100
+  nl_abs_tol = 1e-14
   solve_type = 'PJFNK'
   petsc_options_iname = '-pc_type -pc_hypre_type'
   petsc_options_value = 'hypre boomeramg'

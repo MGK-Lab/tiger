@@ -42,10 +42,12 @@ protected:
   virtual Real computeQpJacobian() override;
 
   const MaterialProperty<RankTwoTensor> & _k;
-  const MaterialProperty<Real> & _fluid_viscosity;
-  const MaterialProperty<Real> & _solid_porosity;
-  const MaterialProperty<Real> & _fluid_compressibility;
-  const MaterialProperty<Real> & _solid_compressibility;
+  const MaterialProperty<Real> & _mu;
+  const MaterialProperty<Real> & _rho_f;
+  const MaterialProperty<Real> & _n;
+  const MaterialProperty<Real> & _beta_f;
+  const MaterialProperty<Real> & _beta_s;
+  const MaterialProperty<RealVectorValue> & _gravity;
 };
 
 #endif // TIGERKERNELH_H

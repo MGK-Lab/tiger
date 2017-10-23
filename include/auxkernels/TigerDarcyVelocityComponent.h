@@ -21,52 +21,30 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerKernelH.h"
+#ifndef TIGERDARCYVELOCITYCOMPONENT_H
+#define TIGERDARCYVELOCITYCOMPONENT_H
+
+#include "AuxKernel.h"
+#include "RankTwoTensor.h"
+
+class TigerDarcyVelocityComponent;
 
 template <>
-InputParameters
-validParams<TigerKernelH>()
+InputParameters validParams<TigerDarcyVelocityComponent>();
+
+class TigerDarcyVelocityComponent : public AuxKernel
 {
-  InputParameters params = validParams<Kernel>();
-  return params;
-}
+public:
+  TigerDarcyVelocityComponent(const InputParameters & parameters);
 
-TigerKernelH::TigerKernelH(const InputParameters & parameters)
-  : Kernel(parameters),
-    _k(getMaterialProperty<RankTwoTensor>("permeability_tensor")),
-    _mu(getMaterialProperty<Real>("viscosity")),
-    _rho_f(getMaterialProperty<Real>("fluid_density")),
-    _n(getMaterialProperty<Real>("porosity")),
-    _beta_f(getMaterialProperty<Real>("fluid_compressibility")),
-    _beta_s(getMaterialProperty<Real>("solid_compressibility")),
-    _gravity(getMaterialProperty<RealVectorValue>("gravity_vector"))
-{
-}
+protected:
+  virtual Real computeValue() override;
 
+private:
+  const VariableGradient & _gradient_pore_pressure;
+  const MaterialProperty<RankTwoTensor> & _kf;
+  const MaterialProperty<Real> & _viscosity;
+  int _component;
+};
 
-Real
-TigerKernelH::computeQpResidual()
-{
-  Real _dt_coeff = 0.0;
-  if (_fe_problem.isTransient())
-    _dt_coeff = -1.0/(_beta_s[_qp] +  _beta_f[_qp] * _n[_qp]);
-  else
-    _dt_coeff = -1.0;
-
-  return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * _grad_u[_qp] );
-  // return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * (_grad_u[_qp] - _rho_f[_qp] * _gravity[_qp]) );
-  // return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * (_grad_u[_qp] - _rho_f[_qp] * _gravity[_qp]) );
-}
-
-Real
-TigerKernelH::computeQpJacobian()
-{
-  Real _dt_coeff = 0.0;
-  if (_fe_problem.isTransient())
-    _dt_coeff = -1.0/(_beta_s[_qp] +  _beta_f[_qp] * _n[_qp]);
-  else
-    _dt_coeff = -1.0;
-
-  return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * _grad_phi[_j][_qp] );
-  // return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * (_grad_phi[_j][_qp] - _rho_f[_qp] * _gravity[_qp]));
-}
+#endif // TIGERDARCYVELOCITYCOMPONENT_H

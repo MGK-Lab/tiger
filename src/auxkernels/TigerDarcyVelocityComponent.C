@@ -21,52 +21,31 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerKernelH.h"
+#include "TigerDarcyVelocityComponent.h"
 
 template <>
 InputParameters
-validParams<TigerKernelH>()
+validParams<TigerDarcyVelocityComponent>()
 {
-  InputParameters params = validParams<Kernel>();
+  InputParameters params = validParams<AuxKernel>();
+  params.addRequiredCoupledVar("gradient_variable", "Variable name for pressure field");
+  MooseEnum component("x=0 y=1 z=2");
+  params.addRequiredParam<MooseEnum>("component", component, "The Darcy velocity component to compute");
   return params;
 }
 
-TigerKernelH::TigerKernelH(const InputParameters & parameters)
-  : Kernel(parameters),
-    _k(getMaterialProperty<RankTwoTensor>("permeability_tensor")),
-    _mu(getMaterialProperty<Real>("viscosity")),
-    _rho_f(getMaterialProperty<Real>("fluid_density")),
-    _n(getMaterialProperty<Real>("porosity")),
-    _beta_f(getMaterialProperty<Real>("fluid_compressibility")),
-    _beta_s(getMaterialProperty<Real>("solid_compressibility")),
-    _gravity(getMaterialProperty<RealVectorValue>("gravity_vector"))
+TigerDarcyVelocityComponent::TigerDarcyVelocityComponent(const InputParameters & parameters)
+  : AuxKernel(parameters),
+    _gradient_pore_pressure(coupledGradient("gradient_variable")),
+    _kf(getMaterialProperty<RankTwoTensor>("permeability_tensor")),
+    _viscosity(getMaterialProperty<Real>("viscosity")),
+    _component(getParam<MooseEnum>("component"))
 {
 }
 
-
 Real
-TigerKernelH::computeQpResidual()
+TigerDarcyVelocityComponent::computeValue()
 {
-  Real _dt_coeff = 0.0;
-  if (_fe_problem.isTransient())
-    _dt_coeff = -1.0/(_beta_s[_qp] +  _beta_f[_qp] * _n[_qp]);
-  else
-    _dt_coeff = -1.0;
-
-  return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * _grad_u[_qp] );
-  // return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * (_grad_u[_qp] - _rho_f[_qp] * _gravity[_qp]) );
-  // return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * (_grad_u[_qp] - _rho_f[_qp] * _gravity[_qp]) );
-}
-
-Real
-TigerKernelH::computeQpJacobian()
-{
-  Real _dt_coeff = 0.0;
-  if (_fe_problem.isTransient())
-    _dt_coeff = -1.0/(_beta_s[_qp] +  _beta_f[_qp] * _n[_qp]);
-  else
-    _dt_coeff = -1.0;
-
-  return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * _grad_phi[_j][_qp] );
-  // return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * (_grad_phi[_j][_qp] - _rho_f[_qp] * _gravity[_qp]));
+  RealVectorValue _Darcy_Vel = _kf[_qp]/_viscosity[_qp]*_gradient_pore_pressure[_qp];
+  return -_Darcy_Vel(_component);
 }

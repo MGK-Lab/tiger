@@ -22,12 +22,15 @@
 /**************************************************************************/
 
 #include "TigerRockMaterial.h"
+#include "MooseMesh.h"
 
 template <>
 InputParameters
 validParams<TigerRockMaterial>()
 {
   InputParameters params = validParams<Material>();
+  params.addParam<bool>("has_gravity", false, "Is the gravity enabled?");
+  params.addParam<Real>("gravity_acceleration", 9.81, "The magnitude of the gravity acceleration (m/s^2)");
   params.addRequiredParam<Real>("porosity", "Porosity of rock matrix");
   params.addRequiredParam<Real>("compressibility", "Compressibility of rock matrix (1/Pa)");
 
@@ -46,11 +49,32 @@ TigerRockMaterial::TigerRockMaterial(const InputParameters & parameters)
     _k0(getParam<std::vector<Real>>("k0")),
     _n0(getParam<Real>("porosity")),
     _beta0(getParam<Real>("compressibility")),
+    _has_gravity(getParam<bool>("has_gravity")),
+    _g(getParam<Real>("gravity_acceleration")),
+    _gravity(declareProperty<RealVectorValue>("gravity_vector")),
     _n(declareProperty<Real>("porosity")),
-    _k(declareProperty<RankTwoTensor>("permeability")),
+    _k(declareProperty<RankTwoTensor>("permeability_tensor")),
     _beta(declareProperty<Real>("solid_compressibility")),
     _kf_UO(getUserObject<TigerPermeability>("kf_UO"))
 {
+  if (_has_gravity)
+    switch (_mesh.dimension())
+    {
+      case 1:
+        _gravity0 = RealVectorValue(-_g, 0.0, 0.0);
+        break;
+      case 2:
+        _gravity0 = RealVectorValue(0.0, -_g, 0.0);
+        break;
+      case 3:
+        _gravity0 = RealVectorValue(0.0, 0.0, -_g);
+        break;
+      default:
+        _gravity0 = RealVectorValue(0.0, 0.0, 0.0);
+        break;
+    }
+  else
+    _gravity0 = RealVectorValue(0.0, 0.0, 0.0);
 }
 
 void
@@ -59,4 +83,5 @@ TigerRockMaterial::computeQpProperties()
   _n   [_qp] = _n0;
   _k   [_qp] = _kf_UO.PermeabilityTensorCalculator(_permeability_type,_k0);
   _beta[_qp] = _beta0;
+  _gravity[_qp] = _gravity0;
 }

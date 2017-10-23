@@ -21,52 +21,43 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerKernelH.h"
+#include "TigerWaterPropertiesConst.h"
 
 template <>
 InputParameters
-validParams<TigerKernelH>()
+validParams<TigerWaterPropertiesConst>()
 {
-  InputParameters params = validParams<Kernel>();
+  InputParameters params = validParams<TigerFluidPropertiesTP>();
+  params.addClassDescription("Water properties constant with tempreture and pressure");
   return params;
 }
 
-TigerKernelH::TigerKernelH(const InputParameters & parameters)
-  : Kernel(parameters),
-    _k(getMaterialProperty<RankTwoTensor>("permeability_tensor")),
-    _mu(getMaterialProperty<Real>("viscosity")),
-    _rho_f(getMaterialProperty<Real>("fluid_density")),
-    _n(getMaterialProperty<Real>("porosity")),
-    _beta_f(getMaterialProperty<Real>("fluid_compressibility")),
-    _beta_s(getMaterialProperty<Real>("solid_compressibility")),
-    _gravity(getMaterialProperty<RealVectorValue>("gravity_vector"))
+TigerWaterPropertiesConst::TigerWaterPropertiesConst(const InputParameters & parameters)
+  : TigerFluidPropertiesTP(parameters)
 {
+}
+
+std::string
+TigerWaterPropertiesConst::fluidName() const
+{
+  return "Water Const";
+}
+
+Real
+TigerWaterPropertiesConst::rho(Real /*pressure*/, Real /*temperature*/) const
+{
+  return 1000.0;
 }
 
 
 Real
-TigerKernelH::computeQpResidual()
+TigerWaterPropertiesConst::mu(Real /*temperature*/) const
 {
-  Real _dt_coeff = 0.0;
-  if (_fe_problem.isTransient())
-    _dt_coeff = -1.0/(_beta_s[_qp] +  _beta_f[_qp] * _n[_qp]);
-  else
-    _dt_coeff = -1.0;
-
-  return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * _grad_u[_qp] );
-  // return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * (_grad_u[_qp] - _rho_f[_qp] * _gravity[_qp]) );
-  // return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * (_grad_u[_qp] - _rho_f[_qp] * _gravity[_qp]) );
+  return 0.001;
 }
 
 Real
-TigerKernelH::computeQpJacobian()
+TigerWaterPropertiesConst::beta(Real /*pressure*/, Real /*temperature*/) const
 {
-  Real _dt_coeff = 0.0;
-  if (_fe_problem.isTransient())
-    _dt_coeff = -1.0/(_beta_s[_qp] +  _beta_f[_qp] * _n[_qp]);
-  else
-    _dt_coeff = -1.0;
-
-  return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * _grad_phi[_j][_qp] );
-  // return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * (_grad_phi[_j][_qp] - _rho_f[_qp] * _gravity[_qp]));
+  return 4.4e-10;
 }

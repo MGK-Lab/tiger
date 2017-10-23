@@ -7,6 +7,9 @@
 //Kernels
 #include "TigerKernelH.h"
 
+//AuxKernels
+#include "TigerDarcyVelocityComponent.h"
+
 //Material
 #include "TigerFluidMaterialTP.h"
 #include "TigerRockMaterial.h"
@@ -14,6 +17,7 @@
 //User Objects
 #include "TigerFluidPropertiesTP.h"
 #include "TigerWaterProperties.h"
+#include "TigerWaterPropertiesConst.h"
 
 #include "TigerPermeability.h"
 #include "TigerPermeabilityRockConst.h"
@@ -69,9 +73,12 @@ TigerApp::registerObjects(Factory & factory)
   registerMaterial(TigerRockMaterial);
 
   registerUserObject(TigerWaterProperties);
+  registerUserObject(TigerWaterPropertiesConst);
   registerUserObject(TigerPermeabilityRockConst);
 
   registerKernel(TigerKernelH);
+
+  registerAux(TigerDarcyVelocityComponent);
 }
 
 void

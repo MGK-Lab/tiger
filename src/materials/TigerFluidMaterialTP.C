@@ -39,7 +39,7 @@ TigerFluidMaterialTP::TigerFluidMaterialTP(const InputParameters & parameters)
   : Material(parameters),
     _pressure(coupledValue("pressure")),
     _temperature(coupledValue("temperature")),
-    _rho(declareProperty<Real>("density")),
+    _rho(declareProperty<Real>("fluid_density")),
     _mu(declareProperty<Real>("viscosity")),
     _beta(declareProperty<Real>("fluid_compressibility")),
     _fluid_properties_UO(getUserObject<TigerFluidPropertiesTP>("fp_UO"))
