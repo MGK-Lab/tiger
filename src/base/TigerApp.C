@@ -16,8 +16,8 @@
 
 //User Objects
 #include "TigerFluidPropertiesTP.h"
-#include "TigerWaterProperties.h"
-#include "TigerWaterPropertiesConst.h"
+#include "TigerWaterTP.h"
+#include "TigerFluidConst.h"
 
 #include "TigerPermeability.h"
 #include "TigerPermeabilityRockConst.h"
@@ -72,8 +72,8 @@ TigerApp::registerObjects(Factory & factory)
   registerMaterial(TigerFluidMaterialTP);
   registerMaterial(TigerRockMaterial);
 
-  registerUserObject(TigerWaterProperties);
-  registerUserObject(TigerWaterPropertiesConst);
+  registerUserObject(TigerWaterTP);
+  registerUserObject(TigerFluidConst);
   registerUserObject(TigerPermeabilityRockConst);
 
   registerKernel(TigerKernelH);

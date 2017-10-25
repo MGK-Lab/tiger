@@ -1,0 +1,7 @@
+[Tests]
+  [./material]
+    type = 'Exodiff'
+    input = 'material_water.i'
+    exodiff = 'material_water.e'
+  [../]
+[]

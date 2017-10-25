@@ -1,0 +1,7 @@
+[Tests]
+  [./hydraulic]
+    type = 'Exodiff'
+    input = 'hydraulic_gravity.i'
+    exodiff = 'hydraulic_gravity_out.e'
+  [../]
+[]

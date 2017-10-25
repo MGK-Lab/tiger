@@ -8,7 +8,7 @@
 
 [UserObjects]
   [./water_uo]
-    type =  TigerWaterPropertiesConst
+    type = TigerFluidConst     
   [../]
   [./rock_uo]
     type =  TigerPermeabilityRockConst
@@ -103,7 +103,7 @@
 
 [Executioner]
   type = Transient
-  dt = 0.1
+  dt = 0.01
   end_time = 1.2
   l_tol = 1e-10 #difference between first and last linear step
   nl_rel_step_tol = 1e-14 #machine percision
