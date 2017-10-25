@@ -53,9 +53,7 @@ TigerKernelH::computeQpResidual()
   else
     _dt_coeff = -1.0;
 
-  return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * _grad_u[_qp] );
-  // return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * (_grad_u[_qp] - _rho_f[_qp] * _gravity[_qp]) );
-  // return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * (_grad_u[_qp] - _rho_f[_qp] * _gravity[_qp]) );
+  return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * ( _grad_u[_qp] - _rho_f[_qp] * _gravity[_qp] ) );
 }
 
 Real
@@ -68,5 +66,4 @@ TigerKernelH::computeQpJacobian()
     _dt_coeff = -1.0;
 
   return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * _grad_phi[_j][_qp] );
-  // return _dt_coeff * _grad_test[_i][_qp] * ( (_k[_qp]/_mu[_qp]) * (_grad_phi[_j][_qp] - _rho_f[_qp] * _gravity[_qp]));
 }

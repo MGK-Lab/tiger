@@ -24,8 +24,8 @@
   [../]
   [./rock]
     type = TigerRockMaterial
-    #has_gravity = true
-    #gravity_acceleration = 9.81
+    has_gravity = true
+    gravity_acceleration = 9.81
     compressibility = 1.0e-9
     permeability_type = isotropic
     k0 = '1.0e-10'
@@ -35,59 +35,58 @@
 []
 
 [BCs]
-  [./left]
+  [./front]
     type =  DirichletBC
     variable = pressure
-    boundary = 'left'
-    value = 100.0
+    boundary = 'front'
+    value = 0
   [../]
-  [./right]
-    type =  DirichletBC
-    variable = pressure
-    boundary = 'right'
-    value = 150.0
+  #[./back]
+  #  type =  DirichletBC
+  #  variable = pressure
+  #  boundary = 'back'
+  #  value = 9810.0
+  #[../]
+[]
+
+[AuxVariables]
+  [./vx]
+    family = MONOMIAL
+    order = CONSTANT
+  [../]
+  [./vy]
+    family = MONOMIAL
+    order = CONSTANT
+  [../]
+  [./vz]
+    family = MONOMIAL
+    order = CONSTANT
   [../]
 []
 
-#[AuxVariables]
-#  [./vx]
-#    family = MONOMIAL
-#    order = CONSTANT
-#  [../]
-#  #[./vy]
-#  #  family = MONOMIAL
-#  #  order = CONSTANT
-#  #[../]
-#  #[./vz]
-#  #  family = MONOMIAL
-#  #  order = CONSTANT
-#  #[../]
-#[]
-#
-#[AuxKernels]
-#  [./vx_ker]
-#    type = TigerDarcyVelocityComponent
-#    gradient_variable = pressure
-#    variable =  vx
-#    component = x
-#  [../]
-#  #[./vy_ker]
-#  #  type = TigerDarcyVelocityComponent
-#  #  gradient_variable = pressure
-#  #  variable =  vy
-#  #  component = y
-#  #[../]
-#  #[./vz_ker]
-#  #  type = TigerDarcyVelocityComponent
-#  #  gradient_variable = pressure
-#  #  variable =  vz
-#  #  component = z
-#  #[../]
-#[]
+[AuxKernels]
+  [./vx_ker]
+    type = TigerDarcyVelocityComponent
+    gradient_variable = pressure
+    variable =  vx
+    component = x
+  [../]
+  [./vy_ker]
+    type = TigerDarcyVelocityComponent
+    gradient_variable = pressure
+    variable =  vy
+    component = y
+  [../]
+  [./vz_ker]
+    type = TigerDarcyVelocityComponent
+    gradient_variable = pressure
+    variable =  vz
+    component = z
+  [../]
+[]
 
 [Variables]
   [./pressure]
-    initial_condition = 200.0
   [../]
 []
 
@@ -104,9 +103,10 @@
 
 [Executioner]
   type = Transient
-  dt = 0.01
-  num_steps = 10
-  nl_abs_tol = 1e-10
+  dt = 0.1
+  end_time = 1.2
+  l_tol = 1e-10 #difference between first and last linear step
+  nl_rel_step_tol = 1e-14 #machine percision
   solve_type = 'PJFNK'
   petsc_options_iname = '-pc_type -pc_hypre_type'
   petsc_options_value = 'hypre boomeramg'

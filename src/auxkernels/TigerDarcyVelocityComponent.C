@@ -38,7 +38,9 @@ TigerDarcyVelocityComponent::TigerDarcyVelocityComponent(const InputParameters &
   : AuxKernel(parameters),
     _gradient_pore_pressure(coupledGradient("gradient_variable")),
     _kf(getMaterialProperty<RankTwoTensor>("permeability_tensor")),
+    _rho_f(getMaterialProperty<Real>("fluid_density")),
     _viscosity(getMaterialProperty<Real>("viscosity")),
+    _gravity(getMaterialProperty<RealVectorValue>("gravity_vector")),
     _component(getParam<MooseEnum>("component"))
 {
 }
@@ -46,6 +48,6 @@ TigerDarcyVelocityComponent::TigerDarcyVelocityComponent(const InputParameters &
 Real
 TigerDarcyVelocityComponent::computeValue()
 {
-  RealVectorValue _Darcy_Vel = _kf[_qp]/_viscosity[_qp]*_gradient_pore_pressure[_qp];
+  RealVectorValue _Darcy_Vel = (_kf[_qp]/_viscosity[_qp]) * (_gradient_pore_pressure[_qp]-_rho_f[_qp]*_gravity[_qp]);
   return -_Darcy_Vel(_component);
 }

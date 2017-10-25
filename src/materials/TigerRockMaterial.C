@@ -58,21 +58,7 @@ TigerRockMaterial::TigerRockMaterial(const InputParameters & parameters)
     _kf_UO(getUserObject<TigerPermeability>("kf_UO"))
 {
   if (_has_gravity)
-    switch (_mesh.dimension())
-    {
-      case 1:
-        _gravity0 = RealVectorValue(-_g, 0.0, 0.0);
-        break;
-      case 2:
-        _gravity0 = RealVectorValue(0.0, -_g, 0.0);
-        break;
-      case 3:
-        _gravity0 = RealVectorValue(0.0, 0.0, -_g);
-        break;
-      default:
-        _gravity0 = RealVectorValue(0.0, 0.0, 0.0);
-        break;
-    }
+    _gravity0 = RealVectorValue(0.0, 0.0, -_g);
   else
     _gravity0 = RealVectorValue(0.0, 0.0, 0.0);
 }
