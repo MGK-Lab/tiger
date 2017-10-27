@@ -42,6 +42,8 @@ TigerFluidMaterialTP::TigerFluidMaterialTP(const InputParameters & parameters)
     _rho(declareProperty<Real>("fluid_density")),
     _mu(declareProperty<Real>("viscosity")),
     _beta(declareProperty<Real>("fluid_compressibility")),
+    _cp(declareProperty<Real>("fluid_specific_heat")),
+    _lambda(declareProperty<Real>("fluid_thermal_conductivity")),
     _fluid_properties_UO(getUserObject<TigerFluidPropertiesTP>("fp_UO"))
 {
 }
@@ -49,7 +51,9 @@ TigerFluidMaterialTP::TigerFluidMaterialTP(const InputParameters & parameters)
 void
 TigerFluidMaterialTP::computeQpProperties()
 {
-  _rho[_qp] = _fluid_properties_UO.rho (_pressure[_qp], _temperature[_qp]);
-  _mu [_qp] = _fluid_properties_UO.mu  (_temperature[_qp]);
-  _beta[_qp]= _fluid_properties_UO.beta(_pressure[_qp], _temperature[_qp]);
+  _rho   [_qp] = _fluid_properties_UO.rho   (_pressure[_qp], _temperature[_qp]);
+  _mu    [_qp] = _fluid_properties_UO.mu    (_pressure[_qp], _temperature[_qp]);
+  _beta  [_qp] = _fluid_properties_UO.beta  (_pressure[_qp], _temperature[_qp]);
+  _cp    [_qp] = _fluid_properties_UO.cp    (_pressure[_qp], _temperature[_qp]);
+  _lambda[_qp] = _fluid_properties_UO.lambda(_pressure[_qp], _temperature[_qp]);
 }

@@ -43,15 +43,23 @@ public:
   virtual Real rho(Real pressure, Real temperature) const override;
 
   /// Dynamic viscosity (Pa.s)
-  virtual Real mu(Real temperature) const override;
+  virtual Real mu(Real pressure, Real temperature) const override;
 
   /// Compressibility (1/Pa)
   virtual Real beta(Real pressure, Real temperature) const override;
+
+  /// specific heat (J/(kg K))
+  virtual Real cp(Real pressure, Real temperature) const override;
+
+  /// thermal conductivity (W/(m K))
+  virtual Real lambda(Real pressure, Real temperature) const override;
 
 private:
   Real _rho;
   Real _mu;
   Real _beta;
+  Real _cp;
+  Real _lambda;
 };
 
 #endif /* TIGERFLUIDCONST_H */

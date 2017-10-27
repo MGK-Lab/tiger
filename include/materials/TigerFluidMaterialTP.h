@@ -54,6 +54,10 @@ protected:
   MaterialProperty<Real> & _mu;
   /// compressibility (1/Pa)
   MaterialProperty<Real> & _beta;
+  /// specific heat (J/(kg K))
+  MaterialProperty<Real> & _cp;
+  /// thermal conductivity (W/(m K))
+  MaterialProperty<Real> & _lambda;
 
   /// Tiger Fluid properties UserObject
  const TigerFluidPropertiesTP & _fluid_properties_UO;

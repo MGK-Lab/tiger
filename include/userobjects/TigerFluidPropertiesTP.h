@@ -48,10 +48,16 @@ public:
   virtual Real rho(Real pressure, Real temperature) const = 0;
 
   /// Dynamic viscosity (Pa.s)
-  virtual Real mu(Real temperature) const = 0;
+  virtual Real mu(Real pressure, Real temperature) const = 0;
 
   /// Compressibility (1/Pa)
   virtual Real beta(Real pressure, Real temperature) const = 0;
+
+  /// specific heat (J/(kg K))
+  virtual Real cp(Real pressure, Real temperature) const = 0;
+
+  /// thermal conductivity (W/(m K))
+  virtual Real lambda(Real pressure, Real temperature) const = 0;
 };
 
 #endif /* TIGERFLUIDPROPERTIESTP_H */

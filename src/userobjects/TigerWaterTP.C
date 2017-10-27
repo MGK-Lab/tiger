@@ -52,7 +52,7 @@ TigerWaterTP::rho(Real pressure, Real temperature) const
 
 
 Real
-TigerWaterTP::mu(Real temperature) const
+TigerWaterTP::mu(Real /*pressure*/, Real temperature) const
 {
   return 2.4e-5*std::pow(10.0, 248.37/(temperature+133.15));
 }
@@ -61,4 +61,16 @@ Real
 TigerWaterTP::beta(Real /*pressure*/, Real /*temperature*/) const
 {
   return 4.4e-10;
+}
+
+Real
+TigerWaterTP::cp(Real /*pressure*/, Real /*temperature*/) const
+{
+  return 4.2e3;
+}
+
+Real
+TigerWaterTP::lambda(Real /*pressure*/, Real /*temperature*/) const
+{
+  return 0.6;
 }
