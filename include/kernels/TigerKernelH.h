@@ -41,13 +41,11 @@ protected:
   virtual Real computeQpResidual() override;
   virtual Real computeQpJacobian() override;
 
-  const MaterialProperty<RankTwoTensor> & _k;
-  const MaterialProperty<Real> & _mu;
-  const MaterialProperty<Real> & _rho_f;
-  const MaterialProperty<Real> & _n;
-  const MaterialProperty<Real> & _beta_f;
-  const MaterialProperty<Real> & _beta_s;
-  const MaterialProperty<RealVectorValue> & _gravity;
+  const MaterialProperty<RankTwoTensor> & _k_vis;
+  const MaterialProperty<Real> & _H_Kernel_dt;
+  const MaterialProperty<RealVectorValue> & _rhof_g;
+private:
+  Real _dt_coeff;
 };
 
 #endif // TIGERKERNELH_H

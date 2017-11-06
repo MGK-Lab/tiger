@@ -22,12 +22,16 @@
 /**************************************************************************/
 
 #include "TigerRockMaterialH.h"
+#include "Material.h"
 
 template <>
 InputParameters
 validParams<TigerRockMaterialH>()
 {
-  InputParameters params = validParams<Material>();
+  InputParameters params = validParams<TigerMaterialGeneral>();
+  params.addParam<bool>("has_gravity", false, "Is the gravity enabled?");
+  params.addParam<Real>("gravity_acceleration", 9.81, "The magnitude of the gravity acceleration (m/s^2)");
+  params.addRequiredParam<Real>("porosity", "Porosity of rock matrix");
   params.addRequiredParam<Real>("compressibility", "Compressibility of rock matrix (1/Pa)");
 
   MooseEnum PT("isotropic=1 orthotropic=2 anisotropic=3");
@@ -40,19 +44,28 @@ validParams<TigerRockMaterialH>()
 }
 
 TigerRockMaterialH::TigerRockMaterialH(const InputParameters & parameters)
-  : Material(parameters),
-    _permeability_type(getParam<MooseEnum>("permeability_type")),
+  : TigerMaterialGeneral(parameters),
+    _pt(getParam<MooseEnum>("permeability_type")),
     _k0(getParam<std::vector<Real>>("k0")),
-    _beta0(getParam<Real>("compressibility")),
-    _k(declareProperty<RankTwoTensor>("permeability_tensor")),
-    _beta(declareProperty<Real>("solid_compressibility")),
-    _kf_UO(getUserObject<TigerPermeability>("kf_UO"))
+    _beta_s(getParam<Real>("compressibility")),
+    _n0(getParam<Real>("porosity")),
+    _k_vis(declareProperty<RankTwoTensor>("permeability_by_viscosity")),
+    _H_Kernel_dt(declareProperty<Real>("H_Kernel_dt_coefficient")),
+    _rhof_g(declareProperty<RealVectorValue>("rho_times_gravity")),
+    _kf_UO(getUserObject<TigerPermeability>("kf_UO")),
+    _has_gravity(getParam<bool>("has_gravity")),
+    _g(getParam<Real>("gravity_acceleration"))
 {
+  if (_has_gravity)
+    _gravity = RealVectorValue(0.0, 0.0, -_g);
+  else
+    _gravity = RealVectorValue(0.0, 0.0, 0.0);
 }
 
 void
 TigerRockMaterialH::computeQpProperties()
 {
-  _k   [_qp] = _kf_UO.PermeabilityTensorCalculator(_permeability_type,_k0);
-  _beta[_qp] = _beta0;
+  _k_vis[_qp] = _kf_UO.PermeabilityTensorCalculator(_pt,_k0) / _fp_UO.mu(_P[_qp], _T[_qp]);
+  _H_Kernel_dt[_qp] = _beta_s + _fp_UO.beta(_P[_qp], _T[_qp]) * _n0;
+  _rhof_g[_qp] = _fp_UO.rho(_P[_qp], _T[_qp]) * _gravity;
 }

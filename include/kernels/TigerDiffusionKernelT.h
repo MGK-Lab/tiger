@@ -41,16 +41,10 @@ protected:
   virtual Real computeQpResidual() override;
   virtual Real computeQpJacobian() override;
 
-  const MaterialProperty<Real> & _rho_f;
-  const MaterialProperty<Real> & _rho_s;
-  const MaterialProperty<Real> & _cp_f;
-  const MaterialProperty<Real> & _cp_s;
-  const MaterialProperty<Real> & _n;
-  const MaterialProperty<Real> & _lambda_f;
-  const MaterialProperty<std::vector<Real>> & _lambda_s;
-
+  const MaterialProperty<Real> & _T_Kernel_dt;
+  const MaterialProperty<RankTwoTensor> & _lambda_sf;
 private:
-  RankTwoTensor ConductivityTensorCalculator(Real const & n, Real const & lambda_f, std::vector<Real> lambda_s);
+  Real _dt_coeff;
 };
 
 #endif // TIGERDIFFUSIONKERNELT_H

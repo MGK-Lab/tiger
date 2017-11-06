@@ -9,58 +9,60 @@
 [UserObjects]
   [./water_uo]
     type = TigerFluidConst
+    specific_heat = 4.2e-2 #unreal value to check the transient stage
   [../]
 []
 
 [Materials]
-  [./water]
-    type = TigerFluidMaterialTP
+  [./rock_t]
+    type = TigerRockMaterialT
     pressure = 1.0e6
     temperature = 100.0
     fp_UO = water_uo
-  [../]
-  [./rock]
-    type = TigerRockMaterialGeneral
     porosity = 0.4
-  [../]
-  [./rockt]
-    type = TigerRockMaterialT
     conductivity_type = isotropic
     lambda = 2
     density = 2600
-    specific_heat = 0.84e3
+    specific_heat = 0.84e-2 #unreal value to check the transient stage
   [../]
 []
 
 [BCs]
   [./front]
     type =  DirichletBC
-    variable = pressure
+    variable = temperature
     boundary = 'front'
     value = 0
   [../]
-  #[./back]
-  #  type =  DirichletBC
-  #  variable = pressure
-  #  boundary = 'back'
-  #  value = 9810.0
-  #[../]
+  [./back]
+    type =  DirichletBC
+    variable = temperature
+    boundary = 'back'
+    value = 100.0
+  [../]
 []
 
 [Variables]
-  [./pressure]
+  [./temperature]
+    initial_condition = 50.0
   [../]
 []
 
 [Kernels]
-  [./diff]
-    type = Diffusion
-    variable = pressure
+  [./T_diff]
+    type = TigerDiffusionKernelT
+    variable = temperature
+  [../]
+  [./T_dt]
+    type = TimeDerivative
+    variable = temperature
   [../]
 []
 
 [Executioner]
-  type = Steady
+  type = Transient
+  dt = 2.0
+  end_time = 10.0
   l_tol = 1e-10 #difference between first and last linear step
   nl_rel_step_tol = 1e-14 #machine percision
   solve_type = 'PJFNK'

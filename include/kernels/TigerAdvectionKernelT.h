@@ -41,15 +41,14 @@ protected:
   virtual Real computeQpResidual() override;
   virtual Real computeQpJacobian() override;
 
-  const MaterialProperty<Real> & _rho_f;
-  const MaterialProperty<Real> & _rho_s;
-  const MaterialProperty<Real> & _cp_f;
-  const MaterialProperty<Real> & _cp_s;
-  const MaterialProperty<Real> & _n;
-  const VariableGradient & _gradient_pore_pressure;
-  const MaterialProperty<RankTwoTensor> & _kf;
-  const MaterialProperty<Real> & _viscosity;
-  const MaterialProperty<RealVectorValue> & _gravity;
+  const MaterialProperty<Real> & _rho_cp_f;
+  const VariableGradient & _gradient_pore_press;
+  const MaterialProperty<Real> & _T_Kernel_dt;
+  const MaterialProperty<RankTwoTensor> & _k_vis;
+  const MaterialProperty<RealVectorValue> & _rhof_g;
+
+private:
+  Real _dt_coeff;
 };
 
 #endif // TIGERADVECTIONKERNELT_H

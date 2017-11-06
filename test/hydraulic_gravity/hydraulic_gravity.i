@@ -1,9 +1,11 @@
 [Mesh]
   type = GeneratedMesh
   dim = 3
-  nx = 10
-  ny = 10
+  nx = 1
+  ny = 1
   nz = 10
+  zmax = 0
+  zmin = -1.0
 []
 
 [UserObjects]
@@ -16,20 +18,14 @@
 []
 
 [Materials]
-  [./water]
-    type = TigerFluidMaterialTP
+  [./rock_h]
+    type = TigerRockMaterialH
     pressure = 1.0e6
     temperature = 100.0
     fp_UO = water_uo
-  [../]
-  [./rock]
-    type = TigerRockMaterialGeneral
-    porosity = 0.4
     has_gravity = true
     gravity_acceleration = 9.81
-  [../]
-  [./rockh]
-    type = TigerRockMaterialH
+    porosity = 0.4
     compressibility = 1.0e-9
     permeability_type = isotropic
     k0 = '1.0e-10'
@@ -107,7 +103,7 @@
 [Executioner]
   type = Transient
   dt = 0.01
-  end_time = 1.2
+  end_time = 0.3
   l_tol = 1e-10 #difference between first and last linear step
   nl_rel_step_tol = 1e-14 #machine percision
   solve_type = 'PJFNK'

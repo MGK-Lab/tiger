@@ -27,10 +27,10 @@ template <>
 InputParameters
 validParams<TigerRockMaterialT>()
 {
-  InputParameters params = validParams<Material>();
+  InputParameters params = validParams<TigerMaterialGeneral>();
   params.addRequiredParam<Real>("specific_heat", "Specific heat of rock matrix (J/(kg K))");
   params.addRequiredParam<Real>("density", "density of rock matrix (kg/m^3)");
-
+  params.addRequiredParam<Real>("porosity", "Porosity of rock matrix");
   MooseEnum CT("isotropic=1 orthotropic=2");
   params.addRequiredParam<MooseEnum>("conductivity_type", CT, "Thermal conductivity distribution type [isotropic, orthotropic].");
   params.addRequiredParam<std::vector<Real>>("lambda", "Initial thermal conductivity of rock matrix (W/(m K))");
@@ -40,16 +40,17 @@ validParams<TigerRockMaterialT>()
 }
 
 TigerRockMaterialT::TigerRockMaterialT(const InputParameters & parameters)
-  : Material(parameters),
-    _conductivity_type(getParam<MooseEnum>("conductivity_type")),
+  : TigerMaterialGeneral(parameters),
+    _ct(getParam<MooseEnum>("conductivity_type")),
     _lambda0(getParam<std::vector<Real>>("lambda")),
     _cp0(getParam<Real>("specific_heat")),
     _rho0(getParam<Real>("density")),
-    _lambda(declareProperty<std::vector<Real>>("solid_conductivity_vector")),
-    _cp(declareProperty<Real>("solid_specific_heat")),
-    _rho(declareProperty<Real>("solid_density"))
+    _n0(getParam<Real>("porosity")),
+    _lambda_sf(declareProperty<RankTwoTensor>("conductivity_mixture")),
+    _T_Kernel_dt(declareProperty<Real>("T_Kernel_dt_coefficient")),
+    _rho_cp_f(declareProperty<Real>("fluid_thermal_capacity"))
 {
-  switch (_conductivity_type)
+  switch (_ct)
   {
     case 1:
       if (_lambda0.size() != 1)
@@ -63,10 +64,27 @@ TigerRockMaterialT::TigerRockMaterialT(const InputParameters & parameters)
   }
 }
 
+RankTwoTensor
+TigerRockMaterialT::ConductivityTensorCalculator(Real const & n, Real const & lambda_f, std::vector<Real> lambda_s)
+{
+  RankTwoTensor temp;
+  switch (lambda_s.size())
+  {
+    case 1:
+      temp = RankTwoTensor(1., 1., 1., 0., 0., 0.) * std::pow(lambda_f,n)*std::pow(lambda_s[0],(1.-n));
+      break;
+
+    case 3:
+      temp = RankTwoTensor(std::pow(lambda_s[0],(1.-n)), std::pow(lambda_s[1],(1.-n)), std::pow(lambda_s[2],(1.-n)), 0., 0., 0.) * std::pow(lambda_f,n);
+      break;
+  }
+  return temp;
+}
+
 void
 TigerRockMaterialT::computeQpProperties()
 {
-  _lambda[_qp] = _lambda0;
-  _cp    [_qp] = _cp0;
-  _rho   [_qp] = _rho0;
+  _T_Kernel_dt[_qp] = (1-_n0)*_rho0*_cp0 + _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp])*_n0;
+  _lambda_sf  [_qp] = ConductivityTensorCalculator(_n0, _fp_UO.lambda(_P[_qp], _T[_qp]), _lambda0);
+  _rho_cp_f   [_qp] = _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp]);
 }

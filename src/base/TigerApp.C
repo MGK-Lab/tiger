@@ -13,8 +13,6 @@
 #include "TigerDarcyVelocityComponent.h"
 
 //Material
-#include "TigerFluidMaterialTP.h"
-#include "TigerRockMaterialGeneral.h"
 #include "TigerRockMaterialH.h"
 #include "TigerRockMaterialT.h"
 
@@ -73,8 +71,6 @@ TigerApp__registerObjects(Factory & factory)
 void
 TigerApp::registerObjects(Factory & factory)
 {
-  registerMaterial(TigerFluidMaterialTP);
-  registerMaterial(TigerRockMaterialGeneral);
   registerMaterial(TigerRockMaterialH);
   registerMaterial(TigerRockMaterialT);
 

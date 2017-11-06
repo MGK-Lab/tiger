@@ -1,0 +1,12 @@
+[Tests]
+  [./HT_Steady]
+    type = 'Exodiff'
+    input = 'hydro_thermal_steady.i'
+    exodiff = 'hydro_thermal_steady_out.e'
+  [../]
+  [./HT_Transient]
+    type = 'Exodiff'
+    input = 'hydro_thermal_transient.i'
+    exodiff = 'hydro_thermal_transient_out.e'
+  [../]
+[]

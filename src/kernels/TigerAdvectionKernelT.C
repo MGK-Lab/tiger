@@ -34,43 +34,34 @@ validParams<TigerAdvectionKernelT>()
 
 TigerAdvectionKernelT::TigerAdvectionKernelT(const InputParameters & parameters)
   : Kernel(parameters),
-    _rho_f(getMaterialProperty<Real>("fluid_density")),
-    _rho_s(getMaterialProperty<Real>("solid_density")),
-    _cp_f(getMaterialProperty<Real>("fluid_specific_heat")),
-    _cp_s(getMaterialProperty<Real>("solid_specific_heat")),
-    _n(getMaterialProperty<Real>("porosity")),
-    _gradient_pore_pressure(coupledGradient("gradient_variable")),
-    _kf(getMaterialProperty<RankTwoTensor>("permeability_tensor")),
-    _viscosity(getMaterialProperty<Real>("viscosity")),
-    _gravity(getMaterialProperty<RealVectorValue>("gravity_vector"))
+    _rho_cp_f(getMaterialProperty<Real>("fluid_thermal_capacity")),
+    _gradient_pore_press(coupledGradient("gradient_variable")),
+    _T_Kernel_dt(getMaterialProperty<Real>("T_Kernel_dt_coefficient")),
+    _k_vis(getMaterialProperty<RankTwoTensor>("permeability_by_viscosity")),
+    _rhof_g(getMaterialProperty<RealVectorValue>("rho_times_gravity"))
 {
+  _dt_coeff = 1.0;
 }
 
 
 Real
 TigerAdvectionKernelT::computeQpResidual()
 {
-  Real _dt_coeff = 0.0;
   if (_fe_problem.isTransient())
-    _dt_coeff = 1.0/( (1-_n[_qp])*_rho_s[_qp]*_cp_s[_qp] + _rho_f[_qp]*_cp_f[_qp]*_n[_qp]);
-  else
-    _dt_coeff = 1.0;
+    _dt_coeff = 1.0/_T_Kernel_dt[_qp];
 
-  RealVectorValue _Darcy_Vel = (_kf[_qp]/_viscosity[_qp]) * (_gradient_pore_pressure[_qp]-_rho_f[_qp]*_gravity[_qp]);
+  RealVectorValue _dv = -_k_vis[_qp] * (_gradient_pore_press[_qp] - _rhof_g[_qp]);
 
-  return _dt_coeff * _rho_f[_qp]*_cp_f[_qp] * _test[_i][_qp] * (_Darcy_Vel * _grad_u[_qp]);
+  return _dt_coeff * _rho_cp_f[_qp] * (_test[_i][_qp] * ( _dv * _grad_u[_qp]));
 }
 
 Real
 TigerAdvectionKernelT::computeQpJacobian()
 {
-  Real _dt_coeff = 0.0;
   if (_fe_problem.isTransient())
-    _dt_coeff = 1.0/( (1-_n[_qp])*_rho_s[_qp]*_cp_s[_qp] + _rho_f[_qp]*_cp_f[_qp]*_n[_qp]);
-  else
-    _dt_coeff = 1.0;
+    _dt_coeff = 1.0/_T_Kernel_dt[_qp];
 
-  RealVectorValue _Darcy_Vel = (_kf[_qp]/_viscosity[_qp]) * _gradient_pore_pressure[_qp];
+  RealVectorValue _dv = -_k_vis[_qp] * (_gradient_pore_press[_qp] - _rhof_g[_qp]);
 
-  return _dt_coeff * _rho_f[_qp]*_cp_f[_qp] * _test[_i][_qp] * (_Darcy_Vel * _grad_phi[_j][_qp]);
+  return _dt_coeff * _rho_cp_f[_qp] * (_test[_i][_qp] * ( _dv * _grad_phi[_j][_qp]));
 }

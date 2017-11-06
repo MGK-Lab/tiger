@@ -33,53 +33,26 @@ validParams<TigerDiffusionKernelT>()
 
 TigerDiffusionKernelT::TigerDiffusionKernelT(const InputParameters & parameters)
   : Kernel(parameters),
-    _rho_f(getMaterialProperty<Real>("fluid_density")),
-    _rho_s(getMaterialProperty<Real>("solid_density")),
-    _cp_f(getMaterialProperty<Real>("fluid_specific_heat")),
-    _cp_s(getMaterialProperty<Real>("solid_specific_heat")),
-    _n(getMaterialProperty<Real>("porosity")),
-    _lambda_f(getMaterialProperty<Real>("fluid_thermal_conductivity")),
-    _lambda_s(getMaterialProperty<std::vector<Real>>("solid_conductivity_vector"))
+    _T_Kernel_dt(getMaterialProperty<Real>("T_Kernel_dt_coefficient")),
+    _lambda_sf(getMaterialProperty<RankTwoTensor>("conductivity_mixture"))
 {
-}
-
-RankTwoTensor
-TigerDiffusionKernelT::ConductivityTensorCalculator(Real const & n, Real const & lambda_f, std::vector<Real> lambda_s)
-{
-  RankTwoTensor temp;
-  switch (_lambda_s.size())
-  {
-    case 1:
-      temp = RankTwoTensor(1., 1., 1., 0., 0., 0.) * std::pow(lambda_f,n)*std::pow(lambda_s[0],(1.-n));
-      break;
-
-    case 3:
-      temp = RankTwoTensor(std::pow(lambda_s[0],(1.-n)), std::pow(lambda_s[1],(1.-n)), std::pow(lambda_s[2],(1.-n)), 0., 0., 0.) * std::pow(lambda_f,n);
-      break;
-  }
-  return temp;
+  _dt_coeff = 1.0;
 }
 
 Real
 TigerDiffusionKernelT::computeQpResidual()
 {
-  Real _dt_coeff = 0.0;
   if (_fe_problem.isTransient())
-    _dt_coeff = -1.0/( (1-_n[_qp])*_rho_s[_qp]*_cp_s[_qp] + _rho_f[_qp]*_cp_f[_qp]*_n[_qp]);
-  else
-    _dt_coeff = -1.0;
+    _dt_coeff = 1.0/_T_Kernel_dt[_qp];
 
-  return _dt_coeff * _grad_test[_i][_qp] * ( ConductivityTensorCalculator(_n[_qp], _lambda_f[_qp], _lambda_s[_qp]) * _grad_u[_qp]);
+  return _dt_coeff * _grad_test[_i][_qp] * ( _lambda_sf[_qp] * _grad_u[_qp]);
 }
 
 Real
 TigerDiffusionKernelT::computeQpJacobian()
 {
-  Real _dt_coeff = 0.0;
   if (_fe_problem.isTransient())
-    _dt_coeff = -1.0/( (1-_n[_qp])*_rho_s[_qp]*_cp_s[_qp] + _rho_f[_qp]*_cp_f[_qp]*_n[_qp]);
-  else
-    _dt_coeff = -1.0;
+    _dt_coeff = 1.0/_T_Kernel_dt[_qp];
 
-  return _dt_coeff * _grad_test[_i][_qp] * ( ConductivityTensorCalculator(_n[_qp], _lambda_f[_qp], _lambda_s[_qp]) * _grad_phi[_j][_qp]);
+  return _dt_coeff * _grad_test[_i][_qp] * ( _lambda_sf[_qp] * _grad_phi[_j][_qp]);
 }

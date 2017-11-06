@@ -42,10 +42,8 @@ protected:
 
 private:
   const VariableGradient & _gradient_pore_pressure;
-  const MaterialProperty<RankTwoTensor> & _kf;
-  const MaterialProperty<Real> & _rho_f;
-  const MaterialProperty<Real> & _viscosity;
-  const MaterialProperty<RealVectorValue> & _gravity;
+  const MaterialProperty<RankTwoTensor> & _k_vis;
+  const MaterialProperty<RealVectorValue> & _rhof_g;
   int _component;
 };
 

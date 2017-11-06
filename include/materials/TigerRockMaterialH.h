@@ -24,7 +24,7 @@
 #ifndef TIGERROCKMATERIALH_H
 #define TIGERROCKMATERIALH_H
 
-#include "Material.h"
+#include "TigerMaterialGeneral.h"
 #include "RankTwoTensor.h"
 #include "TigerPermeability.h"
 
@@ -33,7 +33,7 @@ class TigerRockMaterialH;
 template <>
 InputParameters validParams<TigerRockMaterialH>();
 
-class TigerRockMaterialH : public Material
+class TigerRockMaterialH : public TigerMaterialGeneral
 {
 public:
   TigerRockMaterialH(const InputParameters & parameters);
@@ -42,19 +42,27 @@ protected:
   virtual void computeQpProperties() override;
 
   /// enum for selecting permeability distribution
-  MooseEnum _permeability_type;
+  MooseEnum _pt;
   /// initial permeability
   std::vector<Real> _k0;
   /// initial compressibility
-  Real _beta0;
-
-  /// permeability tensor (m^2)
-  MaterialProperty<RankTwoTensor> & _k;
-  /// compressibility (1/Pa)
-  MaterialProperty<Real> & _beta;
-
+  Real _beta_s;
+  /// gravity vector
+  RealVectorValue _gravity;
+  /// initial porosity
+  Real _n0;
+  /// permeability tensor
+  MaterialProperty<RankTwoTensor> & _k_vis;
+  /// compressibility
+  MaterialProperty<Real> & _H_Kernel_dt;
+  /// compressibility
+  MaterialProperty<RealVectorValue> & _rhof_g;
   /// Tiger permeability calculater UserObject
   const TigerPermeability & _kf_UO;
+  /// gravity option
+  bool _has_gravity;
+  /// gravity acceleration (m/s^2)
+  Real _g;
 };
 
 #endif /* TIGERROCKMATERIALH_H */

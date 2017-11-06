@@ -24,37 +24,43 @@
 #ifndef TIGERROCKMATERIALT_H
 #define TIGERROCKMATERIALT_H
 
-#include "Material.h"
+#include "TigerMaterialGeneral.h"
+#include "RankTwoTensor.h"
 
 class TigerRockMaterialT;
 
 template <>
 InputParameters validParams<TigerRockMaterialT>();
 
-class TigerRockMaterialT : public Material
+class TigerRockMaterialT : public TigerMaterialGeneral
 {
 public:
   TigerRockMaterialT(const InputParameters & parameters);
 
 private:
-  /// enum for selecting thermal conductivity distribution
-  MooseEnum _conductivity_type;
-  /// initial thermal conductivity
+  /// enum for selecting thermal conductivity distribution for solid phase
+  MooseEnum _ct;
+  /// initial thermal conductivity for solid phase
   std::vector<Real> _lambda0;
-  /// initial specific heat
+  /// initial specific heat for solid phase
   Real _cp0;
-  /// initial density
+  /// initial density for solid phase
   Real _rho0;
+  /// initial porosity
+  Real _n0;
 
 protected:
   virtual void computeQpProperties() override;
 
-  /// thermal conductivity vector (W/(m K))
-  MaterialProperty<std::vector<Real>> & _lambda;
-  /// specific heat (J/(kg K))
-  MaterialProperty<Real> & _cp;
-  /// density (kg/m^3)
-  MaterialProperty<Real> & _rho;
+  /// conductivity tensor for mixture
+  MaterialProperty<RankTwoTensor> & _lambda_sf;
+  /// coefficient for time derivative kernel
+  MaterialProperty<Real> & _T_Kernel_dt;
+  /// fluid thermal capacity
+  MaterialProperty<Real> & _rho_cp_f;
+
+private:
+  RankTwoTensor ConductivityTensorCalculator(Real const & n, Real const & lambda_f, std::vector<Real> lambda_s);
 };
 
 #endif /* TIGERROCKMATERIALT_H */
