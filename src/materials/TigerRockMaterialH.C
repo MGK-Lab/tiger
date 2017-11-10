@@ -51,6 +51,7 @@ TigerRockMaterialH::TigerRockMaterialH(const InputParameters & parameters)
     _n0(getParam<Real>("porosity")),
     _k_vis(declareProperty<RankTwoTensor>("permeability_by_viscosity")),
     _H_Kernel_dt(declareProperty<Real>("H_Kernel_dt_coefficient")),
+    _rhof(declareProperty<Real>("fluid_density")),
     _rhof_g(declareProperty<RealVectorValue>("rho_times_gravity")),
     _kf_UO(getUserObject<TigerPermeability>("kf_UO")),
     _has_gravity(getParam<bool>("has_gravity")),
@@ -68,4 +69,5 @@ TigerRockMaterialH::computeQpProperties()
   _k_vis[_qp] = _kf_UO.PermeabilityTensorCalculator(_pt,_k0) / _fp_UO.mu(_P[_qp], _T[_qp]);
   _H_Kernel_dt[_qp] = _beta_s + _fp_UO.beta(_P[_qp], _T[_qp]) * _n0;
   _rhof_g[_qp] = _fp_UO.rho(_P[_qp], _T[_qp]) * _gravity;
+  _rhof[_qp] = _fp_UO.rho(_P[_qp], _T[_qp]);
 }

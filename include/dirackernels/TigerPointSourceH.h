@@ -21,50 +21,43 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERROCKMATERIALH_H
-#define TIGERROCKMATERIALH_H
+#ifndef TIGERPOINTSOURCEH_H
+#define TIGERPOINTSOURCEH_H
 
-#include "TigerMaterialGeneral.h"
-#include "RankTwoTensor.h"
-#include "TigerPermeability.h"
+#include "DiracKernel.h"
+#include "Function.h"
 
-class TigerRockMaterialH;
+class TigerPointSourceH;
 
 template <>
-InputParameters validParams<TigerRockMaterialH>();
+InputParameters validParams<TigerPointSourceH>();
 
-class TigerRockMaterialH : public TigerMaterialGeneral
+/**
+ * Point source (or sink) that adds (removes) fluid at a constant mass flux rate for times
+ * between the specified start and end times. If no start and end times are specified,
+ * the source (sink) starts at the start of the simulation and continues to act indefinitely
+ */
+class TigerPointSourceH : public DiracKernel
 {
 public:
-  TigerRockMaterialH(const InputParameters & parameters);
+  TigerPointSourceH(const InputParameters & parameters);
+
+  virtual void addPoints() override;
+  virtual Real computeQpResidual() override;
 
 protected:
-  virtual void computeQpProperties() override;
-
-  /// enum for selecting permeability distribution
-  MooseEnum _pt;
-  /// initial permeability
-  std::vector<Real> _k0;
-  /// initial compressibility
-  Real _beta_s;
-  /// gravity vector
-  RealVectorValue _gravity;
-  /// initial porosity
-  Real _n0;
-  /// permeability tensor
-  MaterialProperty<RankTwoTensor> & _k_vis;
-  /// compressibility
-  MaterialProperty<Real> & _H_Kernel_dt;
-  /// density
-  MaterialProperty<Real> & _rhof;
-  /// compressibility
-  MaterialProperty<RealVectorValue> & _rhof_g;
-  /// Tiger permeability calculater UserObject
-  const TigerPermeability & _kf_UO;
-  /// gravity option
-  bool _has_gravity;
-  /// gravity acceleration (m/s^2)
-  Real _g;
+  /// The constant mass flux (kg/s)
+  const Real _mass_flux;
+  /// The location of the point source (sink)
+  const Point _p;
+  /// The time at which the point source (sink) starts operating
+  const Real _start_time;
+  /// The time at which the point source (sink) stops operating
+  const Real _end_time;
+  /// fluid density
+  const MaterialProperty<Real> & _rhof;
+  /// flow rate is function of time (kg/s)
+  Function * _mass_flux_function;
 };
 
-#endif /* TIGERROCKMATERIALH_H */
+#endif // TIGERPOINTSOURCEH_H

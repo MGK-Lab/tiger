@@ -8,6 +8,7 @@
 #include "TigerKernelH.h"
 #include "TigerDiffusionKernelT.h"
 #include "TigerAdvectionKernelT.h"
+#include "TigerPointSourceH.h"
 
 //AuxKernels
 #include "TigerDarcyVelocityComponent.h"
@@ -23,6 +24,7 @@
 
 #include "TigerPermeability.h"
 #include "TigerPermeabilityRockConst.h"
+
 
 template <>
 InputParameters
@@ -83,6 +85,9 @@ TigerApp::registerObjects(Factory & factory)
   registerKernel(TigerAdvectionKernelT);
 
   registerAux(TigerDarcyVelocityComponent);
+
+  registerDiracKernel(TigerPointSourceH);
+
 }
 
 void
