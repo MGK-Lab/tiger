@@ -3,7 +3,7 @@
   dim = 3
   nx = 1
   ny = 1
-  nz = 20
+  nz = 10
   zmax = 0
   zmin = -1.0
 []
@@ -23,59 +23,29 @@
     pressure = 1.0e6
     temperature = 100.0
     fp_UO = water_uo
-    #has_gravity = true
-    #gravity_acceleration = 10.0
+    has_gravity = true
+    gravity_acceleration = 9.81
     porosity = 0.4
     compressibility = 1.0e-9
     permeability_type = isotropic
     k0 = '1.0e-10'
     kf_UO = rock_uo
   [../]
-  [./rock_t]
-    type = TigerRockMaterialT
-    pressure = 1.0e6
-    temperature = 100.0
-    fp_UO = water_uo
-    porosity = 0.4
-    conductivity_type = isotropic
-    lambda = 2
-    density = 2600
-    specific_heat = 840
-  [../]
 []
 
 [BCs]
-  [./front_p]
+  [./front]
     type =  DirichletBC
     variable = pressure
     boundary = 'front'
     value = 0
   [../]
-  [./back_p]
-    type =  DirichletBC
-    variable = pressure
-    boundary = 'back'
-    value = 50.0
-  [../]
-  [./front_t]
-    type =  DirichletBC
-    variable = temperature
-    boundary = 'front'
-    value = 0
-  [../]
-  [./back_t]
-    type =  DirichletBC
-    variable = temperature
-    boundary = 'back'
-    value = 100.0
-  [../]
-[]
-
-[Variables]
-  [./temperature]
-  [../]
-  [./pressure]
-  [../]
+  #[./back]
+  #  type =  DirichletBC
+  #  variable = pressure
+  #  boundary = 'back'
+  #  value = 9810.0
+  #[../]
 []
 
 [AuxVariables]
@@ -114,33 +84,31 @@
   [../]
 []
 
+[Variables]
+  [./pressure]
+  [../]
+[]
+
 [Kernels]
-  [./T_diff]
-    type = TigerDiffusionKernelT
-    variable = temperature
-  [../]
-  [./T_advect]
-    type = TigerAdvectionKernelT
-    variable = temperature
-    gradient_variable = pressure
-  [../]
-  [./H_diff]
+  [./diff]
     type = TigerKernelH
+    variable = pressure
+  [../]
+  [./time]
+    type = TigerTimeDerivativeH
     variable = pressure
   [../]
 []
 
 [Executioner]
-  type = Steady
-  l_tol = 1e-10 #difference between first and last linear steps
-  nl_rel_step_tol = 1e-15 #machine percision
-  nl_rel_tol = 1e-10 #difference between first and last nonlinear steps
+  type = Transient
+  dt = 0.01
+  end_time = 0.3
+  l_tol = 1e-10 #difference between first and last linear step
+  nl_rel_step_tol = 1e-14 #machine percision
   solve_type = 'PJFNK'
   petsc_options_iname = '-pc_type -pc_hypre_type'
   petsc_options_value = 'hypre boomeramg'
-  #petsc_options = '-snes_ksp_ew'
-  #petsc_options_iname = '-ksp_type -pc_type -snes_atol -snes_rtol -snes_max_it -ksp_max_it -sub_pc_factor_shift_type'
-  #petsc_options_value = 'gmres lu 1E-10 1E-15 200 500 NONZERO'
 []
 
 [Outputs]

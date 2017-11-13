@@ -36,32 +36,24 @@ TigerAdvectionKernelT::TigerAdvectionKernelT(const InputParameters & parameters)
   : Kernel(parameters),
     _rho_cp_f(getMaterialProperty<Real>("fluid_thermal_capacity")),
     _gradient_pore_press(coupledGradient("gradient_variable")),
-    _T_Kernel_dt(getMaterialProperty<Real>("T_Kernel_dt_coefficient")),
     _k_vis(getMaterialProperty<RankTwoTensor>("permeability_by_viscosity")),
     _rhof_g(getMaterialProperty<RealVectorValue>("rho_times_gravity"))
 {
-  _dt_coeff = 1.0;
 }
 
 
 Real
 TigerAdvectionKernelT::computeQpResidual()
 {
-  if (_fe_problem.isTransient())
-    _dt_coeff = 1.0/_T_Kernel_dt[_qp];
-
   RealVectorValue _dv = -_k_vis[_qp] * (_gradient_pore_press[_qp] - _rhof_g[_qp]);
 
-  return _dt_coeff * _rho_cp_f[_qp] * (_test[_i][_qp] * ( _dv * _grad_u[_qp]));
+  return _rho_cp_f[_qp] * (_test[_i][_qp] * ( _dv * _grad_u[_qp]));
 }
 
 Real
 TigerAdvectionKernelT::computeQpJacobian()
 {
-  if (_fe_problem.isTransient())
-    _dt_coeff = 1.0/_T_Kernel_dt[_qp];
-
   RealVectorValue _dv = -_k_vis[_qp] * (_gradient_pore_press[_qp] - _rhof_g[_qp]);
 
-  return _dt_coeff * _rho_cp_f[_qp] * (_test[_i][_qp] * ( _dv * _grad_phi[_j][_qp]));
+  return _rho_cp_f[_qp] * (_test[_i][_qp] * ( _dv * _grad_phi[_j][_qp]));
 }

@@ -21,30 +21,30 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERADVECTIONKERNELT_H
-#define TIGERADVECTIONKERNELT_H
-
-#include "Kernel.h"
-#include "RankTwoTensor.h"
-
-class TigerAdvectionKernelT;
+#include "TigerTimeDerivativeT.h"
 
 template <>
-InputParameters validParams<TigerAdvectionKernelT>();
-
-class TigerAdvectionKernelT : public Kernel
+InputParameters
+validParams<TigerTimeDerivativeT>()
 {
-public:
-  TigerAdvectionKernelT(const InputParameters & parameters);
+  InputParameters params = validParams<TimeDerivative>();
+  return params;
+}
 
-protected:
-  virtual Real computeQpResidual() override;
-  virtual Real computeQpJacobian() override;
+TigerTimeDerivativeT::TigerTimeDerivativeT(const InputParameters & parameters)
+  : TimeDerivative(parameters),
+    _T_Kernel_dt(getMaterialProperty<Real>("T_Kernel_dt_coefficient"))
+{
+}
 
-  const MaterialProperty<Real> & _rho_cp_f;
-  const VariableGradient & _gradient_pore_press;
-  const MaterialProperty<RankTwoTensor> & _k_vis;
-  const MaterialProperty<RealVectorValue> & _rhof_g;
-};
+Real
+TigerTimeDerivativeT::computeQpResidual()
+{
+  return _T_Kernel_dt[_qp] * TimeDerivative::computeQpResidual();
+}
 
-#endif // TIGERADVECTIONKERNELT_H
+Real
+TigerTimeDerivativeT::computeQpJacobian()
+{
+  return _T_Kernel_dt[_qp] * TimeDerivative::computeQpJacobian();
+}

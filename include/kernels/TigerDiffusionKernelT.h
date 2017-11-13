@@ -41,10 +41,7 @@ protected:
   virtual Real computeQpResidual() override;
   virtual Real computeQpJacobian() override;
 
-  const MaterialProperty<Real> & _T_Kernel_dt;
   const MaterialProperty<RankTwoTensor> & _lambda_sf;
-private:
-  Real _dt_coeff;
 };
 
 #endif // TIGERDIFFUSIONKERNELT_H

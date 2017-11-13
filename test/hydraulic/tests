@@ -1,4 +1,9 @@
 [Tests]
+  [./hydraulic]
+    type = 'Exodiff'
+    input = 'hydraulic_gravity.i'
+    exodiff = 'hydraulic_gravity_out.e'
+  [../]
   [./material]
     type = 'Exodiff'
     input = 'material_water.i'

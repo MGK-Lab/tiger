@@ -42,10 +42,7 @@ protected:
   virtual Real computeQpJacobian() override;
 
   const MaterialProperty<RankTwoTensor> & _k_vis;
-  const MaterialProperty<Real> & _H_Kernel_dt;
   const MaterialProperty<RealVectorValue> & _rhof_g;
-private:
-  Real _dt_coeff;
 };
 
 #endif // TIGERKERNELH_H

@@ -22,6 +22,7 @@
 /**************************************************************************/
 
 #include "TigerPointSourceH.h"
+#include "FEProblemBase.h"
 
 template <>
 InputParameters
@@ -62,11 +63,10 @@ TigerPointSourceH::addPoints()
 Real
 TigerPointSourceH::computeQpResidual()
 {
-  Real factor = 0.0;
+  Real factor = 1.0;
 
   if (isParamValid("mass_flux_function"))
-    /// Negative sign to make a positive mass_flux as a source
-    return -_test[_i][_qp] * _mass_flux_function->value(_t, Point())/_rhof[_qp];
+      factor *= _mass_flux_function->value(_t, Point());
   else
   {
     /**
@@ -80,18 +80,19 @@ TigerPointSourceH::computeQpResidual()
     else if (_t - _dt < _start_time)
     {
       if (_t <= _end_time)
-        factor = (_t - _start_time) / _dt;
+        factor *= (_t - _start_time) / _dt;
       else
-        factor = (_end_time - _start_time) / _dt;
+        factor *= (_end_time - _start_time) / _dt;
     }
     else
     {
       if (_t <= _end_time)
-        factor = 1.0;
+        factor *= 1.0;
       else
-        factor = (_end_time - (_t - _dt)) / _dt;
+        factor *= (_end_time - (_t - _dt)) / _dt;
     }
-    /// Negative sign to make a positive mass_flux as a source
-    return -_test[_i][_qp] * factor * _mass_flux/_rhof[_qp];
+      factor *=_mass_flux;
   }
+  /// Negative sign to make a positive mass_flux as a source
+  return -_test[_i][_qp] * factor /_rhof[_qp];
 }

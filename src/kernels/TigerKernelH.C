@@ -34,27 +34,19 @@ validParams<TigerKernelH>()
 TigerKernelH::TigerKernelH(const InputParameters & parameters)
   : Kernel(parameters),
     _k_vis(getMaterialProperty<RankTwoTensor>("permeability_by_viscosity")),
-    _H_Kernel_dt(getMaterialProperty<Real>("H_Kernel_dt_coefficient")),
     _rhof_g(getMaterialProperty<RealVectorValue>("rho_times_gravity"))
 {
-  _dt_coeff = 1.;
 }
 
 
 Real
 TigerKernelH::computeQpResidual()
 {
-  if (_fe_problem.isTransient())
-    _dt_coeff = 1.0/_H_Kernel_dt[_qp];
-
-  return _dt_coeff * _grad_test[_i][_qp] * ( _k_vis[_qp] * ( _grad_u[_qp] - _rhof_g[_qp] ) );
+  return _grad_test[_i][_qp] * ( _k_vis[_qp] * ( _grad_u[_qp] - _rhof_g[_qp] ) );
 }
 
 Real
 TigerKernelH::computeQpJacobian()
 {
-  if (_fe_problem.isTransient())
-    _dt_coeff = 1.0/_H_Kernel_dt[_qp];
-
-  return _dt_coeff * _grad_test[_i][_qp] * ( _k_vis[_qp] * _grad_phi[_j][_qp] );
+  return _grad_test[_i][_qp] * ( _k_vis[_qp] * _grad_phi[_j][_qp] );
 }

@@ -9,7 +9,6 @@
 [UserObjects]
   [./water_uo]
     type = TigerFluidConst
-    specific_heat = 4.2e-2 #unreal value to check the transient stage
   [../]
 []
 
@@ -23,7 +22,7 @@
     conductivity_type = isotropic
     lambda = 2
     density = 2600
-    specific_heat = 0.84e-2 #unreal value to check the transient stage
+    specific_heat = 840
   [../]
 []
 
@@ -54,15 +53,15 @@
     variable = temperature
   [../]
   [./T_dt]
-    type = TimeDerivative
+    type = TigerTimeDerivativeT
     variable = temperature
   [../]
 []
 
 [Executioner]
   type = Transient
-  dt = 2.0
-  end_time = 10.0
+  num_steps = 200
+  end_time = 4.0e5
   l_tol = 1e-10 #difference between first and last linear step
   nl_rel_step_tol = 1e-14 #machine percision
   solve_type = 'PJFNK'

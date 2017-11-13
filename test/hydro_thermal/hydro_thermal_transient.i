@@ -129,7 +129,7 @@
     gradient_variable = pressure
   [../]
   [./T_dt]
-    type = TimeDerivative
+    type = TigerTimeDerivativeT
     variable = temperature
   [../]
   [./H_diff]
@@ -137,7 +137,7 @@
     variable = pressure
   [../]
   [./H_dt]
-    type = TimeDerivative
+    type = TigerTimeDerivativeH
     variable = pressure
   [../]
 []
@@ -146,7 +146,7 @@
   type = Transient
   #dt = 0.1
   num_steps = 200
-  end_time = 2.0e5
+  end_time = 4.0e5
   l_tol = 1e-10 #difference between first and last linear steps
   nl_rel_step_tol = 1e-15 #machine percision
   nl_rel_tol = 1e-10 #difference between first and last nonlinear steps
@@ -156,7 +156,7 @@
   #petsc_options_value = 'gmres lu 1E-10 1E-15 200 500 NONZERO'
   petsc_options = '-snes_ksp_ew'
   petsc_options_iname = '-ksp_type -pc_type -snes_atol -snes_rtol -snes_max_it -ksp_max_it -sub_pc_type -sub_pc_factor_shift_type'
-  petsc_options_value = 'gmres asm 1E-10 1E-10 200 500 lu NONZERO'
+  petsc_options_value = 'gmres asm 1E-10 1E-15 200 500 lu NONZERO'
 []
 
 [Outputs]

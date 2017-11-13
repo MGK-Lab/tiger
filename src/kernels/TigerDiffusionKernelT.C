@@ -33,26 +33,18 @@ validParams<TigerDiffusionKernelT>()
 
 TigerDiffusionKernelT::TigerDiffusionKernelT(const InputParameters & parameters)
   : Kernel(parameters),
-    _T_Kernel_dt(getMaterialProperty<Real>("T_Kernel_dt_coefficient")),
     _lambda_sf(getMaterialProperty<RankTwoTensor>("conductivity_mixture"))
 {
-  _dt_coeff = 1.0;
 }
 
 Real
 TigerDiffusionKernelT::computeQpResidual()
 {
-  if (_fe_problem.isTransient())
-    _dt_coeff = 1.0/_T_Kernel_dt[_qp];
-
-  return _dt_coeff * _grad_test[_i][_qp] * ( _lambda_sf[_qp] * _grad_u[_qp]);
+  return _grad_test[_i][_qp] * ( _lambda_sf[_qp] * _grad_u[_qp]);
 }
 
 Real
 TigerDiffusionKernelT::computeQpJacobian()
 {
-  if (_fe_problem.isTransient())
-    _dt_coeff = 1.0/_T_Kernel_dt[_qp];
-
-  return _dt_coeff * _grad_test[_i][_qp] * ( _lambda_sf[_qp] * _grad_phi[_j][_qp]);
+  return _grad_test[_i][_qp] * ( _lambda_sf[_qp] * _grad_phi[_j][_qp]);
 }
