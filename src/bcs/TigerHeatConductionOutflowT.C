@@ -21,31 +21,30 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerHeatSourceT.h"
-
-// MOOSE
-#include "Function.h"
+#include "TigerHeatConductionOutflowT.h"
 
 template <>
 InputParameters
-validParams<TigerHeatSourceT>()
+validParams<TigerHeatConductionOutflowT>()
 {
-  InputParameters params = validParams<Kernel>();
-  params.addParam<Real>("value", 1.0, "Constant heat source (sink) (W/m^3) (positive is a source, and negative is a sink) or a multiplier for the the provided function");
-  params.addParam<FunctionName>("function", "1", "Heat source (sink) as a function (W/m^3) (positive is a source, and negative is a sink)");
+  InputParameters params = validParams<IntegratedBC>();
   return params;
 }
 
-TigerHeatSourceT::TigerHeatSourceT(const InputParameters & parameters)
-  : Kernel(parameters),
-    _scale(getParam<Real>("value")),
-    _function(getFunction("function"))
+TigerHeatConductionOutflowT::TigerHeatConductionOutflowT(const InputParameters & parameters)
+  : IntegratedBC(parameters),
+  _lambda_sf(getMaterialProperty<RankTwoTensor>("conductivity_mixture"))
 {
 }
 
 Real
-TigerHeatSourceT::computeQpResidual()
+TigerHeatConductionOutflowT::computeQpResidual()
 {
-  Real factor = _scale * _function.value(_t, _q_point[_qp]);
-  return _test[_i][_qp] * -factor;
+  return -_test[_i][_qp] * _lambda_sf[_qp] * _grad_u[_qp] * _normals[_qp];
+}
+
+Real
+TigerHeatConductionOutflowT::computeQpJacobian()
+{
+  return -_test[_i][_qp] * _lambda_sf[_qp] * _grad_phi[_j][_qp] * _normals[_qp];
 }

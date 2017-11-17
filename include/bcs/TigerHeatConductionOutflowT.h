@@ -21,31 +21,34 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerHeatSourceT.h"
+#ifndef TIGERHEATCONDUCTIONOUTFLOWT_H
+#define TIGERHEATCONDUCTIONOUTFLOWT_H
 
-// MOOSE
-#include "Function.h"
+#include "IntegratedBC.h"
+#include "RankTwoTensor.h"
+
+class TigerHeatConductionOutflowT;
 
 template <>
-InputParameters
-validParams<TigerHeatSourceT>()
-{
-  InputParameters params = validParams<Kernel>();
-  params.addParam<Real>("value", 1.0, "Constant heat source (sink) (W/m^3) (positive is a source, and negative is a sink) or a multiplier for the the provided function");
-  params.addParam<FunctionName>("function", "1", "Heat source (sink) as a function (W/m^3) (positive is a source, and negative is a sink)");
-  return params;
-}
+InputParameters validParams<TigerHeatConductionOutflowT>();
 
-TigerHeatSourceT::TigerHeatSourceT(const InputParameters & parameters)
-  : Kernel(parameters),
-    _scale(getParam<Real>("value")),
-    _function(getFunction("function"))
+/* The residual is simply -test*k*grad_u*normal which is the term
+ * you get from integration by parts.
+ *
+ * See also: Griffiths, David F. "The 'no boundary condition' outflow
+ * boundary condition.", International Journal for Numerical Methods
+ * in Fluids, vol. 24, no. 4, 1997, pp. 393-411.
+ */
+class TigerHeatConductionOutflowT : public IntegratedBC
 {
-}
+public:
+  TigerHeatConductionOutflowT(const InputParameters & parameters);
 
-Real
-TigerHeatSourceT::computeQpResidual()
-{
-  Real factor = _scale * _function.value(_t, _q_point[_qp]);
-  return _test[_i][_qp] * -factor;
-}
+protected:
+  virtual Real computeQpResidual() override;
+  virtual Real computeQpJacobian() override;
+
+  const MaterialProperty<RankTwoTensor> & _lambda_sf;
+};
+
+#endif // TIGERHEATCONDUCTIONOUTFLOWT_H

@@ -28,6 +28,9 @@
 #include "TigerPermeability.h"
 #include "TigerPermeabilityRockConst.h"
 
+//Boundary Condition
+#include "TigerHeatConductionOutflowT.h"
+
 
 template <>
 InputParameters
@@ -93,7 +96,7 @@ TigerApp::registerObjects(Factory & factory)
   registerAux(TigerDarcyVelocityComponent);
 
   registerDiracKernel(TigerPointSourceH);
-
+  registerBoundaryCondition(TigerHeatConductionOutflowT);
 }
 
 void
