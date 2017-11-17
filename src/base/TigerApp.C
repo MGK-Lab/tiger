@@ -11,6 +11,7 @@
 #include "TigerPointSourceH.h"
 #include "TigerTimeDerivativeH.h"
 #include "TigerTimeDerivativeT.h"
+#include "TigerHeatSourceT.h"
 
 //AuxKernels
 #include "TigerDarcyVelocityComponent.h"
@@ -87,6 +88,7 @@ TigerApp::registerObjects(Factory & factory)
   registerKernel(TigerAdvectionKernelT);
   registerKernel(TigerTimeDerivativeH);
   registerKernel(TigerTimeDerivativeT);
+  registerKernel(TigerHeatSourceT);
 
   registerAux(TigerDarcyVelocityComponent);
 
