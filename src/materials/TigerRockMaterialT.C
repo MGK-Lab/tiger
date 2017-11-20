@@ -84,7 +84,7 @@ TigerRockMaterialT::ConductivityTensorCalculator(Real const & n, Real const & la
 void
 TigerRockMaterialT::computeQpProperties()
 {
-  _T_Kernel_dt[_qp] = (1-_n0)*_rho0*_cp0 + _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp])*_n0;
+  _T_Kernel_dt[_qp] = (1.0-_n0)*_rho0*_cp0 + _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp])*_n0;
   _lambda_sf  [_qp] = ConductivityTensorCalculator(_n0, _fp_UO.lambda(_P[_qp], _T[_qp]), _lambda0);
   _rho_cp_f   [_qp] = _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp]);
 }

@@ -1,7 +1,12 @@
 [Tests]
-  [./hydraulic]
+  [./thermal]
     type = 'Exodiff'
     input = 'thermal.i'
     exodiff = 'thermal_out.e'
+  [../]
+  [./thermal_source]
+    type = 'Exodiff'
+    input = 'thermal_source.i'
+    exodiff = 'thermal_source_out.e'
   [../]
 []
