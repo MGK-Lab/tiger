@@ -65,6 +65,8 @@ protected:
   bool _has_gravity;
   /// gravity acceleration (m/s^2)
   Real _g;
+  /// permeability tensor
+  MaterialProperty<RankTwoTensor> & _test;
 };
 
 #endif /* TIGERROCKMATERIALH_H */

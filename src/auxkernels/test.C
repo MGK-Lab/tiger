@@ -21,38 +21,28 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERMATERIALGENERAL_H
-#define TIGERMATERIALGENERAL_H
-
-#include "Material.h"
-#include "TigerFluidPropertiesTP.h"
-#include "RankTwoTensor.h"
-#include <cfloat>
-
-class TigerMaterialGeneral;
+#include "test.h"
 
 template <>
-InputParameters validParams<TigerMaterialGeneral>();
-
-class TigerMaterialGeneral : public Material
+InputParameters
+validParams<test>()
 {
-public:
-  TigerMaterialGeneral(const InputParameters & parameters);
+  InputParameters params = validParams<AuxKernel>();
+  params.addRequiredParam<int>("i", "i");
+  params.addRequiredParam<int>("j", "j");
+  return params;
+}
 
-protected:
-  /// Pressure (Pa)
-  const VariableValue & _P;
-  /// Temperature (K)
-  const VariableValue & _T;
-  /// rotation matrix for local cordinates
-  RankTwoTensor _rot_mat;
-  /// to choose between different conditions (well, fault, matrix)
-  MooseEnum _material_type;
+test::test(const InputParameters & parameters)
+  : AuxKernel(parameters),
+    _test(getMaterialProperty<RankTwoTensor>("test")),
+    _i(getParam<int>("i")),
+    _j(getParam<int>("j"))
+{
+}
 
-  /// compute rotation matrix
-  void computeRotationMatrix();
-  /// Tiger Fluid properties UserObject
- const TigerFluidPropertiesTP & _fp_UO;
-};
-
-#endif /* TIGERMATERIALGENERAL_H */
+Real
+test::computeValue()
+{
+  return _test[_qp](_i,_j);
+}

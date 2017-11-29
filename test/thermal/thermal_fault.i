@@ -1,6 +1,6 @@
 [Mesh]
   type = FileMesh
-  file = frac_3d.msh
+  file = Inclined_Frac.msh
 []
 
 [UserObjects]
@@ -21,6 +21,7 @@
     density = 2600
     specific_heat = 840
     block = 'b1 b2'
+    material_type = matrix
   [../]
   [./rock_t2]
     type = TigerRockMaterialT
@@ -33,6 +34,7 @@
     density = 2600
     specific_heat = 840
     block = frac
+    material_type = fracture
   [../]
 []
 
@@ -71,7 +73,7 @@
 [Executioner]
   type = Transient
   num_steps = 50
-  end_time = 5.0e5
+  end_time = 6.0e5
   l_tol = 1e-10 #difference between first and last linear step
   nl_rel_step_tol = 1e-14 #machine percision
   solve_type = 'PJFNK'

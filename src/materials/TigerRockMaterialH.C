@@ -23,6 +23,7 @@
 
 #include "TigerRockMaterialH.h"
 #include "Material.h"
+#include "MooseMesh.h"
 
 template <>
 InputParameters
@@ -55,13 +56,15 @@ TigerRockMaterialH::TigerRockMaterialH(const InputParameters & parameters)
     _rhof_g(declareProperty<RealVectorValue>("rho_times_gravity")),
     _kf_UO(getUserObject<TigerPermeability>("kf_UO")),
     _has_gravity(getParam<bool>("has_gravity")),
-    _g(getParam<Real>("gravity_acceleration"))
+    _g(getParam<Real>("gravity_acceleration")),
+    _test(declareProperty<RankTwoTensor>("test"))
 {
   if (_has_gravity)
     _gravity = RealVectorValue(0.0, 0.0, -_g);
   else
     _gravity = RealVectorValue(0.0, 0.0, 0.0);
 }
+
 
 void
 TigerRockMaterialH::computeQpProperties()
@@ -70,4 +73,11 @@ TigerRockMaterialH::computeQpProperties()
   _H_Kernel_dt[_qp] = _beta_s + _fp_UO.beta(_P[_qp], _T[_qp]) * _n0;
   _rhof_g[_qp] = _fp_UO.rho(_P[_qp], _T[_qp]) * _gravity;
   _rhof[_qp] = _fp_UO.rho(_P[_qp], _T[_qp]);
+  if (_current_elem->dim() < _mesh.dimension())
+  {
+    _rot_mat.zero();
+    computeRotationMatrix();
+    // _k_vis[_qp](2,2) = 0.0;
+    _k_vis[_qp].rotate(_rot_mat);
+  }
 }
