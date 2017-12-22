@@ -38,8 +38,8 @@ validParams<TigerRockMaterialH>()
   MooseEnum PT("isotropic=1 orthotropic=2 anisotropic=3");
   params.addRequiredParam<MooseEnum>("permeability_type", PT, "The permeability distribution type [isotropic, orthotropic, anisotropic].");
 
-  params.addRequiredParam<std::vector<Real>>("k0", "Initial permeability of rock matrix (m^2)");
-  params.addRequiredParam<UserObjectName>("kf_UO", "The name of the user object for permeability calculation");
+  params.addRequiredParam<std::vector<Real>>("k0", "Initial permeability (m^2)");
+  params.addRequiredParam<UserObjectName>("kf_UO", "The name of the userobject for permeability calculation");
   params.addClassDescription("Rock matrix hydraulic properties");
   return params;
 }
@@ -77,6 +77,7 @@ TigerRockMaterialH::computeQpProperties()
   {
     _rot_mat.zero();
     computeRotationMatrix();
+    _test[_qp] = _rot_mat;
     // _k_vis[_qp](2,2) = 0.0;
     _k_vis[_qp].rotate(_rot_mat);
   }

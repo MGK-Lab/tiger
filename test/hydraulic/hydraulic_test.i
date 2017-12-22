@@ -1,6 +1,6 @@
 [Mesh]
   type = FileMesh
-  file =  frac_3d.msh
+  file =  m5.e
 []
 
 [UserObjects]
@@ -26,7 +26,7 @@
     k0 = '2.0e-10 2.0e-10 2.0e-10'
     kf_UO = rock_uo
     material_type = matrix
-    block = 'b1 b2'
+    block = 0
   [../]
   [./rock_h2]
     type = TigerRockMaterialH
@@ -38,10 +38,25 @@
     porosity = 0.4
     compressibility = 1.0e-9
     permeability_type = orthotropic
-    k0 = '5.0e-10 2.0e-10 10.0e-10'
+    k0 = '2.0e-10 2.0e-10 20.0e-10'
     kf_UO = rock_uo
     material_type = fracture
-    block = frac
+    block = 1
+  [../]
+  [./rock_h3]
+    type = TigerRockMaterialH
+    pressure = 1.0e6
+    temperature = 100.0
+    fp_UO = water_uo
+    #has_gravity = true
+    #gravity_acceleration = 9.81
+    porosity = 0.4
+    compressibility = 1.0e-9
+    permeability_type = orthotropic
+    k0 = '20.0e-10 0.0e-10 0.0e-10'
+    kf_UO = rock_uo
+    material_type = well
+    block = 2
   [../]
 []
 
@@ -49,13 +64,13 @@
   [./front]
     type =  DirichletBC
     variable = pressure
-    boundary = 'top'
+    boundary = 6
     value = 0
   [../]
   [./back]
     type =  DirichletBC
     variable = pressure
-    boundary = 'bottom'
+    boundary = 5
     value = 9810.0
   [../]
 []

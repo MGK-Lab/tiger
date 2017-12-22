@@ -30,7 +30,7 @@ validParams<TigerMaterialGeneral>()
   InputParameters params = validParams<Material>();
   params.addCoupledVar("pressure", 0.0, "Fluid pressure (Pa)");
   params.addCoupledVar("temperature", 0.0, "Fluid temperature (C)");
-  params.addRequiredParam<UserObjectName>("fp_UO", "The name of the user object for fluid properties");
+  params.addRequiredParam<UserObjectName>("fp_UO", "The name of the userobject for fluid properties");
   params.addClassDescription("General properties + fluid properties");
   MooseEnum mat_type("well=0 fracture=1 matrix=2");
   params.addRequiredParam<MooseEnum>("material_type", mat_type, "The type of the geological structure (matrix, fracture, well)");
@@ -71,24 +71,29 @@ TigerMaterialGeneral::computeRotationMatrix()
             break;
           }
       }
+      zp = xp.cross(yp);
+      yp = zp.cross(xp);
       break;
+
     case 1:
       yp = _current_elem->point(2) - _current_elem->point(1);
+      zp = xp.cross(yp);
+      if (!((std::fabs(zp(0)) + std::fabs(zp(1)))/zp.norm() < DBL_MIN)) //horizontal fracture check
+        xp = RealVectorValue(0.,0.,1.).cross(zp);
+      else
+        xp = RealVectorValue(1.,0.,0.);
+      yp = zp.cross(xp);
       break;
+
     case 2:
       break;
   }
+
   if (_material_type<2)
-  {
-    zp = xp.cross(yp);
-    if (!((std::fabs(zp(0)) + std::fabs(zp(1)))/zp.norm() < DBL_MIN))
-      xp = RealVectorValue(0.,0.,1.).cross(zp);
-    yp = zp.cross(xp);
     for (unsigned int i = 0; i < 3; ++i)
     {
       (_rot_mat)(i, 0) = xp(i) / xp.norm();
       (_rot_mat)(i, 1) = yp(i) / yp.norm();
       (_rot_mat)(i, 2) = zp(i) / zp.norm();
     }
-  }
 }
