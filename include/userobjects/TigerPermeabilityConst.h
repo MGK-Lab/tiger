@@ -21,27 +21,24 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERPERMEABILITYROCKCONST_H
-#define TIGERPERMEABILITYROCKCONST_H
+#ifndef TIGERPERMEABILITYCONST_H
+#define TIGERPERMEABILITYCONST_H
 
 #include "TigerPermeability.h"
 #include "MooseEnum.h"
 
-class TigerPermeabilityRockConst;
+class TigerPermeabilityConst;
 
 template <>
-InputParameters validParams<TigerPermeabilityRockConst>();
+InputParameters validParams<TigerPermeabilityConst>();
 
-class TigerPermeabilityRockConst : public TigerPermeability
+class TigerPermeabilityConst : public TigerPermeability
 {
 public:
-  TigerPermeabilityRockConst(const InputParameters & parameters);
-
-  /// permeability name
-  virtual std::string PermeabilityName() const override;
+  TigerPermeabilityConst(const InputParameters & parameters);
 
   /// permeability matrix (m^2)
-  virtual RankTwoTensor PermeabilityTensorCalculator(MooseEnum permeability_type, std::vector<Real> k0) const override;
+  virtual RankTwoTensor PermeabilityTensorCalculator(MooseEnum permeability_type, std::vector<Real> k0, int dim) const override;
 };
 
-#endif /* TIGERPERMEABILITYROCKCONST_H */
+#endif /* TIGERPERMEABILITYCONST_H */

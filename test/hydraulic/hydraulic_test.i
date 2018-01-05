@@ -8,7 +8,7 @@
     type = TigerFluidConst
   [../]
   [./rock_uo]
-    type =  TigerPermeabilityRockConst
+    type =  TigerPermeabilityConst
   [../]
 []
 
@@ -38,7 +38,7 @@
     porosity = 0.4
     compressibility = 1.0e-9
     permeability_type = orthotropic
-    k0 = '2.0e-10 2.0e-10 20.0e-10'
+    k0 = '10.0e-10 10.0e-10'
     kf_UO = rock_uo
     material_type = fracture
     block = 1
@@ -50,10 +50,10 @@
     fp_UO = water_uo
     #has_gravity = true
     #gravity_acceleration = 9.81
-    porosity = 0.4
+    porosity = 1.0
     compressibility = 1.0e-9
-    permeability_type = orthotropic
-    k0 = '20.0e-10 0.0e-10 0.0e-10'
+    permeability_type = isotropic
+    k0 = '20.0e-10'
     kf_UO = rock_uo
     material_type = well
     block = 2
@@ -62,13 +62,13 @@
 
 [BCs]
   [./front]
-    type =  DirichletBC
+    type = DirichletBC
     variable = pressure
     boundary = 6
     value = 0
   [../]
   [./back]
-    type =  DirichletBC
+    type = DirichletBC
     variable = pressure
     boundary = 5
     value = 9810.0
@@ -219,8 +219,8 @@
 
 [Executioner]
   type = Transient
-  dt = 0.01
-  end_time = 0.1
+  dt = 1.0
+  end_time = 10.0
   l_tol = 1e-10 #difference between first and last linear step
   nl_rel_step_tol = 1e-14 #machine percision
   solve_type = 'PJFNK'

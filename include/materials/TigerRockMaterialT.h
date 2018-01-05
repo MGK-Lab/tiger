@@ -40,6 +40,8 @@ public:
 private:
   /// enum for selecting thermal conductivity distribution for solid phase
   MooseEnum _ct;
+  /// enum for selecting calculation method for mixture
+  MooseEnum _mean;
   /// initial thermal conductivity for solid phase
   std::vector<Real> _lambda0;
   /// initial specific heat for solid phase
@@ -48,9 +50,11 @@ private:
   Real _rho0;
   /// initial porosity
   Real _n0;
+  RankTwoTensor ConductivityTensorCalculator(Real const & n, Real const & lambda_f, std::vector<Real> lambda_s, MooseEnum conductivity_type, MooseEnum mean_type, int dim);
 
 protected:
   virtual void computeQpProperties() override;
+  virtual void computeProperties() override;
 
   /// conductivity tensor for mixture
   MaterialProperty<RankTwoTensor> & _lambda_sf;
@@ -58,9 +62,6 @@ protected:
   MaterialProperty<Real> & _T_Kernel_dt;
   /// fluid thermal capacity
   MaterialProperty<Real> & _rho_cp_f;
-
-private:
-  RankTwoTensor ConductivityTensorCalculator(Real const & n, Real const & lambda_f, std::vector<Real> lambda_s);
 };
 
 #endif /* TIGERROCKMATERIALT_H */

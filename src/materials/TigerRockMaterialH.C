@@ -24,6 +24,7 @@
 #include "TigerRockMaterialH.h"
 #include "Material.h"
 #include "MooseMesh.h"
+#include "libmesh/quadrature.h"
 
 template <>
 InputParameters
@@ -40,7 +41,7 @@ validParams<TigerRockMaterialH>()
 
   params.addRequiredParam<std::vector<Real>>("k0", "Initial permeability (m^2)");
   params.addRequiredParam<UserObjectName>("kf_UO", "The name of the userobject for permeability calculation");
-  params.addClassDescription("Rock matrix hydraulic properties");
+  params.addClassDescription("Hydraulic properties");
   return params;
 }
 
@@ -60,25 +61,68 @@ TigerRockMaterialH::TigerRockMaterialH(const InputParameters & parameters)
     _test(declareProperty<RankTwoTensor>("test"))
 {
   if (_has_gravity)
-    _gravity = RealVectorValue(0.0, 0.0, -_g);
+  {
+    if (_mesh.dimension() == 3)
+      _gravity = RealVectorValue(0., 0., -_g);
+    else if (_mesh.dimension() == 2)
+      _gravity = RealVectorValue(0., -_g, 0.);
+    else if (_mesh.dimension() == 1)
+      _gravity = RealVectorValue(-_g, 0., 0.);
+  }
   else
-    _gravity = RealVectorValue(0.0, 0.0, 0.0);
+    _gravity = RealVectorValue(0., 0., 0.);
 }
 
 
 void
+TigerRockMaterialH::computeProperties()
+{
+  if (_constant_option == ConstantTypeEnum::SUBDOMAIN)
+    return;
+
+  // If this Material has the _constant_on_elem flag set, we take the
+  // value computed for _qp==0 and use it at all the quadrature points
+  // in the Elem.
+  if (_constant_option == ConstantTypeEnum::ELEMENT)
+  {
+    // Compute MaterialProperty values at the first qp.
+    _qp = 0;
+    if (_current_elem->dim() < _mesh.dimension())
+      computeRotationMatrix();
+    computeQpProperties();
+
+    // Reference to *all* the MaterialProperties in the MaterialData object, not
+    // just the ones for this Material.
+    MaterialProperties & props = _material_data->props();
+
+    // Now copy the values computed at qp 0 to all the other qps.
+    for (const auto & prop_id : _supplied_prop_ids)
+    {
+      auto nqp = _qrule->n_points();
+      for (decltype(nqp) qp = 1; qp < nqp; ++qp)
+        props[prop_id]->qpCopy(qp, props[prop_id], 0);
+    }
+  }
+  else
+  {
+    if (_current_elem->dim() < _mesh.dimension())
+      computeRotationMatrix();
+    for (_qp = 0; _qp < _qrule->n_points(); ++_qp)
+      computeQpProperties();
+  }
+}
+
+void
 TigerRockMaterialH::computeQpProperties()
 {
-  _k_vis[_qp] = _kf_UO.PermeabilityTensorCalculator(_pt,_k0) / _fp_UO.mu(_P[_qp], _T[_qp]);
+  _k_vis[_qp] = _kf_UO.PermeabilityTensorCalculator(_pt,_k0,_current_elem->dim()) / _fp_UO.mu(_P[_qp], _T[_qp]);
   _H_Kernel_dt[_qp] = _beta_s + _fp_UO.beta(_P[_qp], _T[_qp]) * _n0;
   _rhof_g[_qp] = _fp_UO.rho(_P[_qp], _T[_qp]) * _gravity;
   _rhof[_qp] = _fp_UO.rho(_P[_qp], _T[_qp]);
+
   if (_current_elem->dim() < _mesh.dimension())
   {
-    _rot_mat.zero();
-    computeRotationMatrix();
     _test[_qp] = _rot_mat;
-    // _k_vis[_qp](2,2) = 0.0;
     _k_vis[_qp].rotate(_rot_mat);
   }
 }

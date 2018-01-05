@@ -39,6 +39,7 @@ public:
   TigerRockMaterialH(const InputParameters & parameters);
 
 protected:
+  virtual void computeProperties() override;
   virtual void computeQpProperties() override;
 
   /// enum for selecting permeability distribution
