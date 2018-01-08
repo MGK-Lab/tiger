@@ -21,27 +21,26 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerPermeabilityConst.h"
+#include "TigerPermeabilityCubicLaw.h"
 #include "MooseError.h"
 
 template <>
 InputParameters
-validParams<TigerPermeabilityConst>()
+validParams<TigerPermeabilityCubicLaw>()
 {
   InputParameters params = validParams<TigerPermeability>();
-  MooseEnum PT("isotropic=1 orthotropic=2 anisotropic=3");
-  params.addRequiredParam<MooseEnum>("permeability_type", PT, "The permeability distribution type [isotropic, orthotropic, anisotropic].");
 
-  params.addRequiredParam<std::vector<Real>>("k0", "Initial permeability (m^2)");
+  params.addRequiredParam<Real>("apreture", "Apreture of the fracture (m)");
 
-  params.addClassDescription("calculate permeability tensor based on provided constant permeability value(s)");
+  params.addClassDescription("calculate permeability tensor for fracture based on the Cubic law");
   return params;
 }
 
-TigerPermeabilityConst::TigerPermeabilityConst(const InputParameters & parameters)
+TigerPermeabilityCubicLaw::TigerPermeabilityCubicLaw(const InputParameters & parameters)
   : TigerPermeability(parameters)
 {
-  permeability_type = getParam<MooseEnum>("permeability_type");
+  permeability_type = (TigerPermeability::Permeability_Type() = "isotropic");
+  Real _apreture = getParam<Real>("apreture");
   k0.clear();
-  k0 = getParam<std::vector<Real>>("k0");
+  k0.assign(1,(std::pow(_apreture,2.0) / 12.0));
 }

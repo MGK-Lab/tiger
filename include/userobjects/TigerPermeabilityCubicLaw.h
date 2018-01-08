@@ -21,27 +21,21 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerPermeabilityConst.h"
-#include "MooseError.h"
+#ifndef TIGERPERMEABILITYCUBICLAW_H
+#define TIGERPERMEABILITYCUBICLAW_H
+
+#include "TigerPermeability.h"
+#include "MooseEnum.h"
+
+class TigerPermeabilityCubicLaw;
 
 template <>
-InputParameters
-validParams<TigerPermeabilityConst>()
+InputParameters validParams<TigerPermeabilityCubicLaw>();
+
+class TigerPermeabilityCubicLaw : public TigerPermeability
 {
-  InputParameters params = validParams<TigerPermeability>();
-  MooseEnum PT("isotropic=1 orthotropic=2 anisotropic=3");
-  params.addRequiredParam<MooseEnum>("permeability_type", PT, "The permeability distribution type [isotropic, orthotropic, anisotropic].");
+public:
+  TigerPermeabilityCubicLaw(const InputParameters & parameters);
+};
 
-  params.addRequiredParam<std::vector<Real>>("k0", "Initial permeability (m^2)");
-
-  params.addClassDescription("calculate permeability tensor based on provided constant permeability value(s)");
-  return params;
-}
-
-TigerPermeabilityConst::TigerPermeabilityConst(const InputParameters & parameters)
-  : TigerPermeability(parameters)
-{
-  permeability_type = getParam<MooseEnum>("permeability_type");
-  k0.clear();
-  k0 = getParam<std::vector<Real>>("k0");
-}
+#endif /* TIGERPERMEABILITYCUBICLAW_H */

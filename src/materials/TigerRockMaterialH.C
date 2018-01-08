@@ -35,11 +35,6 @@ validParams<TigerRockMaterialH>()
   params.addParam<Real>("gravity_acceleration", 9.81, "The magnitude of the gravity acceleration (m/s^2)");
   params.addRequiredParam<Real>("porosity", "Porosity of rock matrix");
   params.addRequiredParam<Real>("compressibility", "Compressibility of rock matrix (1/Pa)");
-
-  MooseEnum PT("isotropic=1 orthotropic=2 anisotropic=3");
-  params.addRequiredParam<MooseEnum>("permeability_type", PT, "The permeability distribution type [isotropic, orthotropic, anisotropic].");
-
-  params.addRequiredParam<std::vector<Real>>("k0", "Initial permeability (m^2)");
   params.addRequiredParam<UserObjectName>("kf_UO", "The name of the userobject for permeability calculation");
   params.addClassDescription("Hydraulic properties");
   return params;
@@ -47,8 +42,6 @@ validParams<TigerRockMaterialH>()
 
 TigerRockMaterialH::TigerRockMaterialH(const InputParameters & parameters)
   : TigerMaterialGeneral(parameters),
-    _pt(getParam<MooseEnum>("permeability_type")),
-    _k0(getParam<std::vector<Real>>("k0")),
     _beta_s(getParam<Real>("compressibility")),
     _n0(getParam<Real>("porosity")),
     _k_vis(declareProperty<RankTwoTensor>("permeability_by_viscosity")),
@@ -115,7 +108,7 @@ TigerRockMaterialH::computeProperties()
 void
 TigerRockMaterialH::computeQpProperties()
 {
-  _k_vis[_qp] = _kf_UO.PermeabilityTensorCalculator(_pt,_k0,_current_elem->dim()) / _fp_UO.mu(_P[_qp], _T[_qp]);
+  _k_vis[_qp] = _kf_UO.PermeabilityTensorCalculator(_current_elem->dim()) / _fp_UO.mu(_P[_qp], _T[_qp]);
   _H_Kernel_dt[_qp] = _beta_s + _fp_UO.beta(_P[_qp], _T[_qp]) * _n0;
   _rhof_g[_qp] = _fp_UO.rho(_P[_qp], _T[_qp]) * _gravity;
   _rhof[_qp] = _fp_UO.rho(_P[_qp], _T[_qp]);

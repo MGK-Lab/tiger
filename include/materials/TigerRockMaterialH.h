@@ -42,10 +42,6 @@ protected:
   virtual void computeProperties() override;
   virtual void computeQpProperties() override;
 
-  /// enum for selecting permeability distribution
-  MooseEnum _pt;
-  /// initial permeability
-  std::vector<Real> _k0;
   /// initial compressibility
   Real _beta_s;
   /// gravity vector

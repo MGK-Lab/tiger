@@ -7,8 +7,22 @@
   [./water_uo]
     type = TigerFluidConst
   [../]
-  [./rock_uo]
+  [./rock_uo1]
     type =  TigerPermeabilityConst
+    permeability_type = orthotropic
+    k0 = '2.0e-10 2.0e-10 2.0e-10'
+  [../]
+  [./rock_uo2]
+    #type =  TigerPermeabilityConst
+    #permeability_type = orthotropic
+    #k0 = '10.0e-10 10.0e-10'
+    type = TigerPermeabilityCubicLaw
+    apreture = 0.012
+  [../]
+  [./rock_uo3]
+    type =  TigerPermeabilityConst
+    permeability_type = isotropic
+    k0 = '20.0e-10'
   [../]
 []
 
@@ -22,9 +36,7 @@
     #gravity_acceleration = 9.81
     porosity = 0.4
     compressibility = 1.0e-9
-    permeability_type = orthotropic
-    k0 = '2.0e-10 2.0e-10 2.0e-10'
-    kf_UO = rock_uo
+    kf_UO = rock_uo1
     material_type = matrix
     block = 0
   [../]
@@ -37,9 +49,7 @@
     #gravity_acceleration = 9.81
     porosity = 0.4
     compressibility = 1.0e-9
-    permeability_type = orthotropic
-    k0 = '10.0e-10 10.0e-10'
-    kf_UO = rock_uo
+    kf_UO = rock_uo2
     material_type = fracture
     block = 1
   [../]
@@ -52,9 +62,7 @@
     #gravity_acceleration = 9.81
     porosity = 1.0
     compressibility = 1.0e-9
-    permeability_type = isotropic
-    k0 = '20.0e-10'
-    kf_UO = rock_uo
+    kf_UO = rock_uo3
     material_type = well
     block = 2
   [../]

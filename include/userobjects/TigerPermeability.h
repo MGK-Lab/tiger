@@ -43,7 +43,13 @@ public:
   virtual void finalize();
 
   /// permeability matrix (m^2)
-  virtual RankTwoTensor PermeabilityTensorCalculator(MooseEnum permeability_type, std::vector<Real> k0, int dim) const = 0;
+  virtual RankTwoTensor PermeabilityTensorCalculator(int dim) const;
+  static MooseEnum Permeability_Type();
+
+protected:
+  /// permeability vector (m^2)
+  MooseEnum permeability_type;
+  std::vector<Real> k0;
 };
 
 #endif /* TIGERPERMEABILITY_H */

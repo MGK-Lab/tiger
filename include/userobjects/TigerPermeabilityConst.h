@@ -36,9 +36,6 @@ class TigerPermeabilityConst : public TigerPermeability
 {
 public:
   TigerPermeabilityConst(const InputParameters & parameters);
-
-  /// permeability matrix (m^2)
-  virtual RankTwoTensor PermeabilityTensorCalculator(MooseEnum permeability_type, std::vector<Real> k0, int dim) const override;
 };
 
 #endif /* TIGERPERMEABILITYCONST_H */
