@@ -100,6 +100,7 @@ TigerApp::registerObjects(Factory & factory)
   registerAux(test);
 
   registerDiracKernel(TigerPointSourceH);
+
   registerBoundaryCondition(TigerHeatConductionOutflowT);
 }
 
