@@ -45,12 +45,10 @@ protected:
   /// Temperature (K)
   const VariableValue & _T;
   /// rotation matrix for local cordinates
-  RankTwoTensor _rot_mat;
-  /// to choose between different conditions (well, fault, matrix)
-  MooseEnum _material_type;
+  RankTwoTensor _rot_mat = RankTwoTensor();
 
   /// compute rotation matrix
-  void computeRotationMatrix();
+  void computeRotationMatrix(int dim);
   /// Tiger Fluid properties UserObject
  const TigerFluidPropertiesTP & _fp_UO;
 };

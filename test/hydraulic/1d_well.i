@@ -20,15 +20,10 @@
 [Materials]
   [./rock_h1]
     type = TigerRockMaterialH
-    pressure = 1.0e6
-    temperature = 100.0
     fp_UO = water_uo
-    #has_gravity = true
-    #gravity_acceleration = 9.81
     porosity = 0.0
     compressibility = 7.5e-8
     kf_UO = rock_uo1
-    material_type = matrix
   [../]
 []
 

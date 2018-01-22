@@ -32,8 +32,6 @@ validParams<TigerMaterialGeneral>()
   params.addCoupledVar("temperature", 0.0, "Fluid temperature (C)");
   params.addRequiredParam<UserObjectName>("fp_UO", "The name of the userobject for fluid properties");
   params.addClassDescription("General properties + fluid properties");
-  MooseEnum mat_type("well=0 fracture=1 matrix=2");
-  params.addRequiredParam<MooseEnum>("material_type", mat_type, "The type of the geological structure (matrix, fracture, well)");
   return params;
 }
 
@@ -41,19 +39,19 @@ TigerMaterialGeneral::TigerMaterialGeneral(const InputParameters & parameters)
   : Material(parameters),
     _P(coupledValue("pressure")),
     _T(coupledValue("temperature")),
-    _material_type(getParam<MooseEnum>("material_type")),
     _fp_UO(getUserObject<TigerFluidPropertiesTP>("fp_UO"))
 {
 }
 
 void
-TigerMaterialGeneral::computeRotationMatrix()
+TigerMaterialGeneral::computeRotationMatrix(int dim)
 {
   RealVectorValue xp, yp, zp;
   xp = _current_elem->point(1) - _current_elem->point(0);
-  switch (_material_type)
+
+  switch (dim)
   {
-    case 0:
+    case 1:
       for (unsigned int i = 0; i < 3; ++i)
         yp(i) = 0.0;
       if (std::fabs(xp(0)) > 0.0 && std::fabs(xp(1)) + std::fabs(xp(2)) < DBL_MIN)
@@ -75,7 +73,7 @@ TigerMaterialGeneral::computeRotationMatrix()
       yp = zp.cross(xp);
       break;
 
-    case 1:
+    case 2:
       yp = _current_elem->point(2) - _current_elem->point(1);
       zp = xp.cross(yp);
       if (!((std::fabs(zp(0)) + std::fabs(zp(1)))/zp.norm() < DBL_MIN)) //horizontal fracture check
@@ -84,16 +82,12 @@ TigerMaterialGeneral::computeRotationMatrix()
         xp = RealVectorValue(1.,0.,0.);
       yp = zp.cross(xp);
       break;
-
-    case 2:
-      break;
   }
 
-  if (_material_type<2)
-    for (unsigned int i = 0; i < 3; ++i)
-    {
-      (_rot_mat)(i, 0) = xp(i) / xp.norm();
-      (_rot_mat)(i, 1) = yp(i) / yp.norm();
-      (_rot_mat)(i, 2) = zp(i) / zp.norm();
-    }
+  for (unsigned int i = 0; i < 3; ++i)
+  {
+    (_rot_mat)(i, 0) = xp(i) / xp.norm();
+    (_rot_mat)(i, 1) = yp(i) / yp.norm();
+    (_rot_mat)(i, 2) = zp(i) / zp.norm();
+  }
 }

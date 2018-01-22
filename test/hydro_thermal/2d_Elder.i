@@ -1,82 +1,97 @@
 [Mesh]
   type = GeneratedMesh
-  dim = 3
-  nx = 1
-  ny = 1
-  nz = 20
-  zmax = 0
-  zmin = -1.0
+  dim = 2
+  nx = 60
+  ny = 15
+  xmin = -30
+  xmax = 30
+  ymin = -15
+  ymax = 0.0
 []
 
 [UserObjects]
   [./water_uo]
-    type = TigerFluidConst
+    type = TigerWaterTP
   [../]
   [./rock_uo]
     type =  TigerPermeabilityConst
     permeability_type = isotropic
-    k0 = '1.0e-10'
+    k0 = 1.0e-9
   [../]
 []
 
 [Materials]
   [./rock_h]
     type = TigerRockMaterialH
-    #pressure = 1.0e6
-    #temperature = 100.0
+    pressure = pore_pressure
+    temperature = temperature
     fp_UO = water_uo
-    #has_gravity = true
-    #gravity_acceleration = 10.0
-    porosity = 0.4
+    has_gravity = true
+    gravity_acceleration = 10.0
+    porosity = 0.1
     compressibility = 1.0e-9
     kf_UO = rock_uo
+    material_type = matrix
   [../]
   [./rock_t]
     type = TigerRockMaterialT
-    #pressure = 1.0e6
-    #temperature = 100.0
-    mean_calculation_type = arithmetic
+    pressure = pore_pressure
+    temperature = temperature
     fp_UO = water_uo
-    porosity = 0.4
+    porosity = 0.1
     conductivity_type = isotropic
-    lambda = 2
+    lambda = 20
     density = 2600
     specific_heat = 840
+    material_type = matrix
+    mean_calculation_type = arithmetic
   [../]
 []
 
 [BCs]
-  [./front_p]
+  [./top_p]
     type =  DirichletBC
-    variable = pressure
-    boundary = 'front'
+    variable = pore_pressure
+    boundary = top
     value = 0.0
   [../]
-  [./back_p]
-    type =  DirichletBC
-    variable = pressure
-    boundary = 'back'
-    value = 5e7
-  [../]
-  [./front_t]
+  #[./bott_p]
+  #  type =  DirichletBC
+  #  variable = pore_pressure
+  #  boundary = bottom
+  #  value = 150000.0
+  #[../]
+  [./top_t]
     type =  DirichletBC
     variable = temperature
-    boundary = 'front'
+    boundary = top
     value = 0.0
   [../]
-  [./back_t]
-    type =  DirichletBC
+  #[./bott_t]
+  #  type =  DirichletBC
+  #  variable = temperature
+  #  boundary = bottom
+  #  value = 100.0
+  #[../]
+  [./bott_t]
+    type =  FunctionDirichletBC
     variable = temperature
-    boundary = 'back'
-    value = 100.0
+    boundary = bottom
+    function = temp
+  [../]
+[]
+
+[Functions]
+  [./temp]
+    type = ParsedFunction
+    value = 'if(t>2000.0 & x<15 & x>-15,50.0,0.0)'
   [../]
 []
 
 [Variables]
   [./temperature]
-    initial_condition = 50.0
   [../]
-  [./pressure]
+  [./pore_pressure]
   [../]
 []
 
@@ -89,7 +104,7 @@
     family = MONOMIAL
     order = CONSTANT
   [../]
-  [./vz]
+  [./density]
     family = MONOMIAL
     order = CONSTANT
   [../]
@@ -98,24 +113,22 @@
 [AuxKernels]
   [./vx_ker]
     type = TigerDarcyVelocityComponent
-    gradient_variable = pressure
+    gradient_variable = pore_pressure
     variable =  vx
     component = x
     execute_on = timestep_end
   [../]
   [./vy_ker]
     type = TigerDarcyVelocityComponent
-    gradient_variable = pressure
+    gradient_variable = pore_pressure
     variable =  vy
     component = y
     execute_on = timestep_end
   [../]
-  [./vz_ker]
-    type = TigerDarcyVelocityComponent
-    gradient_variable = pressure
-    variable =  vz
-    component = z
-    execute_on = timestep_end
+  [./density_ker]
+    type = MaterialRealAux
+    variable =  density
+    property = fluid_density
   [../]
 []
 
@@ -124,30 +137,30 @@
     type = TigerDiffusionKernelT
     variable = temperature
   [../]
-  [./T_advect]
-    type = TigerAdvectionKernelT
-    variable = temperature
-    gradient_variable = pressure
-  [../]
+  #[./T_advect]
+  #  type = TigerAdvectionKernelT
+  #  variable = temperature
+  #  gradient_variable = pore_pressure
+  #[../]
   [./T_dt]
     type = TigerTimeDerivativeT
     variable = temperature
   [../]
   [./H_diff]
     type = TigerKernelH
-    variable = pressure
+    variable = pore_pressure
   [../]
   [./H_dt]
     type = TigerTimeDerivativeH
-    variable = pressure
+    variable = pore_pressure
   [../]
 []
 
 [Executioner]
   type = Transient
   #dt = 0.1
-  num_steps = 200
-  end_time = 4.0e5
+  num_steps = 50
+  end_time = 2.5e8
   l_tol = 1e-10 #difference between first and last linear steps
   nl_rel_step_tol = 1e-15 #machine percision
   nl_rel_tol = 1e-10 #difference between first and last nonlinear steps
@@ -162,5 +175,6 @@
 
 [Outputs]
   exodus = true
-  #execute_on = timestep_end
+  execute_on = timestep_end
+  print_linear_residuals = false
 []

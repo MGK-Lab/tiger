@@ -81,7 +81,7 @@ TigerRockMaterialH::computeProperties()
     // Compute MaterialProperty values at the first qp.
     _qp = 0;
     if (_current_elem->dim() < _mesh.dimension())
-      computeRotationMatrix();
+      computeRotationMatrix(_current_elem->dim());
     computeQpProperties();
 
     // Reference to *all* the MaterialProperties in the MaterialData object, not
@@ -99,7 +99,7 @@ TigerRockMaterialH::computeProperties()
   else
   {
     if (_current_elem->dim() < _mesh.dimension())
-      computeRotationMatrix();
+      computeRotationMatrix(_current_elem->dim());
     for (_qp = 0; _qp < _qrule->n_points(); ++_qp)
       computeQpProperties();
   }
