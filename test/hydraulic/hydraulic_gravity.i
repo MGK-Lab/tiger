@@ -13,7 +13,9 @@
     type = TigerFluidConst
   [../]
   [./rock_uo]
-    type =  TigerPermeabilityRockConst
+    type =  TigerPermeabilityConst
+    permeability_type = isotropic
+    k0 = '1.0e-10'
   [../]
 []
 
@@ -27,8 +29,6 @@
     gravity_acceleration = 9.81
     porosity = 0.4
     compressibility = 1.0e-9
-    permeability_type = isotropic
-    k0 = '1.0e-10'
     kf_UO = rock_uo
   [../]
 []

@@ -15,7 +15,7 @@
   [./water_uo]
     type = TigerFluidConst
     density = 1000
-    viscosity = 1.8e-4
+    viscosity = 1.0e-4
     specific_heat = 4200
     conductivity = 0.65
     compressibility = 4.0e-10
@@ -62,26 +62,26 @@
     type = DirichletBC
     variable = pressure
     boundary = right
-    value = 1e7
+    value = 0
   [../]
   [./left_h]
     type = DirichletBC
     variable = pressure
     boundary = left
-    value = 1e7
+    value = 0
   [../]
-  #[./top_h]
-  #  type = DirichletBC
-  #  variable = pressure
-  #  boundary = top
-  #  value = 1e7
-  #[../]
-  #[./bottom_h]
-  #  type = DirichletBC
-  #  variable = pressure
-  #  boundary = bottom
-  #  value = 1e7
-  #[../]
+  [./top_h]
+    type = DirichletBC
+    variable = pressure
+    boundary = top
+    value = 0
+  [../]
+  [./bottom_h]
+    type = DirichletBC
+    variable = pressure
+    boundary = bottom
+    value = 0
+  [../]
 []
 
 [AuxVariables]
@@ -112,34 +112,41 @@
 
 [Variables]
   [./pressure]
-    #initial_condition = 1e7
+    initial_condition = 0
   [../]
 []
 
-#[DiracKernels]
-#  [./pump_in]
-#    type = TigerPointSourceH
-#    point = '150.0 250.0 0.0'
-#    mass_flux = 3.0
-#    variable = pressure
-#  [../]
-#  [./pump_out]
-#    type = TigerPointSourceH
-#    point = '350.0 250.0 0.0'
-#    mass_flux = -3.0
-#    variable = pressure
-#  [../]
-#[]
+[DiracKernels]
+  [./pump_in]
+    type = TigerPointSourceH
+    point = '150.0 250.0 0.0'
+    mass_flux =0.5
+    variable = pressure
+    drop_duplicate_points = true
+  [../]
+  #[./pump_out]
+  #  type = TigerPointSourceH
+  #  point = '350.0 250.0 0.0'
+  #  mass_flux = -3.0
+  #  variable = pressure
+  #[../]
+[]
 
 [Kernels]
   [./H_diff]
     type = TigerKernelH
     variable = pressure
   [../]
+  #[./H_time]
+  #  type = TigerTimeDerivativeH
+  #  variable = pressure
+  #[../]
 []
 
 [Executioner]
-  type = Steady
+  type = Transient
+  end_time = 2
+  num_steps = 5
   l_tol = 1e-10 #difference between first and last linear steps
   nl_rel_step_tol = 1e-15 #machine percision
   nl_rel_tol = 1e-10 #difference between first and last nonlinear steps
@@ -156,5 +163,5 @@
 
 [Outputs]
   exodus = true
-  print_linear_residuals = false
+  #print_linear_residuals = false
 []
