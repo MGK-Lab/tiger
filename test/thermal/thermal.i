@@ -15,10 +15,9 @@
 [Materials]
   [./rock_t]
     type = TigerRockMaterialT
-    pressure = 1.0e6
-    temperature = 100.0
     fp_UO = water_uo
     porosity = 0.0
+    mean_calculation_type = arithmetic
     conductivity_type = isotropic
     lambda = 2
     density = 2600

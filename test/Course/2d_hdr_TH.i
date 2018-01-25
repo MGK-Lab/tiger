@@ -7,7 +7,7 @@
   [./water_uo]
     type = TigerFluidConst
     density = 1000
-    viscosity = 1.8e-4
+    viscosity = 1e-4
     specific_heat = 4200
     conductivity = 0.65
     compressibility = 4.0e-10
@@ -41,6 +41,28 @@
     compressibility = 4.0e-10
     block = 'frac'
   [../]
+  [./matrix_t]
+    type = TigerRockMaterialT
+    fp_UO = water_uo
+    porosity = 0.01
+    conductivity_type = isotropic
+    mean_calculation_type = arithmetic
+    lambda = 3
+    density = 2600
+    specific_heat = 950
+    block = 'matrix'
+  [../]
+  [./fracture_t]
+    type = TigerRockMaterialT
+    fp_UO = water_uo
+    porosity = 1.0
+    conductivity_type = isotropic
+    mean_calculation_type = arithmetic
+    lambda = 3
+    density = 2600
+    specific_heat = 950
+    block = 'frac'
+  [../]
 []
 
 [BCs]
@@ -50,6 +72,18 @@
     boundary = circum
     value = 1e7
   [../]
+  #[./whole_t]
+  #  type =  DirichletBC
+  #  variable = temperature
+  #  boundary = circum
+  #  value = 200
+  #[../]
+  #[./well_t]
+  #  type =  DirichletBC
+  #  variable = temperature
+  #  boundary = inject
+  #  value = 70
+  #[../]
 []
 
 [AuxVariables]
@@ -82,6 +116,9 @@
   [./pressure]
     initial_condition = 1e7
   [../]
+  #[./temperature]
+  #  initial_condition = 200
+  #[../]
 []
 
 [DiracKernels]
@@ -104,17 +141,35 @@
     type = TigerKernelH
     variable = pressure
   [../]
+  #[./T_advect]
+  #  type = TigerAdvectionKernelT
+  #  variable = temperature
+  #  gradient_variable = pressure
+  #[../]
+  #[./T_diff]
+  #  type = TigerDiffusionKernelT
+  #  variable = temperature
+  #[../]
 []
+
+#[Preconditioning]
+#  [./precond]
+#    type = SMP
+#    full = true
+#    petsc_options = '-snes_ksp_ew'
+#    petsc_options_iname = '-ksp_type -pc_type -snes_atol -snes_rtol -snes_max_it -ksp_max_it -sub_pc_type -sub_pc_factor_shift_type'
+#    petsc_options_value = 'gmres asm 1E-10 1E-10 200 500 lu NONZERO'
+#  [../]
+#[]
 
 [Executioner]
   type = Steady
-  solve_type = 'PJFNK'
-  petsc_options = '-snes_ksp_ew'
-  petsc_options_iname = '-ksp_type -pc_type -snes_atol -snes_rtol -snes_max_it -ksp_max_it -sub_pc_type -sub_pc_factor_shift_type'
-  petsc_options_value = 'gmres asm 1E-10 1E-15 200 500 lu NONZERO'
+  solve_type = NEWTON
+  petsc_options_iname = '-ksp_type -snes_type -pc_type -pc_factor_shift_type -pc_factor_shift_amount -snes_atol -snes_rtol -snes_max_it'
+  petsc_options_value = '  gmres     newtontr     lu          NONZERO               1E-12               1E-10       1E-15       250     '
 []
 
 [Outputs]
   exodus = true
-  print_linear_residuals = false
+  print_linear_residuals = true
 []

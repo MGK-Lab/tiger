@@ -1,9 +1,6 @@
 [Mesh]
-  type = GeneratedMesh
-  dim = 1
-  xmin = 0
-  xmax = 30
-  nx = 100
+  type = FileMesh
+  file = Circle2.msh
 []
 
 [UserObjects]
@@ -17,10 +14,6 @@
   [../]
 []
 
-[Problem]
-  coord_type = RZ
-[]
-
 [Materials]
   [./rock_h1]
     type = TigerRockMaterialH
@@ -32,25 +25,20 @@
 []
 
 [BCs]
-  [./right]
-    type = PresetBC
+  [./circum]
+    type = DirichletBC
     variable = pressure
-    boundary = right
-    value = 1.818e5
-  [../]
-[]
-
-[Functions]
-  [./analytical_function]
-    type = ParsedFunction
-    vars = 'Q T R'
-    vals = '0.04 2.3e-3 30'
-    value = '1.818e5-1e4*Q/(2*3.14*T)*log(R/x)'
+    boundary = circum
+    value = 1.368e5
   [../]
 []
 
 [AuxVariables]
   [./vx]
+    family = MONOMIAL
+    order = CONSTANT
+  [../]
+  [./vy]
     family = MONOMIAL
     order = CONSTANT
   [../]
@@ -60,12 +48,27 @@
   [../]
 []
 
+[Functions]
+  [./analytical_function]
+    type = ParsedFunction
+    vars = 'Q T R'
+    vals = '0.04 2.3e-3 250'
+    value = '1.368e5-1e4*Q/(2*3.14*T)*log(R/sqrt(x*x+y*y))'
+  [../]
+[]
+
 [AuxKernels]
   [./vx_ker]
     type = TigerDarcyVelocityComponent
     gradient_variable = pressure
     variable =  vx
     component = x
+  [../]
+  [./vy_ker]
+    type = TigerDarcyVelocityComponent
+    gradient_variable = pressure
+    variable =  vy
+    component = y
   [../]
   [./a_ker]
     type = FunctionAux
@@ -77,6 +80,7 @@
 
 [Variables]
   [./pressure]
+    initial_condition = 1e7
   [../]
 []
 
@@ -89,31 +93,21 @@
   [../]
 []
 
-
 [Kernels]
   [./diff]
     type = TigerKernelH
     variable = pressure
   [../]
-  #[./time]
-  #  type = TigerTimeDerivativeH
-  #  variable = pressure
-  #[../]
 []
 
 [Executioner]
-  #type = Transient
-  #num_steps = 50
-  #end_time = 300.0
   type = Steady
-  l_tol = 1e-10 #difference between first and last linear step
-  nl_rel_step_tol = 1e-14 #machine percision
-  solve_type = 'PJFNK'
-  petsc_options_iname = '-pc_type -pc_hypre_type'
-  petsc_options_value = 'hypre boomeramg'
+  solve_type = NEWTON
+  petsc_options_iname = '-ksp_type -snes_type -pc_type -pc_factor_shift_type -pc_factor_shift_amount -snes_atol -snes_rtol -snes_max_it'
+  petsc_options_value = '  gmres     newtontr     lu          NONZERO               1E-12               1E-10       1E-15       250     '
 []
 
 [Outputs]
   exodus = true
-  print_linear_residuals = false
+  print_linear_residuals = true
 []

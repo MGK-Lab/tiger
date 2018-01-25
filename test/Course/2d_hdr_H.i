@@ -104,14 +104,23 @@
     type = TigerKernelH
     variable = pressure
   [../]
+  [./H_time]
+    type = TigerTimeDerivativeH
+    variable = pressure
+  [../]
 []
 
 [Executioner]
-  type = Steady
-  solve_type = 'PJFNK'
-  petsc_options = '-snes_ksp_ew'
-  petsc_options_iname = '-ksp_type -pc_type -snes_atol -snes_rtol -snes_max_it -ksp_max_it -sub_pc_type -sub_pc_factor_shift_type'
-  petsc_options_value = 'gmres asm 1E-10 1E-15 200 500 lu NONZERO'
+  #type = Steady
+  type = Transient
+  num_steps = 100
+  end_time = 5e7
+  l_tol = 1e-15 #difference between first and last linear step
+  #nl_rel_step_tol = 1e-14 #machine percision
+  nl_abs_tol = 1e-14
+  solve_type = NEWTON
+  petsc_options_iname = '-pc_type -pc_hypre_type'
+  petsc_options_value = 'hypre boomeramg'
 []
 
 [Outputs]
