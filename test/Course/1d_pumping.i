@@ -77,6 +77,7 @@
 
 [Variables]
   [./pressure]
+    initial_condition = 1.818e5
   [../]
 []
 
@@ -95,17 +96,16 @@
     type = TigerKernelH
     variable = pressure
   [../]
-  #[./time]
-  #  type = TigerTimeDerivativeH
-  #  variable = pressure
-  #[../]
+  [./time]
+    type = TigerTimeDerivativeH
+    variable = pressure
+  [../]
 []
 
 [Executioner]
-  #type = Transient
-  #num_steps = 50
-  #end_time = 300.0
-  type = Steady
+  type = Transient
+  num_steps = 50
+  end_time = 500.0
   l_tol = 1e-10 #difference between first and last linear step
   nl_rel_step_tol = 1e-14 #machine percision
   solve_type = 'PJFNK'

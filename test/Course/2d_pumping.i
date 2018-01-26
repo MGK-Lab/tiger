@@ -1,6 +1,6 @@
 [Mesh]
   type = FileMesh
-  file = Circle2.msh
+  file = Circle.msh
 []
 
 [UserObjects]
@@ -80,7 +80,6 @@
 
 [Variables]
   [./pressure]
-    initial_condition = 1e7
   [../]
 []
 

@@ -18,25 +18,25 @@
   [./matrix_t]
     type = TigerRockMaterialT
     fp_UO = water_uo
-    porosity = 0.0
+    porosity = 0.01
     conductivity_type = isotropic
     mean_calculation_type = geometric
     lambda = 3
     density = 2600
     specific_heat = 950
-    #block = 'matrix'
+    block = 'matrix'
   [../]
-  #[./fracture_t]
-  #  type = TigerRockMaterialT
-  #  fp_UO = water_uo
-  #  porosity = 1.0
-  #  conductivity_type = isotropic
-  #  mean_calculation_type = geometric
-  #  lambda = 3
-  #  density = 2600
-  #  specific_heat = 950
-  #  block = 'frac'
-  #[../]
+  [./fracture_t]
+    type = TigerRockMaterialT
+    fp_UO = water_uo
+    porosity = 1.0
+    conductivity_type = isotropic
+    mean_calculation_type = geometric
+    lambda = 3
+    density = 2600
+    specific_heat = 950
+    block = 'frac'
+  [../]
 []
 
 [BCs]
@@ -44,7 +44,7 @@
     type =  DirichletBC
     variable = temperature
     boundary = circum
-    value = 300
+    value = 200
   [../]
   [./well_t]
     type =  DirichletBC
@@ -56,7 +56,7 @@
 
 [Variables]
   [./temperature]
-    initial_condition = 300
+    initial_condition = 200
   [../]
 []
 

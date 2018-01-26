@@ -1,21 +1,13 @@
 [Mesh]
-  #type = FileMesh
-  #file = ex_hdr.msh
-  type = GeneratedMesh
-  dim = 2
-  xmin = 0
-  xmax = 500
-  ymin = 0
-  ymax = 500
-  nx = 50
-  ny = 50
+  type = FileMesh
+  file = ex_hdr2.msh
 []
 
 [UserObjects]
   [./water_uo]
     type = TigerFluidConst
     density = 1000
-    viscosity = 1.0e-4
+    viscosity = 1.8e-4
     specific_heat = 4200
     conductivity = 0.65
     compressibility = 4.0e-10
@@ -23,12 +15,12 @@
   [./matrix_uo1]
     type =  TigerPermeabilityConst
     permeability_type = isotropic
-    k0 = '1.0e-15'
+    k0 = '7.0e-14'
   [../]
   [./fracture_uo1]
     type =  TigerPermeabilityConst
     permeability_type = isotropic
-    k0 = '8.3333e-12'
+    k0 = '8.3333e-10'
   [../]
 []
 
@@ -39,48 +31,24 @@
     kf_UO = matrix_uo1
     porosity = 0.1
     compressibility = 1.0e-10
-    #block = 'unit'
+    block = 'unit'
   [../]
-  #[./fracure_h]
-  #  type = TigerRockMaterialH
-  #  fp_UO = water_uo
-  #  kf_UO = matrix_uo1
-  #  porosity = 1.0
-  #  compressibility = 4.0e-10
-  #  block = 'frac1 frac2'
-  #[../]
+  [./fracure_h]
+    type = TigerRockMaterialH
+    fp_UO = water_uo
+    kf_UO = fracture_uo1
+    porosity = 1.0
+    compressibility = 4.0e-10
+    block = 'frac1 frac2'
+  [../]
 []
 
 [BCs]
-  #[./whole_h]
-  #  type = DirichletBC
-  #  variable = pressure
-  #  boundary = circum
-  #  value = 1e7
-  #[../]
-  [./right_h]
+  [./whole_h]
     type = DirichletBC
     variable = pressure
-    boundary = right
-    value = 0
-  [../]
-  [./left_h]
-    type = DirichletBC
-    variable = pressure
-    boundary = left
-    value = 0
-  [../]
-  [./top_h]
-    type = DirichletBC
-    variable = pressure
-    boundary = top
-    value = 0
-  [../]
-  [./bottom_h]
-    type = DirichletBC
-    variable = pressure
-    boundary = bottom
-    value = 0
+    boundary = circum
+    value = 1e7
   [../]
 []
 
@@ -112,7 +80,7 @@
 
 [Variables]
   [./pressure]
-    initial_condition = 0
+    initial_condition = 1e7
   [../]
 []
 
@@ -120,16 +88,15 @@
   [./pump_in]
     type = TigerPointSourceH
     point = '150.0 250.0 0.0'
-    mass_flux =0.5
+    mass_flux = 3.0
     variable = pressure
-    drop_duplicate_points = true
   [../]
-  #[./pump_out]
-  #  type = TigerPointSourceH
-  #  point = '350.0 250.0 0.0'
-  #  mass_flux = -3.0
-  #  variable = pressure
-  #[../]
+  [./pump_out]
+    type = TigerPointSourceH
+    point = '350.0 250.0 0.0'
+    mass_flux = -3.0
+    variable = pressure
+  [../]
 []
 
 [Kernels]
@@ -143,25 +110,29 @@
   #[../]
 []
 
+[Preconditioning]
+  [./pre]
+    type = SMP
+    full = true
+    petsc_options_iname = '-pc_type -pc_hypre_type -snes_atol -snes_rtol -snes_max_it'
+    petsc_options_value = ' hypre    boomeramg      1E-10      1E-15      250     '
+    #solve_type = PJFNK
+    #petsc_options_iname = '-ksp_type -snes_type -pc_type -pc_factor_shift_type -pc_factor_shift_amount -snes_atol -snes_rtol -snes_max_it'
+    #petsc_options_value = '  gmres     newtontr     lu          NONZERO               1E-12               1E-10       1E-15       250     '
+  [../]
+[]
+
 [Executioner]
-  type = Transient
-  end_time = 2
-  num_steps = 5
-  l_tol = 1e-10 #difference between first and last linear steps
-  nl_rel_step_tol = 1e-15 #machine percision
-  nl_rel_tol = 1e-10 #difference between first and last nonlinear steps
-  solve_type = 'PJFNK'
-  petsc_options_iname = '-pc_type -pc_hypre_type'
-  petsc_options_value = 'hypre boomeramg'
-  #petsc_options = '-snes_ksp_ew'
-  #petsc_options_iname = '-ksp_type -pc_type -snes_atol -snes_rtol -snes_max_it -ksp_max_it -sub_pc_type -sub_pc_factor_shift_type'
-  #petsc_options_value = 'gmres asm 1E-10 1E-15 200 500 lu NONZERO'
-  #petsc_options = '-snes_ksp_ew'
-  #petsc_options_iname = '-ksp_type -pc_type -snes_atol -snes_rtol -snes_max_it -ksp_max_it -sub_pc_factor_shift_type'
-  #petsc_options_value = 'gmres lu 1E-10 1E-15 200 500 NONZERO'
+  #type = Transient
+  #end_time = 2
+  #num_steps = 5
+  type = Steady
+  #solve_type = NEWTON
+  #petsc_options_iname = '-ksp_type -snes_type -pc_type -pc_factor_shift_type -pc_factor_shift_amount -snes_atol -snes_rtol -snes_max_it'
+  #petsc_options_value = '  gmres     newtontr     lu          NONZERO               1E-12               1E-10       1E-15       250     '
 []
 
 [Outputs]
   exodus = true
-  #print_linear_residuals = false
+  print_linear_residuals = false
 []
