@@ -80,6 +80,7 @@
 
 [Variables]
   [./pressure]
+    initial_condition = 1.368e5
   [../]
 []
 
@@ -97,16 +98,30 @@
     type = TigerKernelH
     variable = pressure
   [../]
+  [./time]
+    type = TigerTimeDerivativeH
+    variable = pressure
+  [../]
+[]
+
+[Preconditioning]
+  [./pre]
+    type = SMP
+    full = true
+    petsc_options_iname = '-ksp_type -snes_type -pc_type -pc_factor_shift_type -pc_factor_shift_amount -snes_atol -snes_rtol -snes_max_it'
+    petsc_options_value = '  gmres     newtontr     asm          NONZERO               1E-12               1E-10       1E-15       250     '
+  [../]
 []
 
 [Executioner]
-  type = Steady
+  #type = Steady
+  type = Transient
+  num_steps = 50
+  end_time = 5e4
   solve_type = NEWTON
-  petsc_options_iname = '-ksp_type -snes_type -pc_type -pc_factor_shift_type -pc_factor_shift_amount -snes_atol -snes_rtol -snes_max_it'
-  petsc_options_value = '  gmres     newtontr     lu          NONZERO               1E-12               1E-10       1E-15       250     '
 []
 
 [Outputs]
   exodus = true
-  print_linear_residuals = true
+  print_linear_residuals = false
 []

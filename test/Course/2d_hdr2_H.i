@@ -104,10 +104,10 @@
     type = TigerKernelH
     variable = pressure
   [../]
-  #[./H_time]
-  #  type = TigerTimeDerivativeH
-  #  variable = pressure
-  #[../]
+  [./H_time]
+    type = TigerTimeDerivativeH
+    variable = pressure
+  [../]
 []
 
 [Preconditioning]
@@ -116,20 +116,15 @@
     full = true
     petsc_options_iname = '-pc_type -pc_hypre_type -snes_atol -snes_rtol -snes_max_it'
     petsc_options_value = ' hypre    boomeramg      1E-10      1E-15      250     '
-    #solve_type = PJFNK
-    #petsc_options_iname = '-ksp_type -snes_type -pc_type -pc_factor_shift_type -pc_factor_shift_amount -snes_atol -snes_rtol -snes_max_it'
-    #petsc_options_value = '  gmres     newtontr     lu          NONZERO               1E-12               1E-10       1E-15       250     '
   [../]
 []
 
 [Executioner]
-  #type = Transient
-  #end_time = 2
-  #num_steps = 5
-  type = Steady
-  #solve_type = NEWTON
-  #petsc_options_iname = '-ksp_type -snes_type -pc_type -pc_factor_shift_type -pc_factor_shift_amount -snes_atol -snes_rtol -snes_max_it'
-  #petsc_options_value = '  gmres     newtontr     lu          NONZERO               1E-12               1E-10       1E-15       250     '
+  #type = Steady
+  type = Transient
+  num_steps = 100
+  end_time = 1e4
+  solve_type = NEWTON
 []
 
 [Outputs]

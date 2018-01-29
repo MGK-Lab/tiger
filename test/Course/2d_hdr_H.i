@@ -110,17 +110,21 @@
   [../]
 []
 
+[Preconditioning]
+  [./pre]
+    type = SMP
+    full = true
+    petsc_options_iname = '-pc_type -pc_hypre_type -snes_atol -snes_rtol -snes_max_it'
+    petsc_options_value = ' hypre    boomeramg      1E-10      1E-15      250     '
+  [../]
+[]
+
 [Executioner]
   #type = Steady
   type = Transient
   num_steps = 100
-  end_time = 5e7
-  l_tol = 1e-15 #difference between first and last linear step
-  #nl_rel_step_tol = 1e-14 #machine percision
-  nl_abs_tol = 1e-14
+  end_time = 1.5e7
   solve_type = NEWTON
-  petsc_options_iname = '-pc_type -pc_hypre_type'
-  petsc_options_value = 'hypre boomeramg'
 []
 
 [Outputs]

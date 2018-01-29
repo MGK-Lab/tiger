@@ -2,7 +2,7 @@
   type = GeneratedMesh
   dim = 1
   xmin = 0
-  xmax = 30
+  xmax = 250
   nx = 100
 []
 
@@ -33,7 +33,7 @@
 
 [BCs]
   [./right]
-    type = PresetBC
+    type = DirichletBC
     variable = pressure
     boundary = right
     value = 1.818e5
@@ -44,7 +44,7 @@
   [./analytical_function]
     type = ParsedFunction
     vars = 'Q T R'
-    vals = '0.04 2.3e-3 30'
+    vals = '0.04 2.3e-3 250'
     value = '1.818e5-1e4*Q/(2*3.14*T)*log(R/x)'
   [../]
 []
@@ -102,15 +102,21 @@
   [../]
 []
 
+[Preconditioning]
+  [./pre]
+    type = SMP
+    full = true
+    petsc_options_iname = '-ksp_type -snes_type -pc_type -pc_factor_shift_type -pc_factor_shift_amount -snes_atol -snes_rtol -snes_max_it'
+    petsc_options_value = '  gmres     newtontr     asm          NONZERO               1E-12               1E-10       1E-15       250     '
+  [../]
+[]
+
 [Executioner]
+  #type = Steady
   type = Transient
   num_steps = 50
-  end_time = 500.0
-  l_tol = 1e-10 #difference between first and last linear step
-  nl_rel_step_tol = 1e-14 #machine percision
-  solve_type = 'PJFNK'
-  petsc_options_iname = '-pc_type -pc_hypre_type'
-  petsc_options_value = 'hypre boomeramg'
+  end_time = 5e4
+  solve_type = NEWTON
 []
 
 [Outputs]

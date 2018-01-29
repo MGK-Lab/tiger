@@ -3,7 +3,7 @@
   dim = 1
   xmin = 0
   xmax = 10
-  nx = 10
+  nx = 100
 []
 
 [UserObjects]
@@ -24,7 +24,6 @@
     porosity = 0.2
     compressibility = 1.0e-9
     kf_UO = rock_uo1
-    material_type = matrix
   [../]
 []
 
