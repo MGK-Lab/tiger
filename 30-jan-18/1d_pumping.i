@@ -17,10 +17,6 @@
   [../]
 []
 
-[Problem]
-  coord_type = RZ
-[]
-
 [Materials]
   [./rock_h1]
     type = TigerRockMaterialH
