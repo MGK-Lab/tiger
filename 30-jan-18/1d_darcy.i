@@ -13,7 +13,7 @@
   [./rock_uo1]
     type =  TigerPermeabilityConst
     permeability_type = isotropic
-    k0 = '2.0e-10'
+    k0 = ???
   [../]
 []
 
@@ -21,8 +21,8 @@
   [./rock_h1]
     type = TigerRockMaterialH
     fp_UO = water_uo
-    porosity = 0.2
-    compressibility = 1.0e-9
+    porosity = ???
+    compressibility = ???
     kf_UO = rock_uo1
   [../]
 []
@@ -32,13 +32,13 @@
     type = DirichletBC
     variable = pressure
     boundary = left
-    value = 10
+    value = ???
   [../]
   [./right]
     type = DirichletBC
     variable = pressure
     boundary = right
-    value = 0.0
+    value = ???
   [../]
 []
 
