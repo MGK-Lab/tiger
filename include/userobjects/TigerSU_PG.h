@@ -21,39 +21,35 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERADVECTIONKERNELT_H
-#define TIGERADVECTIONKERNELT_H
+#ifndef TIGERSU_PG_H
+#define TIGERSU_PG_H
 
-#include "Kernel.h"
-#include "RankTwoTensor.h"
-#include "TigerSU_PG.h"
+#include "GeneralUserObject.h"
 
-class TigerAdvectionKernelT;
+class TigerSU_PG;
 
 template <>
-InputParameters validParams<TigerAdvectionKernelT>();
+InputParameters validParams<TigerSU_PG>();
 
-class TigerAdvectionKernelT : public Kernel
+class TigerSU_PG : public GeneralUserObject
 {
 public:
-  TigerAdvectionKernelT(const InputParameters & parameters);
-
-private:
-  // to check if the streamline upwinding is activated
-  bool _has_SUPG_upwind;
-  // UserObject for SU/PG method
-  const TigerSU_PG * _supg_uo;
-
+  TigerSU_PG(const InputParameters & parameters);
+  virtual void initialize() {}
+  virtual void execute() {}
+  virtual void finalize() {}
+  virtual Real k_bar(RealVectorValue vel, Real diff, Real dt, const Elem * ele) const;
 
 protected:
-  virtual Real computeQpResidual() override;
-  virtual Real computeQpJacobian() override;
+  MooseEnum _effective_length;
+  MooseEnum _method;
 
-  const MaterialProperty<Real> & _lambda_sf_eq;
-  const MaterialProperty<Real> & _rho_cp_f;
-  const VariableGradient & _gradient_pore_press;
-  const MaterialProperty<RankTwoTensor> & _k_vis;
-  const MaterialProperty<RealVectorValue> & _rhof_g;
+private:
+  Real EEL(RealVectorValue vel, const Elem * ele) const;
+  Real Optimal(Real) const;
+  Real Temporal(Real, Real, Real, Real) const;
+  Real DoublyAsymptotic(Real) const;
+  Real Critical(Real) const;
 };
 
-#endif // TIGERADVECTIONKERNELT_H
+#endif // TIGERSU_PG_H

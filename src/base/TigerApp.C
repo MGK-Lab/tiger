@@ -30,6 +30,8 @@
 #include "TigerPermeabilityConst.h"
 #include "TigerPermeabilityCubicLaw.h"
 
+#include "TigerSU_PG.h"
+
 //Boundary Condition
 #include "TigerHeatConductionOutflowT.h"
 
@@ -88,6 +90,7 @@ TigerApp::registerObjects(Factory & factory)
   registerUserObject(TigerFluidConst);
   registerUserObject(TigerPermeabilityConst);
   registerUserObject(TigerPermeabilityCubicLaw);
+  registerUserObject(TigerSU_PG);
 
   registerKernel(TigerKernelH);
   registerKernel(TigerDiffusionKernelT);

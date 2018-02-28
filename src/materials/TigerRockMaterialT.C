@@ -38,18 +38,23 @@ validParams<TigerRockMaterialT>()
   MooseEnum Mean("arithmetic=1 geometric=2");
   params.addRequiredParam<MooseEnum>("mean_calculation_type", Mean, "Solid-liquid mixture thermal conductivity calculation method [arithmetic, geometric]");
   params.addRequiredParam<std::vector<Real>>("lambda", "Initial thermal conductivity of rock matrix (W/(m K))");
+  // params.addParam<UserObjectName>("supg_uo", "The name of the Streamline Upwinding (SU/PG) user object.");
   params.addClassDescription("Thermal properties");
   return params;
 }
 
 TigerRockMaterialT::TigerRockMaterialT(const InputParameters & parameters)
   : TigerMaterialGeneral(parameters),
+    // _has_SUPG_upwind(isParamValid("supg_uo") ? true : false),
     _ct(getParam<MooseEnum>("conductivity_type")),
     _mean(getParam<MooseEnum>("mean_calculation_type")),
     _lambda0(getParam<std::vector<Real>>("lambda")),
     _cp0(getParam<Real>("specific_heat")),
     _rho0(getParam<Real>("density")),
     _n0(getParam<Real>("porosity")),
+    // _supg_uo(_has_SUPG_upwind ? &getUserObject<TigerSU_PG>("supg_uo") : NULL),
+    // _SUPG_k_bar(declareProperty<Real>("SUPG_k_bar")),
+    _lambda_sf_eq(declareProperty<Real>("conductivity_mixture_equivalent")),
     _lambda_sf(declareProperty<RankTwoTensor>("conductivity_mixture")),
     _T_Kernel_dt(declareProperty<Real>("T_Kernel_dt_coefficient")),
     _rho_cp_f(declareProperty<Real>("fluid_thermal_capacity"))
@@ -98,20 +103,27 @@ void
 TigerRockMaterialT::computeQpProperties()
 {
   _T_Kernel_dt[_qp] = (1.0-_n0)*_rho0*_cp0 + _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp])*_n0;
-  _lambda_sf  [_qp] = ConductivityTensorCalculator(_n0, _fp_UO.lambda(_P[_qp], _T[_qp]), _lambda0, _ct, _mean, _current_elem->dim());
+
+  ConductivityTensorCalculator(_n0, _fp_UO.lambda(_P[_qp], _T[_qp]), _lambda0, _ct, _mean, _current_elem->dim());
+  _lambda_sf     [_qp] = _lambda_sf_tensor;
+  _lambda_sf_eq  [_qp] = _lambda_sf_real;
+
   _rho_cp_f   [_qp] = _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp]);
 
   if (_current_elem->dim() < _mesh.dimension())
     _lambda_sf[_qp].rotate(_rot_mat);
+
+  // if (_has_SUPG_upwind)
+  //   _SUPG_k_bar[_qp] = _supg_uo->k_bar(vel, diff, _dt, _current_elem);
+
 }
 
-RankTwoTensor
+void
 TigerRockMaterialT::ConductivityTensorCalculator(Real const & n, Real const & lambda_f, std::vector<Real> lambda_s, MooseEnum conductivity_type, MooseEnum mean_type, int dim)
 {
   RealVectorValue lambda_x;
   RealVectorValue lambda_y;
   RealVectorValue lambda_z;
-  RankTwoTensor lambda;
 
   if (mean_type==1)
   {
@@ -122,7 +134,7 @@ TigerRockMaterialT::ConductivityTensorCalculator(Real const & n, Real const & la
         case 1:
           if (lambda_s.size() != 1)
             mooseError("One input value is needed for isotropic distribution of thermal conductivity! You provided ", lambda_s.size(), " values.\n");
-          lambda = (1.-n)*RankTwoTensor(lambda_s[0], 0., 0., 0., 0., 0.) + n*RankTwoTensor(lambda_f, 0., 0., 0., 0., 0.);
+          _lambda_sf_tensor = (1.-n)*RankTwoTensor(lambda_s[0], 0., 0., 0., 0., 0.) + n*RankTwoTensor(lambda_f, 0., 0., 0., 0., 0.);
           break;
         case 2:
         case 3:
@@ -137,12 +149,12 @@ TigerRockMaterialT::ConductivityTensorCalculator(Real const & n, Real const & la
         case 1:
           if (lambda_s.size() != 1)
             mooseError("One input value is needed for isotropic distribution of thermal conductivity! You provided ", lambda_s.size(), " values.\n");
-          lambda = ((1.-n)*lambda_s[0] + n*lambda_f) * RankTwoTensor(1., 1., 0., 0., 0., 0.);
+          _lambda_sf_tensor = ((1.-n)*lambda_s[0] + n*lambda_f) * RankTwoTensor(1., 1., 0., 0., 0., 0.);
           break;
         case 2:
           if (lambda_s.size() != 2)
             mooseError("Two input values are needed for orthotropic distribution of thermal conductivity in two dimensional elements! You provided ", lambda_s.size(), " values.\n");
-          lambda = (1.-n)*RankTwoTensor(lambda_s[0], lambda_s[1], 0., 0., 0., 0.) + n*lambda_f*RankTwoTensor(1., 1., 0., 0., 0., 0.);
+          _lambda_sf_tensor = (1.-n)*RankTwoTensor(lambda_s[0], lambda_s[1], 0., 0., 0., 0.) + n*lambda_f*RankTwoTensor(1., 1., 0., 0., 0., 0.);
           break;
         case 3:
           if (lambda_s.size() != 4)
@@ -150,7 +162,7 @@ TigerRockMaterialT::ConductivityTensorCalculator(Real const & n, Real const & la
           lambda_x = RealVectorValue(lambda_s[0], lambda_s[1], 0.0);
           lambda_y = RealVectorValue(lambda_s[2], lambda_s[3], 0.0);
           lambda_z = RealVectorValue(0.0  , 0.0  , 0.0);
-          lambda = (1.-n)*RankTwoTensor(lambda_x, lambda_y, lambda_z) +  n*lambda_f*RankTwoTensor(1., 1., 0., 0., 0., 0.);
+          _lambda_sf_tensor = (1.-n)*RankTwoTensor(lambda_x, lambda_y, lambda_z) +  n*lambda_f*RankTwoTensor(1., 1., 0., 0., 0., 0.);
           break;
       }
     }
@@ -161,13 +173,13 @@ TigerRockMaterialT::ConductivityTensorCalculator(Real const & n, Real const & la
         case 1:
           if (lambda_s.size() != 1)
             mooseError("One input value is needed for isotropic distribution of thermal conductivity! You provided ", lambda_s.size(), " values.\n");
-          lambda = ((1.-n)*lambda_s[0] + n*lambda_f) * RankTwoTensor(1., 1., 1., 0., 0., 0.);
+          _lambda_sf_tensor = ((1.-n)*lambda_s[0] + n*lambda_f) * RankTwoTensor(1., 1., 1., 0., 0., 0.);
           break;
 
         case 2:
           if (lambda_s.size() != 3)
             mooseError("Three input values are needed for orthotropic distribution of thermal conductivity! You provided ", lambda_s.size(), " values.\n");
-          lambda = (1.-n)*RankTwoTensor(lambda_s[0], lambda_s[1], lambda_s[2], 0., 0., 0.) + n*lambda_f*RankTwoTensor(1., 1., 1., 0., 0., 0.);
+          _lambda_sf_tensor = (1.-n)*RankTwoTensor(lambda_s[0], lambda_s[1], lambda_s[2], 0., 0., 0.) + n*lambda_f*RankTwoTensor(1., 1., 1., 0., 0., 0.);
           break;
 
         case 3:
@@ -176,7 +188,7 @@ TigerRockMaterialT::ConductivityTensorCalculator(Real const & n, Real const & la
           lambda_x = RealVectorValue(lambda_s[0], lambda_s[1], lambda_s[2]);
           lambda_y = RealVectorValue(lambda_s[3], lambda_s[4], lambda_s[5]);
           lambda_z = RealVectorValue(lambda_s[6], lambda_s[7], lambda_s[8]);
-          lambda = (1.-n)*RankTwoTensor(lambda_x, lambda_y, lambda_z) +  n*lambda_f*RankTwoTensor(1., 1., 1., 0., 0., 0.);
+          _lambda_sf_tensor = (1.-n)*RankTwoTensor(lambda_x, lambda_y, lambda_z) +  n*lambda_f*RankTwoTensor(1., 1., 1., 0., 0., 0.);
           break;
       }
     }
@@ -190,7 +202,7 @@ TigerRockMaterialT::ConductivityTensorCalculator(Real const & n, Real const & la
         case 1:
           if (lambda_s.size() != 1)
             mooseError("One input value is needed for isotropic distribution of thermal conductivity! You provided ", lambda_s.size(), " values.\n");
-          lambda = RankTwoTensor(1., 0., 0., 0., 0., 0.) * std::pow(lambda_f,n)*std::pow(lambda_s[0],(1.-n));
+          _lambda_sf_tensor = RankTwoTensor(1., 0., 0., 0., 0., 0.) * std::pow(lambda_f,n)*std::pow(lambda_s[0],(1.-n));
         break;
         case 2:
         case 3:
@@ -205,12 +217,12 @@ TigerRockMaterialT::ConductivityTensorCalculator(Real const & n, Real const & la
         case 1:
           if (lambda_s.size() != 1)
             mooseError("One input value is needed for isotropic distribution of thermal conductivity! You provided ", lambda_s.size(), " values.\n");
-          lambda = RankTwoTensor(1., 1., 0., 0., 0., 0.) * std::pow(lambda_f,n)*std::pow(lambda_s[0],(1.-n));
+          _lambda_sf_tensor = RankTwoTensor(1., 1., 0., 0., 0., 0.) * std::pow(lambda_f,n)*std::pow(lambda_s[0],(1.-n));
           break;
         case 2:
           if (lambda_s.size() != 2)
             mooseError("Two input values are needed for orthotropic distribution of thermal conductivity in two dimensional elements! You provided ", lambda_s.size(), " values.\n");
-          lambda = RankTwoTensor(std::pow(lambda_s[0],(1.-n)), std::pow(lambda_s[1],(1.-n)), 0., 0., 0., 0.) * std::pow(lambda_f,n);
+          _lambda_sf_tensor = RankTwoTensor(std::pow(lambda_s[0],(1.-n)), std::pow(lambda_s[1],(1.-n)), 0., 0., 0., 0.) * std::pow(lambda_f,n);
           break;
         case 3:
           mooseError("Geometric mean for thermal conductivity of mixture is not available in anisotropic distribution.\n");
@@ -224,13 +236,13 @@ TigerRockMaterialT::ConductivityTensorCalculator(Real const & n, Real const & la
         case 1:
           if (lambda_s.size() != 1)
             mooseError("One input value is needed for isotropic distribution of thermal conductivity! You provided ", lambda_s.size(), " values.\n");
-          lambda = RankTwoTensor(1., 1., 1., 0., 0., 0.) * std::pow(lambda_f,n)*std::pow(lambda_s[0],(1.-n));
+          _lambda_sf_tensor = RankTwoTensor(1., 1., 1., 0., 0., 0.) * std::pow(lambda_f,n)*std::pow(lambda_s[0],(1.-n));
           break;
 
         case 2:
           if (lambda_s.size() != 3)
             mooseError("Three input values are needed for orthotropic distribution of thermal conductivity! You provided ", lambda_s.size(), " values.\n");
-          lambda = RankTwoTensor(std::pow(lambda_s[0],(1.-n)), std::pow(lambda_s[1],(1.-n)), std::pow(lambda_s[2],(1.-n)), 0., 0., 0.) * std::pow(lambda_f,n);
+          _lambda_sf_tensor = RankTwoTensor(std::pow(lambda_s[0],(1.-n)), std::pow(lambda_s[1],(1.-n)), std::pow(lambda_s[2],(1.-n)), 0., 0., 0.) * std::pow(lambda_f,n);
           break;
 
         case 3:
@@ -239,5 +251,5 @@ TigerRockMaterialT::ConductivityTensorCalculator(Real const & n, Real const & la
       }
     }
   }
-  return lambda;
+  _lambda_sf_real = _lambda_sf_tensor.trace() / dim;
 }
