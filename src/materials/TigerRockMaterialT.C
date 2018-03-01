@@ -38,22 +38,18 @@ validParams<TigerRockMaterialT>()
   MooseEnum Mean("arithmetic=1 geometric=2");
   params.addRequiredParam<MooseEnum>("mean_calculation_type", Mean, "Solid-liquid mixture thermal conductivity calculation method [arithmetic, geometric]");
   params.addRequiredParam<std::vector<Real>>("lambda", "Initial thermal conductivity of rock matrix (W/(m K))");
-  // params.addParam<UserObjectName>("supg_uo", "The name of the Streamline Upwinding (SU/PG) user object.");
   params.addClassDescription("Thermal properties");
   return params;
 }
 
 TigerRockMaterialT::TigerRockMaterialT(const InputParameters & parameters)
   : TigerMaterialGeneral(parameters),
-    // _has_SUPG_upwind(isParamValid("supg_uo") ? true : false),
     _ct(getParam<MooseEnum>("conductivity_type")),
     _mean(getParam<MooseEnum>("mean_calculation_type")),
     _lambda0(getParam<std::vector<Real>>("lambda")),
     _cp0(getParam<Real>("specific_heat")),
     _rho0(getParam<Real>("density")),
     _n0(getParam<Real>("porosity")),
-    // _supg_uo(_has_SUPG_upwind ? &getUserObject<TigerSU_PG>("supg_uo") : NULL),
-    // _SUPG_k_bar(declareProperty<Real>("SUPG_k_bar")),
     _lambda_sf_eq(declareProperty<Real>("conductivity_mixture_equivalent")),
     _lambda_sf(declareProperty<RankTwoTensor>("conductivity_mixture")),
     _T_Kernel_dt(declareProperty<Real>("T_Kernel_dt_coefficient")),
@@ -112,10 +108,6 @@ TigerRockMaterialT::computeQpProperties()
 
   if (_current_elem->dim() < _mesh.dimension())
     _lambda_sf[_qp].rotate(_rot_mat);
-
-  // if (_has_SUPG_upwind)
-  //   _SUPG_k_bar[_qp] = _supg_uo->k_bar(vel, diff, _dt, _current_elem);
-
 }
 
 void

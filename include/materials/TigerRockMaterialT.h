@@ -26,7 +26,6 @@
 
 #include "TigerMaterialGeneral.h"
 #include "RankTwoTensor.h"
-// #include "TigerSU_PG.h"
 
 class TigerRockMaterialT;
 
@@ -39,8 +38,6 @@ public:
   TigerRockMaterialT(const InputParameters & parameters);
 
 private:
-  // // to check if the streamline upwinding is activated
-  // bool _has_SUPG_upwind;
   /// enum for selecting thermal conductivity distribution for solid phase
   MooseEnum _ct;
   /// enum for selecting calculation method for mixture
@@ -53,8 +50,6 @@ private:
   Real _rho0;
   /// initial porosity
   Real _n0;
-  // // UserObject for SU/PG method
-  // const TigerSU_PG * _supg_uo;
 
   RankTwoTensor _lambda_sf_tensor = RankTwoTensor();
   Real _lambda_sf_real = 0.0;
@@ -65,8 +60,6 @@ protected:
   virtual void computeQpProperties() override;
   virtual void computeProperties() override;
 
-  // // artificial diffusivity coefficient for SU/PG method
-  // MaterialProperty<Real> & _SUPG_k_bar;
   /// conductivity tensor for mixture
   MaterialProperty<Real> & _lambda_sf_eq;
   /// equivalent conductivity for mixture

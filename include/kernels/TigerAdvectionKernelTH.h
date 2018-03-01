@@ -21,35 +21,31 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERSU_PG_H
-#define TIGERSU_PG_H
+#ifndef TIGERADVECTIONKERNELTH_H
+#define TIGERADVECTIONKERNELTH_H
 
-#include "GeneralUserObject.h"
+#include "Kernel.h"
 
-class TigerSU_PG;
+class TigerAdvectionKernelTH;
 
 template <>
-InputParameters validParams<TigerSU_PG>();
+InputParameters validParams<TigerAdvectionKernelTH>();
 
-class TigerSU_PG : public GeneralUserObject
+class TigerAdvectionKernelTH : public Kernel
 {
 public:
-  TigerSU_PG(const InputParameters & parameters);
-  virtual void initialize() {}
-  virtual void execute() {}
-  virtual void finalize() {}
-  virtual Real k_bar(RealVectorValue vel, Real diff, Real dt, const Elem * ele) const;
-
-protected:
-  MooseEnum _effective_length;
-  MooseEnum _method;
+  TigerAdvectionKernelTH(const InputParameters & parameters);
 
 private:
-  Real EEL(RealVectorValue vel, const Elem * ele) const;
-  Real Optimal(Real) const;
-  Real Temporal(Real, Real, Real, Real) const;
-  Real DoublyAsymptotic(Real) const;
-  Real Critical(Real) const;
+  bool _has_supg;
+
+protected:
+  virtual Real computeQpResidual() override;
+  virtual Real computeQpJacobian() override;
+
+  const MaterialProperty<Real> & _rho_cp_f;
+  const MaterialProperty<RealVectorValue> * _SUPG_p;
+  const MaterialProperty<RealVectorValue> & _darcy_v;
 };
 
-#endif // TIGERSU_PG_H
+#endif // TIGERADVECTIONKERNELTH_H

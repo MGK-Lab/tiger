@@ -3,7 +3,7 @@
   dim = 1
   xmin = 0
   xmax = 100
-  nx = 5
+  nx = 20
 []
 
 [UserObjects]
@@ -17,11 +17,6 @@
     type =  TigerPermeabilityConst
     permeability_type = isotropic
     k0 = '1.0e-8'
-  [../]
-  [./supg]
-    type = TigerSU_PG
-    effective_length = max
-    method = critical
   [../]
 []
 
@@ -42,6 +37,13 @@
     lambda = 0.01
     density = 1
     specific_heat = 1
+  [../]
+  [./advect_th]
+    type = TigerAdvectionMaterialTH
+    pore_pressure =  pressure
+    has_supg = true
+    supg_eff_length = min
+    supg_coeficient = optimal
   [../]
 []
 
@@ -122,8 +124,6 @@
   [./T_advect]
     type = TigerAdvectionKernelT
     variable = temperature
-    gradient_variable = pressure
-    supg_uo = supg
   [../]
   [./T_diff]
     type = TigerDiffusionKernelT

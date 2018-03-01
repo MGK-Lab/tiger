@@ -7,7 +7,7 @@
 //Kernels
 #include "TigerKernelH.h"
 #include "TigerDiffusionKernelT.h"
-#include "TigerAdvectionKernelT.h"
+#include "TigerAdvectionKernelTH.h"
 #include "TigerPointSourceH.h"
 #include "TigerTimeDerivativeH.h"
 #include "TigerTimeDerivativeT.h"
@@ -20,6 +20,7 @@
 //Material
 #include "TigerRockMaterialH.h"
 #include "TigerRockMaterialT.h"
+#include "TigerAdvectionMaterialTH.h"
 
 //User Objects
 #include "TigerFluidPropertiesTP.h"
@@ -29,8 +30,6 @@
 #include "TigerPermeability.h"
 #include "TigerPermeabilityConst.h"
 #include "TigerPermeabilityCubicLaw.h"
-
-#include "TigerSU_PG.h"
 
 //Boundary Condition
 #include "TigerHeatConductionOutflowT.h"
@@ -85,16 +84,16 @@ TigerApp::registerObjects(Factory & factory)
 {
   registerMaterial(TigerRockMaterialH);
   registerMaterial(TigerRockMaterialT);
+  registerMaterial(TigerAdvectionMaterialTH);
 
   registerUserObject(TigerWaterTP);
   registerUserObject(TigerFluidConst);
   registerUserObject(TigerPermeabilityConst);
   registerUserObject(TigerPermeabilityCubicLaw);
-  registerUserObject(TigerSU_PG);
 
   registerKernel(TigerKernelH);
   registerKernel(TigerDiffusionKernelT);
-  registerKernel(TigerAdvectionKernelT);
+  registerKernel(TigerAdvectionKernelTH);
   registerKernel(TigerTimeDerivativeH);
   registerKernel(TigerTimeDerivativeT);
   registerKernel(TigerHeatSourceT);

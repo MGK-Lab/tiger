@@ -21,39 +21,44 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERADVECTIONKERNELT_H
-#define TIGERADVECTIONKERNELT_H
+#ifndef TIGERADVECTIONMATERIALTH_H
+#define TIGERADVECTIONMATERIALTH_H
 
-#include "Kernel.h"
+#include "Material.h"
 #include "RankTwoTensor.h"
-#include "TigerSU_PG.h"
 
-class TigerAdvectionKernelT;
+class TigerAdvectionMaterialTH;
 
 template <>
-InputParameters validParams<TigerAdvectionKernelT>();
+InputParameters validParams<TigerAdvectionMaterialTH>();
 
-class TigerAdvectionKernelT : public Kernel
+class TigerAdvectionMaterialTH : public Material
 {
 public:
-  TigerAdvectionKernelT(const InputParameters & parameters);
+  TigerAdvectionMaterialTH(const InputParameters & parameters);
 
 private:
-  // to check if the streamline upwinding is activated
-  bool _has_SUPG_upwind;
-  // UserObject for SU/PG method
-  const TigerSU_PG * _supg_uo;
+  virtual Real tau(RealVectorValue vel, Real diff, Real dt, const Elem * ele) const;
+  Real EEL(const Elem * ele) const;
+  Real Optimal(Real) const;
+  Real Temporal(Real, Real, Real, Real) const;
+  Real DoublyAsymptotic(Real) const;
+  Real Critical(Real) const;
 
 
 protected:
-  virtual Real computeQpResidual() override;
-  virtual Real computeQpJacobian() override;
+  virtual void computeQpProperties() override;
+
+  MooseEnum _effective_length;
+  MooseEnum _method;
+  bool _has_supg;
 
   const MaterialProperty<Real> & _lambda_sf_eq;
-  const MaterialProperty<Real> & _rho_cp_f;
   const VariableGradient & _gradient_pore_press;
   const MaterialProperty<RankTwoTensor> & _k_vis;
   const MaterialProperty<RealVectorValue> & _rhof_g;
+  MaterialProperty<RealVectorValue> & _dv;
+  MaterialProperty<RealVectorValue> * _SUPG_p;
 };
 
-#endif // TIGERADVECTIONKERNELT_H
+#endif /* TIGERADVECTIONMATERIALTH_H */

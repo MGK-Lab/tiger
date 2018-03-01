@@ -21,51 +21,47 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerAdvectionKernelT.h"
+#include "TigerAdvectionKernelTH.h"
+#include "MaterialPropertyInterface.h"
+
 
 template <>
 InputParameters
-validParams<TigerAdvectionKernelT>()
+validParams<TigerAdvectionKernelTH>()
 {
   InputParameters params = validParams<Kernel>();
-  params.addRequiredCoupledVar("gradient_variable", "Variable name for pressure field");
-  params.addParam<UserObjectName>("supg_uo", "The name of the Streamline Upwinding (SU/PG) user object.");
   return params;
 }
 
-TigerAdvectionKernelT::TigerAdvectionKernelT(const InputParameters & parameters)
+TigerAdvectionKernelTH::TigerAdvectionKernelTH(const InputParameters & parameters)
   : Kernel(parameters),
-    _has_SUPG_upwind(isParamValid("supg_uo") ? true : false),
-    _supg_uo(_has_SUPG_upwind ? &getUserObject<TigerSU_PG>("supg_uo") : NULL),
-    _lambda_sf_eq(getMaterialProperty<Real>("conductivity_mixture_equivalent")),
-    _rho_cp_f(getMaterialProperty<Real>("fluid_thermal_capacity")),
-    _gradient_pore_press(coupledGradient("gradient_variable")),
-    _k_vis(getMaterialProperty<RankTwoTensor>("permeability_by_viscosity")),
-    _rhof_g(getMaterialProperty<RealVectorValue>("rho_times_gravity"))
+  _has_supg(hasMaterialProperty<RealVectorValue>("petrov_supg_p_function")),
+  _rho_cp_f(getMaterialProperty<Real>("fluid_thermal_capacity")),
+  _SUPG_p(_has_supg ? &getMaterialProperty<RealVectorValue>("petrov_supg_p_function") : NULL),
+  _darcy_v(getMaterialProperty<RealVectorValue>("darcy_velocity"))
 {
 }
 
-
 Real
-TigerAdvectionKernelT::computeQpResidual()
+TigerAdvectionKernelTH::computeQpResidual()
 {
-  RealVectorValue _dv = -_k_vis[_qp] * (_gradient_pore_press[_qp] - _rhof_g[_qp]);
-  Real _SUPG_residue = 0.0;
+  Real R;
+  if (_has_supg)
+    R = _rho_cp_f[_qp] * ((_test[_i][_qp] + (*_SUPG_p)[_qp] * _grad_test[_i][_qp]) * ( _darcy_v[_qp] * _grad_u[_qp]));
+  else
+    R = _rho_cp_f[_qp] * (_test[_i][_qp] * ( _darcy_v[_qp] * _grad_u[_qp]));
 
-  if (_has_SUPG_upwind && _dv.norm()!=0.0)
-    _SUPG_residue = _supg_uo->k_bar(_dv, _lambda_sf_eq[_qp], 0.0, _current_elem) * _dv * _grad_test[_i][_qp] / _dv.norm_sq();
-
-  return _rho_cp_f[_qp] * ((_test[_i][_qp] + _SUPG_residue) * ( _dv * _grad_u[_qp]));
+  return R;
 }
 
 Real
-TigerAdvectionKernelT::computeQpJacobian()
+TigerAdvectionKernelTH::computeQpJacobian()
 {
-  RealVectorValue _dv = -_k_vis[_qp] * (_gradient_pore_press[_qp] - _rhof_g[_qp]);
-  Real _SUPG_residue = 0.0;
+  Real R;
+  if (_has_supg)
+    R = _rho_cp_f[_qp] * ((_test[_i][_qp] + (*_SUPG_p)[_qp] * _grad_test[_i][_qp]) * ( _darcy_v[_qp] * _grad_phi[_j][_qp]));
+  else
+    R = _rho_cp_f[_qp] * (_test[_i][_qp] * ( _darcy_v[_qp] * _grad_phi[_j][_qp]));
 
-  if (_has_SUPG_upwind && _dv.norm()!=0.0)
-    _SUPG_residue = _supg_uo->k_bar(_dv, _lambda_sf_eq[_qp], 0.0, _current_elem) * _dv * _grad_test[_i][_qp] / _dv.norm_sq();
-
-  return _rho_cp_f[_qp] * ((_test[_i][_qp] + _SUPG_residue) * ( _dv * _grad_phi[_j][_qp]));
+  return R;
 }
