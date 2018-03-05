@@ -61,6 +61,8 @@ protected:
   const MaterialProperty<RealVectorValue> & _rhof_g;
   MaterialProperty<RealVectorValue> & _dv;
   MaterialProperty<RealVectorValue> * _SUPG_p;
+  MaterialProperty<Real> * _Pe;
+  MaterialProperty<Real> * _Cr;
   MaterialProperty<RealVectorValue> * _SUPG_p_consistent;
   MaterialProperty<Real> & _rho_cp_f;
 };

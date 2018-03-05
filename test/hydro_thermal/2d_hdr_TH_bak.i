@@ -3,6 +3,13 @@
   file = ex_hdr.msh
 []
 
+[MeshModifiers]
+  [./modify]
+     type = BlockDeleter
+     block_id = 2
+  [../]
+[]
+
 [UserObjects]
   [./water_uo]
     type = TigerFluidConst
@@ -15,7 +22,7 @@
   [./matrix_uo1]
     type =  TigerPermeabilityConst
     permeability_type = isotropic
-    k0 = '1.0e-17'
+    k0 = '1.0e-10'
   [../]
   [./fracture_uo1]
     type =  TigerPermeabilityConst
@@ -33,45 +40,36 @@
     compressibility = 1.0e-10
     block = 'matrix'
   [../]
+  #[./fracure_h]
+  #  type = TigerRockMaterialH
+  #  fp_UO = water_uo
+  #  kf_UO = fracture_uo1
+  #  porosity = 1.0
+  #  compressibility = 4.0e-10
+  #  block = 'frac'
+  #[../]
   [./matrix_t]
     type = TigerRockMaterialT
     fp_UO = water_uo
     porosity = 0.01
     conductivity_type = isotropic
-    mean_calculation_type = geometric
+    mean_calculation_type = arithmetic
     lambda = 3
     density = 2600
     specific_heat = 950
     block = 'matrix'
   [../]
-  [./fracure_h]
-    type = TigerRockMaterialH
-    fp_UO = water_uo
-    kf_UO = fracture_uo1
-    porosity = 1.0
-    compressibility = 4.0e-10
-    block = 'frac'
-  [../]
-  [./fracture_t]
-    type = TigerRockMaterialT
-    fp_UO = water_uo
-    porosity = 1.0
-    conductivity_type = isotropic
-    mean_calculation_type = geometric
-    lambda = 3
-    density = 2600
-    specific_heat = 950
-    block = 'frac'
-  [../]
-  [./advect_th]
-    type = TigerAdvectionMaterialTH
-    fp_UO = water_uo
-    pressure = pressure
-    has_supg = true
-    is_supg_consistent = true
-    supg_eff_length = max
-    supg_coeficient = optimal
-  [../]
+  #[./fracture_t]
+  #  type = TigerRockMaterialT
+  #  fp_UO = water_uo
+  #  porosity = 1.0
+  #  conductivity_type = isotropic
+  #  mean_calculation_type = arithmetic
+  #  lambda = 3
+  #  density = 2600
+  #  specific_heat = 950
+  #  block = 'frac'
+  #[../]
 []
 
 [BCs]
@@ -104,11 +102,11 @@
     family = MONOMIAL
     order = CONSTANT
   [../]
-  [./pe]
+  [./lmin]
     family = MONOMIAL
     order = CONSTANT
   [../]
-  [./cr]
+  [./lmax]
     family = MONOMIAL
     order = CONSTANT
   [../]
@@ -127,26 +125,24 @@
     variable =  vy
     component = y
   [../]
-  [./pe_ker]
-    type = MaterialRealAux
-    property = 'peclet_number'
-    variable = pe
+  [./lmin_ker]
+    type = ElementLengthAux
+    method = min
+    variable = lmin
   [../]
-  [./cr_ker]
-    type = MaterialRealAux
-    property = 'courant_number'
-    variable = cr
+  [./lmax_ker]
+    type = ElementLengthAux
+    method = max
+    variable = lmax
   [../]
 []
 
 [Variables]
   [./pressure]
     initial_condition = 1e7
-    scaling = 1e7
   [../]
   [./temperature]
     initial_condition = 200
-    #scaling = 200
   [../]
 []
 
@@ -154,13 +150,13 @@
   [./pump_in]
     type = TigerPointSourceH
     point = '175.0 250.0 0.0'
-    mass_flux = 1.0
+    mass_flux = 0.01
     variable = pressure
   [../]
   [./pump_out]
     type = TigerPointSourceH
     point = '325.0 250.0 0.0'
-    mass_flux = -1.0
+    mass_flux = -0.01
     variable = pressure
   [../]
 []
@@ -170,14 +166,14 @@
     type = TigerKernelH
     variable = pressure
   [../]
-  [./H_time]
+  [./H_Time]
     type = TigerTimeDerivativeH
     variable = pressure
   [../]
   [./T_advect]
-    type = TigerAdvectionKernelTH
+    type = TigerAdvectionKernelT
     variable = temperature
-    #block = 'matrix'
+    gradient_variable = pressure
   [../]
   [./T_diff]
     type = TigerDiffusionKernelT
@@ -190,46 +186,24 @@
 []
 
 [Preconditioning]
-  #[./precond]
-  #  type = SMP
-  #  full = true
-  #  petsc_options_iname = '-pc_type -pc_hypre_type'
-  #  petsc_options_value = 'hypre boomeramg'
-  #  #petsc_options_iname = '-ksp_type -snes_type -pc_type -pc_factor_shift_type -pc_factor_shift_amount -snes_atol -snes_rtol -snes_max_it'
-  #  #petsc_options_value = '  gmres     newtontr     asm          NONZERO               1E-12               1E-10       1E-15       250     '
-  #  #petsc_options = '-snes_ksp_ew'
-  #  #petsc_options_iname = '-ksp_type -pc_type -snes_atol -snes_rtol -snes_max_it -ksp_max_it -sub_pc_type -sub_pc_factor_shift_type'
-  #  #petsc_options_value = 'gmres asm 1E-10 1E-10 200 500 lu NONZERO'
-  #[../]
-  [./fieldsplit]
-    type = FSP
-    topsplit = pT
-    [./pT]
-      splitting = 'p T'
-      splitting_type = multiplicative
-      petsc_options_iname = '-ksp_type -ksp_rtol -ksp_max_it -snes_type -snes_linesearch_type -snes_atol -snes_rtol -snes_max_it'
-      petsc_options_value = 'fgmres 1.0e-12 50 newtonls basic 1.0e-04 1.0e-12 25'
-    [../]
-    [./p]
-      vars = 'pressure'
-      petsc_options_iname = '-ksp_type -pc_type -sub_pc_type -sub_pc_factor_levels -ksp_rtol -ksp_max_it'
-      petsc_options_value = 'fgmres asm ilu 1 1e-12 20'
-    [../]
-    [./T]
-      vars = 'temperature'
-      petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_rtol -ksp_max_it'
-      petsc_options_value = 'preonly hypre boomeramg 1e-12 20'
-    [../]
+  [./precond]
+    type = SMP
+    full = true
+    #petsc_options_iname = '-pc_type -pc_hypre_type'
+    #petsc_options_value = 'hypre boomeramg'
+    petsc_options_iname = '-ksp_type -snes_type -pc_type -pc_factor_shift_type -pc_factor_shift_amount -snes_atol -snes_rtol -snes_max_it'
+    petsc_options_value = '  gmres     newtontr     asm          NONZERO               1E-12               1E-10       1E-15       250     '
+    #petsc_options = '-snes_ksp_ew'
+    #petsc_options_iname = '-ksp_type -pc_type -snes_atol -snes_rtol -snes_max_it -ksp_max_it -sub_pc_type -sub_pc_factor_shift_type'
+    #petsc_options_value = 'gmres asm 1E-10 1E-10 200 500 lu NONZERO'
   [../]
 []
 
 [Executioner]
   type = Transient
   num_steps = 100
-  end_time = 1.5e7
+  end_time = 1e9
   solve_type = NEWTON
-  #l_tol = 1e-10 #difference between first and last linear step
-  #nl_rel_step_tol = 1e-14 #machine percision
 []
 
 [Outputs]

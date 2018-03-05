@@ -52,6 +52,8 @@ TigerAdvectionMaterialTH::TigerAdvectionMaterialTH(const InputParameters & param
   _rhof_g(getMaterialProperty<RealVectorValue>("rho_times_gravity")),
   _dv(declareProperty<RealVectorValue>("darcy_velocity")),
   _SUPG_p(_has_supg ? &declareProperty<RealVectorValue>("petrov_supg_p_function") : NULL),
+  _Pe(_has_supg ? &declareProperty<Real>("peclet_number") : NULL),
+  _Cr(_has_supg ? &declareProperty<Real>("courant_number") : NULL),
   _SUPG_p_consistent(_is_supg_consistent ? &declareProperty<RealVectorValue>("petrov_supg_p_function_consistent") : NULL),
   _rho_cp_f(declareProperty<Real>("fluid_thermal_capacity"))
 {
@@ -81,6 +83,9 @@ TigerAdvectionMaterialTH::tau(RealVectorValue vel, Real diff, Real dt, const Ele
   Real h_ele = EEL(ele);
   Real tau = 0.0;
   Real alpha = (_pure_advection ? 1.0e5 : 0.5 * norm_v * h_ele / diff);
+  (*_Pe)[_qp] = alpha;
+  (*_Cr)[_qp] = vel.norm() * dt / h_ele;
+
 
   switch (_method)
   {
