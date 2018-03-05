@@ -38,8 +38,10 @@ validParams<TigerHeatSourceT>()
 
 TigerHeatSourceT::TigerHeatSourceT(const InputParameters & parameters)
   : Kernel(parameters),
+    _has_supg(hasMaterialProperty<RealVectorValue>("petrov_supg_p_function_consistent")),
     _scale(getParam<Real>("value")),
-    _function(getFunction("function"))
+    _function(getFunction("function")),
+    _SUPG_p(_has_supg ? &getMaterialProperty<RealVectorValue>("petrov_supg_p_function_consistent") : NULL)
 {
 }
 
@@ -47,5 +49,10 @@ Real
 TigerHeatSourceT::computeQpResidual()
 {
   Real factor = _scale * _function.value(_t, _q_point[_qp]);
-  return _test[_i][_qp] * -factor;
+  Real R;
+  if (_has_supg)
+    R = (_test[_i][_qp] + (*_SUPG_p)[_qp] * _grad_test[_i][_qp]) * -factor;
+  else
+    R = _test[_i][_qp] * -factor;
+  return R;
 }

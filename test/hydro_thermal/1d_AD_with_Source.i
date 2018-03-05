@@ -2,8 +2,8 @@
   type = GeneratedMesh
   dim = 1
   xmin = 0
-  xmax = 100
-  nx = 20
+  xmax = 1
+  nx = 10
 []
 
 [UserObjects]
@@ -40,8 +40,10 @@
   [../]
   [./advect_th]
     type = TigerAdvectionMaterialTH
-    pore_pressure =  pressure
+    fp_UO = water_uo
+    pressure =  pressure
     has_supg = true
+    is_supg_consistent = true
     supg_eff_length = min
     supg_coeficient = optimal
   [../]
@@ -52,7 +54,7 @@
     type = DirichletBC
     variable = pressure
     boundary = left
-    value = 1e6
+    value = 1e5
   [../]
   [./right_h]
     type = DirichletBC
@@ -79,10 +81,6 @@
     family = MONOMIAL
     order = CONSTANT
   [../]
-  [./analytical_solution]
-    family = LAGRANGE
-    order = FIRST
-  [../]
 []
 
 [AuxKernels]
@@ -92,20 +90,12 @@
     variable =  vx
     component = x
   [../]
-  [./a_ker]
-    type = FunctionAux
-    function = analytical_function
-    variable = analytical_solution
-    execute_on = initial
-  [../]
 []
 
 [Functions]
-  [./analytical_function]
+  [./source]
     type = ParsedFunction
-    vars = 'l T v lambda'
-    vals = '100 1 0.1 0.01'
-    value = 'T*exp((x-l)*v/(2*lambda))*sinh(x*sqrt(v*v/(4*lambda*lambda)))/sinh(l*sqrt(v*v/(4*lambda*lambda)))'
+    value = '10*exp(-5*x)-4*exp(-1*x)'
   [../]
 []
 
@@ -122,33 +112,19 @@
     variable = pressure
   [../]
   [./T_advect]
-    type = TigerAdvectionKernelT
+    type = TigerAdvectionKernelTH
     variable = temperature
   [../]
   [./T_diff]
     type = TigerDiffusionKernelT
     variable = temperature
   [../]
-  #[./T_body]
-  #  type = TigerHeatSourceT
-  #  variable = temperature
-  #  value = 1
-  #[../]
+  [./T_body]
+    type = TigerHeatSourceT
+    variable = temperature
+    function = source
+  [../]
 []
-
-#[Preconditioning]
-#  [./precond]
-#    type = SMP
-#    full = true
-#    petsc_options_iname = '-pc_type -pc_hypre_type'
-#    petsc_options_value = 'hypre boomeramg'
-#    #petsc_options_iname = '-ksp_type -snes_type -pc_type -pc_factor_shift_type -pc_factor_shift_amount -snes_atol -snes_rtol -snes_max_it'
-#    #petsc_options_value = '  gmres     newtontr     asm          NONZERO               1E-12               1E-10       1E-15       250     '
-#    #petsc_options = '-snes_ksp_ew'
-#    #petsc_options_iname = '-ksp_type -pc_type -snes_atol -snes_rtol -snes_max_it -ksp_max_it -sub_pc_type -sub_pc_factor_shift_type'
-#    #petsc_options_value = 'gmres asm 1E-10 1E-10 200 500 lu NONZERO'
-#  [../]
-#[]
 
 [Executioner]
   type = Steady

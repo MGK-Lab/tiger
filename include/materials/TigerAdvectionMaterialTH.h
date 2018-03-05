@@ -24,7 +24,7 @@
 #ifndef TIGERADVECTIONMATERIALTH_H
 #define TIGERADVECTIONMATERIALTH_H
 
-#include "Material.h"
+#include "TigerMaterialGeneral.h"
 #include "RankTwoTensor.h"
 
 class TigerAdvectionMaterialTH;
@@ -32,7 +32,7 @@ class TigerAdvectionMaterialTH;
 template <>
 InputParameters validParams<TigerAdvectionMaterialTH>();
 
-class TigerAdvectionMaterialTH : public Material
+class TigerAdvectionMaterialTH : public TigerMaterialGeneral
 {
 public:
   TigerAdvectionMaterialTH(const InputParameters & parameters);
@@ -45,20 +45,24 @@ private:
   Real DoublyAsymptotic(Real) const;
   Real Critical(Real) const;
 
+  bool _has_supg;
+  bool _pure_advection;
+  bool _is_supg_consistent;
 
 protected:
   virtual void computeQpProperties() override;
 
   MooseEnum _effective_length;
   MooseEnum _method;
-  bool _has_supg;
 
-  const MaterialProperty<Real> & _lambda_sf_eq;
+  const MaterialProperty<Real> * _lambda_sf_eq;
   const VariableGradient & _gradient_pore_press;
   const MaterialProperty<RankTwoTensor> & _k_vis;
   const MaterialProperty<RealVectorValue> & _rhof_g;
   MaterialProperty<RealVectorValue> & _dv;
   MaterialProperty<RealVectorValue> * _SUPG_p;
+  MaterialProperty<RealVectorValue> * _SUPG_p_consistent;
+  MaterialProperty<Real> & _rho_cp_f;
 };
 
 #endif /* TIGERADVECTIONMATERIALTH_H */

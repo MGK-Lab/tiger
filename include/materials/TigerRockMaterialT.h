@@ -66,8 +66,6 @@ protected:
   MaterialProperty<RankTwoTensor> & _lambda_sf;
   /// coefficient for time derivative kernel
   MaterialProperty<Real> & _T_Kernel_dt;
-  /// fluid thermal capacity
-  MaterialProperty<Real> & _rho_cp_f;
 };
 
 #endif /* TIGERROCKMATERIALT_H */

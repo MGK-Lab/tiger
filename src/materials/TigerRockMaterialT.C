@@ -52,8 +52,7 @@ TigerRockMaterialT::TigerRockMaterialT(const InputParameters & parameters)
     _n0(getParam<Real>("porosity")),
     _lambda_sf_eq(declareProperty<Real>("conductivity_mixture_equivalent")),
     _lambda_sf(declareProperty<RankTwoTensor>("conductivity_mixture")),
-    _T_Kernel_dt(declareProperty<Real>("T_Kernel_dt_coefficient")),
-    _rho_cp_f(declareProperty<Real>("fluid_thermal_capacity"))
+    _T_Kernel_dt(declareProperty<Real>("T_Kernel_dt_coefficient"))
 {
 }
 
@@ -104,7 +103,6 @@ TigerRockMaterialT::computeQpProperties()
   _lambda_sf     [_qp] = _lambda_sf_tensor;
   _lambda_sf_eq  [_qp] = _lambda_sf_real;
 
-  _rho_cp_f   [_qp] = _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp]);
 
   if (_current_elem->dim() < _mesh.dimension())
     _lambda_sf[_qp].rotate(_rot_mat);
