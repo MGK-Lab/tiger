@@ -7,7 +7,7 @@
   [./water_uo]
     type = TigerFluidConst
     density = 1000
-    viscosity = 1.8e-4
+    viscosity = 2e-4
     specific_heat = 4200
     conductivity = 0.65
     compressibility = 4.0e-10
@@ -20,7 +20,7 @@
   [./fracture_uo1]
     type =  TigerPermeabilityConst
     permeability_type = isotropic
-    k0 = '8.3333e-10'
+    k0 = '8.333333e-10'
   [../]
 []
 
@@ -29,6 +29,7 @@
     type = TigerRockMaterialH
     fp_UO = water_uo
     kf_UO = matrix_uo1
+    scaling_factor = 300
     porosity = 0.01
     compressibility = 1.0e-10
     block = 'matrix'
@@ -37,11 +38,23 @@
     type = TigerRockMaterialT
     fp_UO = water_uo
     porosity = 0.01
+    scaling_factor = 1.0
     conductivity_type = isotropic
     mean_calculation_type = geometric
     lambda = 3
     density = 2600
     specific_heat = 950
+    block = 'matrix'
+  [../]
+  [./matrix_th]
+    type = TigerAdvectionMaterialTH
+    scaling_factor = 1.0
+    fp_UO = water_uo
+    pressure = pressure
+    has_supg = false
+    is_supg_consistent = true
+    supg_eff_length = max
+    supg_coeficient = transient_brooks
     block = 'matrix'
   [../]
   [./fracure_h]
@@ -50,6 +63,7 @@
     kf_UO = fracture_uo1
     porosity = 1.0
     compressibility = 4.0e-10
+    scaling_factor = 0.03
     block = 'frac'
   [../]
   [./fracture_t]
@@ -59,18 +73,21 @@
     conductivity_type = isotropic
     mean_calculation_type = geometric
     lambda = 3
+    scaling_factor = 0.0001
     density = 2600
     specific_heat = 950
     block = 'frac'
   [../]
-  [./advect_th]
+  [./fracture_th]
     type = TigerAdvectionMaterialTH
+    scaling_factor = 0.0001
     fp_UO = water_uo
     pressure = pressure
-    has_supg = true
+    has_supg = false
     is_supg_consistent = true
     supg_eff_length = max
-    supg_coeficient = optimal
+    supg_coeficient = transient_brooks
+    block = 'frac'
   [../]
 []
 
@@ -104,14 +121,14 @@
     family = MONOMIAL
     order = CONSTANT
   [../]
-  [./pe]
-    family = MONOMIAL
-    order = CONSTANT
-  [../]
-  [./cr]
-    family = MONOMIAL
-    order = CONSTANT
-  [../]
+  #[./pe]
+  #  family = MONOMIAL
+  #  order = CONSTANT
+  #[../]
+  #[./cr]
+  #  family = MONOMIAL
+  #  order = CONSTANT
+  #[../]
 []
 
 [AuxKernels]
@@ -127,16 +144,16 @@
     variable =  vy
     component = y
   [../]
-  [./pe_ker]
-    type = MaterialRealAux
-    property = 'peclet_number'
-    variable = pe
-  [../]
-  [./cr_ker]
-    type = MaterialRealAux
-    property = 'courant_number'
-    variable = cr
-  [../]
+  #[./pe_ker]
+  #  type = MaterialRealAux
+  #  property = 'peclet_number'
+  #  variable = pe
+  #[../]
+  #[./cr_ker]
+  #  type = MaterialRealAux
+  #  property = 'courant_number'
+  #  variable = cr
+  #[../]
 []
 
 [Variables]
@@ -177,7 +194,6 @@
   [./T_advect]
     type = TigerAdvectionKernelTH
     variable = temperature
-    #block = 'matrix'
   [../]
   [./T_diff]
     type = TigerDiffusionKernelT
@@ -190,17 +206,6 @@
 []
 
 [Preconditioning]
-  #[./precond]
-  #  type = SMP
-  #  full = true
-  #  petsc_options_iname = '-pc_type -pc_hypre_type'
-  #  petsc_options_value = 'hypre boomeramg'
-  #  #petsc_options_iname = '-ksp_type -snes_type -pc_type -pc_factor_shift_type -pc_factor_shift_amount -snes_atol -snes_rtol -snes_max_it'
-  #  #petsc_options_value = '  gmres     newtontr     asm          NONZERO               1E-12               1E-10       1E-15       250     '
-  #  #petsc_options = '-snes_ksp_ew'
-  #  #petsc_options_iname = '-ksp_type -pc_type -snes_atol -snes_rtol -snes_max_it -ksp_max_it -sub_pc_type -sub_pc_factor_shift_type'
-  #  #petsc_options_value = 'gmres asm 1E-10 1E-10 200 500 lu NONZERO'
-  #[../]
   [./fieldsplit]
     type = FSP
     topsplit = pT
@@ -225,11 +230,9 @@
 
 [Executioner]
   type = Transient
-  num_steps = 100
-  end_time = 1.5e7
+  dt = 2628000
+  end_time = 946080000
   solve_type = NEWTON
-  #l_tol = 1e-10 #difference between first and last linear step
-  #nl_rel_step_tol = 1e-14 #machine percision
 []
 
 [Outputs]

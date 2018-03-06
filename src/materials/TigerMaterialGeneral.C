@@ -23,6 +23,8 @@
 
 #include "TigerMaterialGeneral.h"
 
+#define PI 3.141592653589793238462643383279502884197169399375105820974944592308
+
 template <>
 InputParameters
 validParams<TigerMaterialGeneral>()
@@ -31,7 +33,8 @@ validParams<TigerMaterialGeneral>()
   params.addCoupledVar("pressure", 0.0, "Fluid pressure (Pa)");
   params.addCoupledVar("temperature", 0.0, "Fluid temperature (C)");
   params.addRequiredParam<UserObjectName>("fp_UO", "The name of the userobject for fluid properties");
-  params.addClassDescription("General properties + fluid properties");
+  params.addParam<Real>("scaling_factor", 1.0, "The scaling factor for lower dimensional elements (2D & 1D elements in 2D & 3D simulations)");
+  params.addClassDescription("General properties");
   return params;
 }
 
@@ -39,8 +42,29 @@ TigerMaterialGeneral::TigerMaterialGeneral(const InputParameters & parameters)
   : Material(parameters),
     _P(coupledValue("pressure")),
     _T(coupledValue("temperature")),
+    _scaling_factor0(getParam<Real>("scaling_factor")),
     _fp_UO(getUserObject<TigerFluidPropertiesTP>("fp_UO"))
 {
+}
+
+Real
+TigerMaterialGeneral::LowerDScaling()
+{
+  Real _scaling_factor = 1.0;
+  if (_mesh.dimension()>1)
+    switch (_mesh.dimension())
+    {
+      case 2:
+        _scaling_factor = _scaling_factor0; //aperture * height for fracture & height for unit
+        break;
+      case 3:
+        if (_current_elem->dim() == 2)
+          _scaling_factor = _scaling_factor0; //fracture aperture
+        else if (_current_elem->dim() == 1)
+          _scaling_factor = PI * _scaling_factor0 * _scaling_factor0; //radius of well
+        break;
+    }
+  return _scaling_factor;
 }
 
 void

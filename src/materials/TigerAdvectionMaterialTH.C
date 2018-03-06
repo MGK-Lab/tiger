@@ -47,6 +47,7 @@ TigerAdvectionMaterialTH::TigerAdvectionMaterialTH(const InputParameters & param
   _is_supg_consistent(getParam<bool>("is_supg_consistent")),
   _effective_length(getParam<MooseEnum>("supg_eff_length")),
   _method(getParam<MooseEnum>("supg_coeficient")),
+  _scaling_lowerD_H(getMaterialProperty<Real>("lowerD_scale_factor_h")),
   _gradient_pore_press(coupledGradient("pressure")),
   _k_vis(getMaterialProperty<RankTwoTensor>("permeability_by_viscosity")),
   _rhof_g(getMaterialProperty<RealVectorValue>("rho_times_gravity")),
@@ -64,7 +65,7 @@ TigerAdvectionMaterialTH::TigerAdvectionMaterialTH(const InputParameters & param
 void
 TigerAdvectionMaterialTH::computeQpProperties()
 {
-  _rho_cp_f[_qp] = _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp]);
+  _rho_cp_f[_qp] = LowerDScaling() * _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp]);
 
   _dv[_qp] = -_k_vis[_qp] * (_gradient_pore_press[_qp] - _rhof_g[_qp]);
 

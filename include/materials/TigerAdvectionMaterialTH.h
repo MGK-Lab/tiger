@@ -56,6 +56,7 @@ protected:
   MooseEnum _method;
 
   const MaterialProperty<Real> * _lambda_sf_eq;
+  const MaterialProperty<Real> & _scaling_lowerD_H;
   const VariableGradient & _gradient_pore_press;
   const MaterialProperty<RankTwoTensor> & _k_vis;
   const MaterialProperty<RealVectorValue> & _rhof_g;

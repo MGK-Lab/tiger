@@ -51,7 +51,7 @@ TigerRockMaterialH::TigerRockMaterialH(const InputParameters & parameters)
     _kf_UO(getUserObject<TigerPermeability>("kf_UO")),
     _has_gravity(getParam<bool>("has_gravity")),
     _g(getParam<Real>("gravity_acceleration")),
-    _test(declareProperty<RankTwoTensor>("test"))
+    _scaling_lowerD(declareProperty<Real>("lowerD_scale_factor_h"))
 {
   if (_has_gravity)
   {
@@ -113,9 +113,8 @@ TigerRockMaterialH::computeQpProperties()
   _rhof_g[_qp] = _fp_UO.rho(_P[_qp], _T[_qp]) * _gravity;
   _rhof[_qp] = _fp_UO.rho(_P[_qp], _T[_qp]);
 
+  _scaling_lowerD[_qp] = LowerDScaling();
+
   if (_current_elem->dim() < _mesh.dimension())
-  {
-    _test[_qp] = _rot_mat;
     _k_vis[_qp].rotate(_rot_mat);
-  }
 }

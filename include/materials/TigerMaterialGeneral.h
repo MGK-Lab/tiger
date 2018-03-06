@@ -27,6 +27,7 @@
 #include "Material.h"
 #include "TigerFluidPropertiesTP.h"
 #include "RankTwoTensor.h"
+#include "MooseMesh.h"
 #include <cfloat>
 
 class TigerMaterialGeneral;
@@ -46,9 +47,13 @@ protected:
   const VariableValue & _T;
   /// rotation matrix for local cordinates
   RankTwoTensor _rot_mat = RankTwoTensor();
+  /// initial scaling factor
+  Real _scaling_factor0;
 
   /// compute rotation matrix
   void computeRotationMatrix(int dim);
+  /// compute scaling factor for lower dimensional elements
+  Real LowerDScaling();
   /// Tiger Fluid properties UserObject
  const TigerFluidPropertiesTP & _fp_UO;
 };

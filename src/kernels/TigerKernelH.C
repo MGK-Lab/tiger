@@ -33,20 +33,20 @@ validParams<TigerKernelH>()
 
 TigerKernelH::TigerKernelH(const InputParameters & parameters)
   : Kernel(parameters),
+    _scaling_lowerD(getMaterialProperty<Real>("lowerD_scale_factor_h")),
     _k_vis(getMaterialProperty<RankTwoTensor>("permeability_by_viscosity")),
     _rhof_g(getMaterialProperty<RealVectorValue>("rho_times_gravity"))
 {
 }
 
-
 Real
 TigerKernelH::computeQpResidual()
 {
-  return _grad_test[_i][_qp] * ( _k_vis[_qp] * ( _grad_u[_qp] - _rhof_g[_qp] ) );
+  return _grad_test[_i][_qp] * (_scaling_lowerD[_qp] * _k_vis[_qp] * ( _grad_u[_qp] - _rhof_g[_qp] ) );
 }
 
 Real
 TigerKernelH::computeQpJacobian()
 {
-  return _grad_test[_i][_qp] * ( _k_vis[_qp] * _grad_phi[_j][_qp] );
+  return _grad_test[_i][_qp] * (_scaling_lowerD[_qp] *  _k_vis[_qp] * _grad_phi[_j][_qp] );
 }

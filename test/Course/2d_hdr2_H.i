@@ -15,7 +15,7 @@
   [./matrix_uo1]
     type =  TigerPermeabilityConst
     permeability_type = isotropic
-    k0 = '7.0e-14'
+    k0 = '1.0e-15'
   [../]
   [./fracture_uo1]
     type =  TigerPermeabilityConst
@@ -29,6 +29,7 @@
     type = TigerRockMaterialH
     fp_UO = water_uo
     kf_UO = matrix_uo1
+    scaling_factor = 100 #height of the unit
     porosity = 0.1
     compressibility = 1.0e-10
     block = 'unit'
@@ -37,6 +38,7 @@
     type = TigerRockMaterialH
     fp_UO = water_uo
     kf_UO = fracture_uo1
+    scaling_factor = 0.01 #area of the fracture
     porosity = 1.0
     compressibility = 4.0e-10
     block = 'frac1 frac2'
@@ -104,10 +106,10 @@
     type = TigerKernelH
     variable = pressure
   [../]
-  [./H_time]
-    type = TigerTimeDerivativeH
-    variable = pressure
-  [../]
+  #[./H_time]
+  #  type = TigerTimeDerivativeH
+  #  variable = pressure
+  #[../]
 []
 
 [Preconditioning]
@@ -120,10 +122,10 @@
 []
 
 [Executioner]
-  #type = Steady
-  type = Transient
-  num_steps = 100
-  end_time = 1e4
+  type = Steady
+  #type = Transient
+  #num_steps = 100
+  #end_time = 1e4
   solve_type = NEWTON
 []
 
