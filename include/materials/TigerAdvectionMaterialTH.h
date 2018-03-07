@@ -38,13 +38,14 @@ public:
   TigerAdvectionMaterialTH(const InputParameters & parameters);
 
 private:
-  virtual Real tau(RealVectorValue vel, Real diff, Real dt, const Elem * ele) const;
+  Real tau(Real & norm_v, Real & alpha, Real & diff, Real & dt, Real & h_ele) const;
   Real EEL(const Elem * ele) const;
   Real Optimal(Real) const;
   Real Temporal(Real, Real, Real, Real) const;
   Real DoublyAsymptotic(Real) const;
   Real Critical(Real) const;
 
+  bool _has_PeCr;
   bool _has_supg;
   bool _pure_advection;
   bool _is_supg_consistent;
@@ -66,6 +67,7 @@ protected:
   MaterialProperty<Real> * _Cr;
   MaterialProperty<RealVectorValue> * _SUPG_p_consistent;
   MaterialProperty<Real> & _rho_cp_f;
+  MaterialProperty<Real> & _scaling_lowerD;
 };
 
 #endif /* TIGERADVECTIONMATERIALTH_H */

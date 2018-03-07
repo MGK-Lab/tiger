@@ -30,6 +30,7 @@ InputParameters
 validParams<TigerAdvectionMaterialTH>()
 {
   InputParameters params = validParams<TigerMaterialGeneral>();
+  params.addParam<bool>("output_Pe_Cr_numbers", false , "calcuate Peclet and Courant numbers");
   params.addParam<bool>("has_supg", false , "Is Streameline Upwinding / Petrov Galerkin (SU/PG) activated?");
   params.addParam<bool>("is_supg_consistent", true , "Is it a Consistent SU/PG?");
   MooseEnum EleLen("min=1 max=2 average=3");
@@ -42,6 +43,7 @@ validParams<TigerAdvectionMaterialTH>()
 
 TigerAdvectionMaterialTH::TigerAdvectionMaterialTH(const InputParameters & parameters)
   : TigerMaterialGeneral(parameters),
+  _has_PeCr(getParam<bool>("output_Pe_Cr_numbers")),
   _has_supg(getParam<bool>("has_supg")),
   _pure_advection(!hasMaterialProperty<Real>("conductivity_mixture_equivalent")),
   _is_supg_consistent(getParam<bool>("is_supg_consistent")),
@@ -53,10 +55,11 @@ TigerAdvectionMaterialTH::TigerAdvectionMaterialTH(const InputParameters & param
   _rhof_g(getMaterialProperty<RealVectorValue>("rho_times_gravity")),
   _dv(declareProperty<RealVectorValue>("darcy_velocity")),
   _SUPG_p(_has_supg ? &declareProperty<RealVectorValue>("petrov_supg_p_function") : NULL),
-  _Pe(_has_supg ? &declareProperty<Real>("peclet_number") : NULL),
-  _Cr(_has_supg ? &declareProperty<Real>("courant_number") : NULL),
+  _Pe(_has_PeCr ? &declareProperty<Real>("peclet_number") : NULL),
+  _Cr(_has_PeCr ? &declareProperty<Real>("courant_number") : NULL),
   _SUPG_p_consistent(_is_supg_consistent ? &declareProperty<RealVectorValue>("petrov_supg_p_function_consistent") : NULL),
-  _rho_cp_f(declareProperty<Real>("fluid_thermal_capacity"))
+  _rho_cp_f(declareProperty<Real>("fluid_thermal_capacity")),
+  _scaling_lowerD(declareProperty<Real>("lowerD_scale_factor_th"))
 {
   if (!_pure_advection)
     _lambda_sf_eq = &getMaterialProperty<Real>("conductivity_mixture_equivalent");
@@ -65,28 +68,44 @@ TigerAdvectionMaterialTH::TigerAdvectionMaterialTH(const InputParameters & param
 void
 TigerAdvectionMaterialTH::computeQpProperties()
 {
-  _rho_cp_f[_qp] = LowerDScaling() * _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp]);
+  _scaling_lowerD[_qp] = LowerDScaling();
+
+  _rho_cp_f[_qp] = _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp]);
 
   _dv[_qp] = -_k_vis[_qp] * (_gradient_pore_press[_qp] - _rhof_g[_qp]);
 
+  Real norm_v, h_ele, alpha, lambda;
+
+  if (_has_supg || _has_PeCr)
+  {
+    norm_v = _dv[_qp].norm();
+    h_ele = EEL(_current_elem);
+      if (_pure_advection)
+      {
+        alpha = 1.0e10;
+        lambda = 0.0;
+      }
+      else
+      {
+        alpha = 0.5 * norm_v * h_ele / (*_lambda_sf_eq)[_qp];
+        lambda = (*_lambda_sf_eq)[_qp];
+      }
+    (*_Pe)[_qp] = alpha;
+    (*_Cr)[_qp] = norm_v * _dt / h_ele;
+  }
+
   if (_has_supg && _dv[_qp].norm()!=0.0) // should be multiplied by gradient of the test function to build the Petrov P function
   {
-    (*_SUPG_p)[_qp] = tau(_dv[_qp], _pure_advection ? 0.0 : (*_lambda_sf_eq)[_qp], _dt, _current_elem) * _dv[_qp];
+    (*_SUPG_p)[_qp] = tau(norm_v, alpha, lambda, _dt, h_ele) * _dv[_qp];
     if (_is_supg_consistent)
       (*_SUPG_p_consistent)[_qp] = (*_SUPG_p)[_qp];
   }
 }
 
 Real
-TigerAdvectionMaterialTH::tau(RealVectorValue vel, Real diff, Real dt, const Elem * ele) const
+TigerAdvectionMaterialTH::tau(Real & norm_v, Real & alpha, Real & diff, Real & dt, Real & h_ele) const
 {
-  Real norm_v = vel.norm();
-  Real h_ele = EEL(ele);
   Real tau = 0.0;
-  Real alpha = (_pure_advection ? 1.0e5 : 0.5 * norm_v * h_ele / diff);
-  (*_Pe)[_qp] = alpha;
-  (*_Cr)[_qp] = vel.norm() * dt / h_ele;
-
 
   switch (_method)
   {
@@ -99,7 +118,7 @@ TigerAdvectionMaterialTH::tau(RealVectorValue vel, Real diff, Real dt, const Ele
     case 3:
       tau += Critical(alpha) * h_ele / (2.0 * norm_v);
       break;
-    case 4:
+    case 4: // Brooks & Hughes
       tau += h_ele / (sqrt(15.0) * norm_v);
       break;
     case 5: // Tezduyar & Osawa 2000

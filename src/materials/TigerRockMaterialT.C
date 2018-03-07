@@ -52,7 +52,8 @@ TigerRockMaterialT::TigerRockMaterialT(const InputParameters & parameters)
     _n0(getParam<Real>("porosity")),
     _lambda_sf_eq(declareProperty<Real>("conductivity_mixture_equivalent")),
     _lambda_sf(declareProperty<RankTwoTensor>("conductivity_mixture")),
-    _T_Kernel_dt(declareProperty<Real>("T_Kernel_dt_coefficient"))
+    _T_Kernel_dt(declareProperty<Real>("T_Kernel_dt_coefficient")),
+    _scaling_lowerD(declareProperty<Real>("lowerD_scale_factor_t"))
 {
 }
 
@@ -100,10 +101,10 @@ TigerRockMaterialT::computeQpProperties()
   _T_Kernel_dt[_qp] = (1.0-_n0)*_rho0*_cp0 + _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp])*_n0;
 
   ConductivityTensorCalculator(_n0, _fp_UO.lambda(_P[_qp], _T[_qp]), _lambda0, _ct, _mean, _current_elem->dim());
-  _lambda_sf     [_qp] = _lambda_sf_tensor * LowerDScaling();
-  _lambda_sf_eq  [_qp] = _lambda_sf_real * LowerDScaling();
+  _lambda_sf     [_qp] = _lambda_sf_tensor;
+  _lambda_sf_eq  [_qp] = _lambda_sf_real;
 
-
+  _scaling_lowerD[_qp] = LowerDScaling();
 
   if (_current_elem->dim() < _mesh.dimension())
     _lambda_sf[_qp].rotate(_rot_mat);

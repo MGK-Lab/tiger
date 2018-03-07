@@ -36,6 +36,7 @@ validParams<TigerAdvectionKernelTH>()
 TigerAdvectionKernelTH::TigerAdvectionKernelTH(const InputParameters & parameters)
   : Kernel(parameters),
   _has_supg(hasMaterialProperty<RealVectorValue>("petrov_supg_p_function")),
+  _scaling_lowerD(getMaterialProperty<Real>("lowerD_scale_factor_th")),
   _rho_cp_f(getMaterialProperty<Real>("fluid_thermal_capacity")),
   _SUPG_p(_has_supg ? &getMaterialProperty<RealVectorValue>("petrov_supg_p_function") : NULL),
   _darcy_v(getMaterialProperty<RealVectorValue>("darcy_velocity"))
@@ -51,7 +52,7 @@ TigerAdvectionKernelTH::computeQpResidual()
   else
     R = _rho_cp_f[_qp] * (_test[_i][_qp] * ( _darcy_v[_qp] * _grad_u[_qp]));
 
-  return R;
+  return _scaling_lowerD[_qp] * R;
 }
 
 Real
@@ -63,5 +64,5 @@ TigerAdvectionKernelTH::computeQpJacobian()
   else
     R = _rho_cp_f[_qp] * (_test[_i][_qp] * ( _darcy_v[_qp] * _grad_phi[_j][_qp]));
 
-  return R;
+  return _scaling_lowerD[_qp] * R;
 }

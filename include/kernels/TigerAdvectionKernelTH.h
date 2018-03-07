@@ -43,6 +43,7 @@ protected:
   virtual Real computeQpResidual() override;
   virtual Real computeQpJacobian() override;
 
+  const MaterialProperty<Real> & _scaling_lowerD;
   const MaterialProperty<Real> & _rho_cp_f;
   const MaterialProperty<RealVectorValue> * _SUPG_p;
   const MaterialProperty<RealVectorValue> & _darcy_v;

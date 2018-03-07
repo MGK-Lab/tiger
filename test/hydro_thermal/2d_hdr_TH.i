@@ -3,6 +3,11 @@
   file = ex_hdr.msh
 []
 
+[GlobalParams]
+  fp_UO = water_uo
+  output_Pe_Cr_numbers = true
+[]
+
 [UserObjects]
   [./water_uo]
     type = TigerFluidConst
@@ -27,7 +32,6 @@
 [Materials]
   [./matrix_h]
     type = TigerRockMaterialH
-    fp_UO = water_uo
     kf_UO = matrix_uo1
     scaling_factor = 300
     porosity = 0.01
@@ -36,7 +40,6 @@
   [../]
   [./matrix_t]
     type = TigerRockMaterialT
-    fp_UO = water_uo
     porosity = 0.01
     scaling_factor = 1.0
     conductivity_type = isotropic
@@ -49,17 +52,12 @@
   [./matrix_th]
     type = TigerAdvectionMaterialTH
     scaling_factor = 1.0
-    fp_UO = water_uo
     pressure = pressure
     has_supg = false
-    is_supg_consistent = true
-    supg_eff_length = max
-    supg_coeficient = transient_brooks
     block = 'matrix'
-  [../]
+    [../]
   [./fracure_h]
     type = TigerRockMaterialH
-    fp_UO = water_uo
     kf_UO = fracture_uo1
     porosity = 1.0
     compressibility = 4.0e-10
@@ -68,7 +66,6 @@
   [../]
   [./fracture_t]
     type = TigerRockMaterialT
-    fp_UO = water_uo
     porosity = 1.0
     conductivity_type = isotropic
     mean_calculation_type = geometric
@@ -81,12 +78,8 @@
   [./fracture_th]
     type = TigerAdvectionMaterialTH
     scaling_factor = 0.0001
-    fp_UO = water_uo
     pressure = pressure
     has_supg = false
-    is_supg_consistent = true
-    supg_eff_length = max
-    supg_coeficient = transient_brooks
     block = 'frac'
   [../]
 []
@@ -121,14 +114,14 @@
     family = MONOMIAL
     order = CONSTANT
   [../]
-  #[./pe]
-  #  family = MONOMIAL
-  #  order = CONSTANT
-  #[../]
-  #[./cr]
-  #  family = MONOMIAL
-  #  order = CONSTANT
-  #[../]
+  [./pe]
+    family = MONOMIAL
+    order = CONSTANT
+  [../]
+  [./cr]
+    family = MONOMIAL
+    order = CONSTANT
+  [../]
 []
 
 [AuxKernels]
@@ -144,22 +137,22 @@
     variable =  vy
     component = y
   [../]
-  #[./pe_ker]
-  #  type = MaterialRealAux
-  #  property = 'peclet_number'
-  #  variable = pe
-  #[../]
-  #[./cr_ker]
-  #  type = MaterialRealAux
-  #  property = 'courant_number'
-  #  variable = cr
-  #[../]
+  [./pe_ker]
+    type = MaterialRealAux
+    property = 'peclet_number'
+    variable = pe
+  [../]
+  [./cr_ker]
+    type = MaterialRealAux
+    property = 'courant_number'
+    variable = cr
+  [../]
 []
 
 [Variables]
   [./pressure]
     initial_condition = 1e7
-    scaling = 1e7
+    #scaling = 1e7
   [../]
   [./temperature]
     initial_condition = 200
@@ -208,6 +201,7 @@
 [Preconditioning]
   [./fieldsplit]
     type = FSP
+    full = true
     topsplit = pT
     [./pT]
       splitting = 'p T'

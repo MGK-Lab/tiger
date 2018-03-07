@@ -41,6 +41,7 @@ protected:
   virtual Real computeQpResidual() override;
   virtual Real computeQpJacobian() override;
 
+  const MaterialProperty<Real> & _scaling_lowerD;
   const MaterialProperty<RankTwoTensor> & _lambda_sf;
 };
 

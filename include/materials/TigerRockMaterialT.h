@@ -66,6 +66,8 @@ protected:
   MaterialProperty<RankTwoTensor> & _lambda_sf;
   /// coefficient for time derivative kernel
   MaterialProperty<Real> & _T_Kernel_dt;
+  /// scaling factor for lowerdimensional element
+  MaterialProperty<Real> & _scaling_lowerD;
 };
 
 #endif /* TIGERROCKMATERIALT_H */
