@@ -45,6 +45,7 @@ private:
   Real DoublyAsymptotic(Real) const;
   Real Critical(Real) const;
 
+  bool _has_user_vel;
   bool _has_PeCr;
   bool _has_supg;
   bool _pure_advection;
@@ -57,10 +58,9 @@ protected:
   MooseEnum _method;
 
   const MaterialProperty<Real> * _lambda_sf_eq;
-  const MaterialProperty<Real> & _scaling_lowerD_H;
   const VariableGradient & _gradient_pore_press;
-  const MaterialProperty<RankTwoTensor> & _k_vis;
-  const MaterialProperty<RealVectorValue> & _rhof_g;
+  const MaterialProperty<RankTwoTensor> * _k_vis;
+  const MaterialProperty<RealVectorValue> * _rhof_g;
   MaterialProperty<RealVectorValue> & _dv;
   MaterialProperty<RealVectorValue> * _SUPG_p;
   MaterialProperty<Real> * _Pe;
@@ -68,6 +68,7 @@ protected:
   MaterialProperty<RealVectorValue> * _SUPG_p_consistent;
   MaterialProperty<Real> & _rho_cp_f;
   MaterialProperty<Real> & _scaling_lowerD;
+  Function * _vel_func;
 };
 
 #endif /* TIGERADVECTIONMATERIALTH_H */

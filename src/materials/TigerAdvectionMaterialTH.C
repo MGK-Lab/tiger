@@ -24,6 +24,7 @@
 #include "TigerAdvectionMaterialTH.h"
 #include "MooseMesh.h"
 #include "libmesh/quadrature.h"
+#include "MooseParsedVectorFunction.h"
 
 template <>
 InputParameters
@@ -37,32 +38,38 @@ validParams<TigerAdvectionMaterialTH>()
   params.addParam<MooseEnum>("supg_eff_length", EleLen = "min", "The characteristic element length for SU/PG.");
   MooseEnum Method("optimal=1 doubly_asymptotic=2 critical=3 transient_brooks=4 transient_tezduyar=5");
   params.addParam<MooseEnum>("supg_coeficient", Method = "optimal" , "The method for calculating SU/PG coefficent (tau)");
+  params.addParam<FunctionName>("user_velocity", "a vector function to define the velocity manually (decoupled)");
   params.addClassDescription("Advection related properties");
   return params;
 }
 
 TigerAdvectionMaterialTH::TigerAdvectionMaterialTH(const InputParameters & parameters)
   : TigerMaterialGeneral(parameters),
+  _has_user_vel(parameters.isParamSetByUser("user_velocity")),
   _has_PeCr(getParam<bool>("output_Pe_Cr_numbers")),
   _has_supg(getParam<bool>("has_supg")),
   _pure_advection(!hasMaterialProperty<Real>("conductivity_mixture_equivalent")),
   _is_supg_consistent(getParam<bool>("is_supg_consistent")),
   _effective_length(getParam<MooseEnum>("supg_eff_length")),
   _method(getParam<MooseEnum>("supg_coeficient")),
-  _scaling_lowerD_H(getMaterialProperty<Real>("lowerD_scale_factor_h")),
   _gradient_pore_press(coupledGradient("pressure")),
-  _k_vis(getMaterialProperty<RankTwoTensor>("permeability_by_viscosity")),
-  _rhof_g(getMaterialProperty<RealVectorValue>("rho_times_gravity")),
   _dv(declareProperty<RealVectorValue>("darcy_velocity")),
   _SUPG_p(_has_supg ? &declareProperty<RealVectorValue>("petrov_supg_p_function") : NULL),
   _Pe(_has_PeCr ? &declareProperty<Real>("peclet_number") : NULL),
   _Cr(_has_PeCr ? &declareProperty<Real>("courant_number") : NULL),
   _SUPG_p_consistent(_is_supg_consistent ? &declareProperty<RealVectorValue>("petrov_supg_p_function_consistent") : NULL),
   _rho_cp_f(declareProperty<Real>("fluid_thermal_capacity")),
-  _scaling_lowerD(declareProperty<Real>("lowerD_scale_factor_th"))
+  _scaling_lowerD(declareProperty<Real>("lowerD_scale_factor_th")),
+  _vel_func(_has_user_vel ? &getFunction("user_velocity") : NULL)
 {
   if (!_pure_advection)
     _lambda_sf_eq = &getMaterialProperty<Real>("conductivity_mixture_equivalent");
+
+  if (!_has_user_vel)
+  {
+    _k_vis = &getMaterialProperty<RankTwoTensor>("permeability_by_viscosity");
+    _rhof_g = &getMaterialProperty<RealVectorValue>("rho_times_gravity");
+  }
 }
 
 void
@@ -70,9 +77,15 @@ TigerAdvectionMaterialTH::computeQpProperties()
 {
   _scaling_lowerD[_qp] = LowerDScaling();
 
-  _rho_cp_f[_qp] = _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp]);
+  if (!_pure_advection)
+    _rho_cp_f[_qp] = _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp]);
+  else
+    _rho_cp_f[_qp] = 1.0;
 
-  _dv[_qp] = -_k_vis[_qp] * (_gradient_pore_press[_qp] - _rhof_g[_qp]);
+  if (_has_user_vel)
+    _dv[_qp] = _vel_func->vectorValue(_t, _q_point[_qp]);
+  else
+    _dv[_qp] = -(*_k_vis)[_qp] * (_gradient_pore_press[_qp] - (*_rhof_g)[_qp]);
 
   Real norm_v, h_ele, alpha, lambda;
 
@@ -80,19 +93,24 @@ TigerAdvectionMaterialTH::computeQpProperties()
   {
     norm_v = _dv[_qp].norm();
     h_ele = EEL(_current_elem);
-      if (_pure_advection)
-      {
-        alpha = 1.0e10;
-        lambda = 0.0;
-      }
-      else
-      {
-        alpha = 0.5 * norm_v * h_ele / (*_lambda_sf_eq)[_qp];
-        lambda = (*_lambda_sf_eq)[_qp];
-      }
+    if (_pure_advection)
+    {
+      alpha = 1.0e10;
+      lambda = 0.0;
+    }
+    else
+    {
+      alpha = 0.5 * norm_v * h_ele / (*_lambda_sf_eq)[_qp];
+      lambda = (*_lambda_sf_eq)[_qp];
+    }
+  }
+
+  if (_has_PeCr)
+  {
     (*_Pe)[_qp] = alpha;
     (*_Cr)[_qp] = norm_v * _dt / h_ele;
   }
+
 
   if (_has_supg && _dv[_qp].norm()!=0.0) // should be multiplied by gradient of the test function to build the Petrov P function
   {
