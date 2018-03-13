@@ -57,7 +57,7 @@ TigerAdvectionMaterialTH::TigerAdvectionMaterialTH(const InputParameters & param
   _SUPG_p(_has_supg ? &declareProperty<RealVectorValue>("petrov_supg_p_function") : NULL),
   _Pe(_has_PeCr ? &declareProperty<Real>("peclet_number") : NULL),
   _Cr(_has_PeCr ? &declareProperty<Real>("courant_number") : NULL),
-  _SUPG_p_consistent(_is_supg_consistent ? &declareProperty<RealVectorValue>("petrov_supg_p_function_consistent") : NULL),
+  _SUPG_p_consistent((_is_supg_consistent && _has_supg) ? &declareProperty<RealVectorValue>("petrov_supg_p_function_consistent") : NULL),
   _rho_cp_f(declareProperty<Real>("fluid_thermal_capacity")),
   _scaling_lowerD(declareProperty<Real>("lowerD_scale_factor_th")),
   _vel_func(_has_user_vel ? &getFunction("user_velocity") : NULL)
