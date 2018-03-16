@@ -69,6 +69,7 @@ protected:
   MaterialProperty<Real> & _rho_cp_f;
   MaterialProperty<Real> & _scaling_lowerD;
   Function * _vel_func;
+  Real _supg_scale;
 };
 
 #endif /* TIGERADVECTIONMATERIALTH_H */

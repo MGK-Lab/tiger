@@ -224,7 +224,7 @@
 
 [Executioner]
   type = Transient
-  dt = 2628000
+  num_steps = 300
   end_time = 946080000
   solve_type = NEWTON
 []

@@ -38,6 +38,7 @@ validParams<TigerAdvectionMaterialTH>()
   params.addParam<MooseEnum>("supg_eff_length", EleLen = "min", "The characteristic element length for SU/PG.");
   MooseEnum Method("optimal=1 doubly_asymptotic=2 critical=3 transient_brooks=4 transient_tezduyar=5");
   params.addParam<MooseEnum>("supg_coeficient", Method = "optimal" , "The method for calculating SU/PG coefficent (tau)");
+  params.addParam<Real>("supg_coeficient_scale", 1.0 , "The user defined factor to scale SU/PG coefficent (tau)");
   params.addParam<FunctionName>("user_velocity", "a vector function to define the velocity manually (decoupled)");
   params.addClassDescription("Advection related properties");
   return params;
@@ -60,7 +61,9 @@ TigerAdvectionMaterialTH::TigerAdvectionMaterialTH(const InputParameters & param
   _SUPG_p_consistent((_is_supg_consistent && _has_supg) ? &declareProperty<RealVectorValue>("petrov_supg_p_function_consistent") : NULL),
   _rho_cp_f(declareProperty<Real>("fluid_thermal_capacity")),
   _scaling_lowerD(declareProperty<Real>("lowerD_scale_factor_th")),
-  _vel_func(_has_user_vel ? &getFunction("user_velocity") : NULL)
+  _vel_func(_has_user_vel ? &getFunction("user_velocity") : NULL),
+  _supg_scale(getParam<Real>("supg_coeficient_scale"))
+
 {
   if (!_pure_advection)
     _lambda_sf_eq = &getMaterialProperty<Real>("conductivity_mixture_equivalent");
@@ -114,7 +117,7 @@ TigerAdvectionMaterialTH::computeQpProperties()
 
   if (_has_supg && _dv[_qp].norm()!=0.0) // should be multiplied by gradient of the test function to build the Petrov P function
   {
-    (*_SUPG_p)[_qp] = tau(norm_v, alpha, lambda, _dt, h_ele) * _dv[_qp];
+    (*_SUPG_p)[_qp] = _supg_scale * tau(norm_v, alpha, lambda, _dt, h_ele) * _dv[_qp];
     if (_is_supg_consistent)
       (*_SUPG_p_consistent)[_qp] = (*_SUPG_p)[_qp];
   }
