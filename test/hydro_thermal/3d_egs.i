@@ -24,7 +24,7 @@
 #    [./error_frac]
 #      indicator = ind
 #      type = ErrorFractionMarker
-#      refine = 0.05
+#      refine = 0.01
 #    [../]
 #  [../]
 #  [./Indicators]
@@ -174,6 +174,7 @@
     is_supg_consistent = true
     supg_eff_length = average
     supg_coeficient = transient_brooks
+    supg_coeficient_scale = 1
     scaling_factor = 0.01
     block = 'frac_vertical frac_inclined'
   [../]
@@ -334,7 +335,7 @@
       splitting = 'p T'
       splitting_type = multiplicative
       petsc_options_iname = '-ksp_type -pc_type -ksp_rtol -ksp_max_it -snes_type -snes_linesearch_type -snes_atol -snes_rtol -snes_max_it'
-      petsc_options_value = 'fgmres lu 1.0e-12 25 newtonls basic 1.0e-3 1.0e-20 20'
+      petsc_options_value = 'fgmres lu 1.0e-12 25 newtonls basic 1.0e-1 1.0e-20 20'
     [../]
     [./p]
       vars = 'pressure'
@@ -352,16 +353,23 @@
 [Executioner]
   type = Transient
   end_time = 946080000
+  #dtmax = 2.59e6
   dt = 2.59e6
   solve_type = NEWTON
   #[./TimeStepper]
   #  type = SolutionTimeAdaptiveDT
-  #   dt = 3600
+  #   dt = 60
   #  percent_change = 0.5
   #[../]
+  [./TimeIntegrator]
+    type = CrankNicolson
+  [../]
 []
 
 [Outputs]
-  exodus = true
+  [./maz]
+    type = Exodus
+    file_base = 3d_egs/3d_egs
+  [../]
   print_linear_residuals = true
 []

@@ -30,6 +30,9 @@ InputParameters
 validParams<TigerAdvectionKernelTH>()
 {
   InputParameters params = validParams<Kernel>();
+
+  params.addCoupledVar("pressure_varible", 0 ,"The variable representing the pressure.");
+
   return params;
 }
 
@@ -39,8 +42,11 @@ TigerAdvectionKernelTH::TigerAdvectionKernelTH(const InputParameters & parameter
   _scaling_lowerD(getMaterialProperty<Real>("lowerD_scale_factor_th")),
   _rho_cp_f(getMaterialProperty<Real>("fluid_thermal_capacity")),
   _SUPG_p(_has_supg ? &getMaterialProperty<RealVectorValue>("petrov_supg_p_function") : NULL),
-  _darcy_v(getMaterialProperty<RealVectorValue>("darcy_velocity"))
+  _darcy_v(getMaterialProperty<RealVectorValue>("darcy_velocity")),
+  _pressure_var(coupled("pressure_varible"))
 {
+  if (parameters.isParamSetByUser("pressure_varible"))
+    _k_vis = &getMaterialProperty<RankTwoTensor>("permeability_by_viscosity");
 }
 
 Real
@@ -65,4 +71,23 @@ TigerAdvectionKernelTH::computeQpJacobian()
     R = _rho_cp_f[_qp] * (_test[_i][_qp] * ( _darcy_v[_qp] * _grad_phi[_j][_qp]));
 
   return _scaling_lowerD[_qp] * R;
+}
+
+Real
+TigerAdvectionKernelTH::computeQpOffDiagJacobian(unsigned int jvar)
+{
+  Real R;
+  if (jvar == _pressure_var)
+  {
+    if (_has_supg)
+      R = _rho_cp_f[_qp] * ((_test[_i][_qp] + (*_SUPG_p)[_qp] * _grad_test[_i][_qp]) * ( -(*_k_vis)[_qp] * _grad_phi[_j][_qp] * _grad_u[_qp]));
+    else
+      R = _rho_cp_f[_qp] * (_test[_i][_qp] * ( -(*_k_vis)[_qp] * _grad_phi[_j][_qp] * _grad_u[_qp]));
+
+    R *=_scaling_lowerD[_qp];
+  }
+  else
+    R = 0.0;
+
+  return R;
 }

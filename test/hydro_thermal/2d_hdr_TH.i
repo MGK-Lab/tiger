@@ -152,11 +152,11 @@
 [Variables]
   [./pressure]
     initial_condition = 1e7
-    #scaling = 1e7
+    scaling = 1e9
   [../]
   [./temperature]
     initial_condition = 200
-    #scaling = 200
+    #scaling = 1e2
   [../]
 []
 
@@ -187,6 +187,7 @@
   [./T_advect]
     type = TigerAdvectionKernelTH
     variable = temperature
+    pressure_varible = pressure
   [../]
   [./T_diff]
     type = TigerDiffusionKernelT
@@ -199,26 +200,24 @@
 []
 
 [Preconditioning]
-  [./fieldsplit]
-    type = FSP
+  active = 'p1'
+  [./p1]
+    type = SMP
     full = true
-    topsplit = pT
-    [./pT]
-      splitting = 'p T'
-      splitting_type = multiplicative
-      petsc_options_iname = '-ksp_type -ksp_rtol -ksp_max_it -snes_type -snes_linesearch_type -snes_atol -snes_rtol -snes_max_it'
-      petsc_options_value = 'fgmres 1.0e-12 50 newtonls basic 1.0e-04 1.0e-12 25'
-    [../]
-    [./p]
-      vars = 'pressure'
-      petsc_options_iname = '-ksp_type -pc_type -sub_pc_type -sub_pc_factor_levels -ksp_rtol -ksp_max_it'
-      petsc_options_value = 'fgmres asm ilu 1 1e-12 20'
-    [../]
-    [./T]
-      vars = 'temperature'
-      petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_rtol -ksp_max_it'
-      petsc_options_value = 'preonly hypre boomeramg 1e-12 20'
-    [../]
+    petsc_options_iname = '-pc_type -pc_hypre_type -ksp_rtol -ksp_atol -ksp_max_it -snes_rtol -snes_atol'
+    petsc_options_value = 'hypre boomeramg 1e-12 1e-10 20 1e-8 1e-10'
+  [../]
+  [./p2]
+    type = SMP
+    full = true
+    petsc_options_iname = '-pc_type -sub_pc_type -ksp_rtol -ksp_atol -ksp_max_it -snes_rtol -snes_atol -sub_pc_factor_shift_type'
+    petsc_options_value = 'asm lu 1e-12 1e-10 20 1e-8 1e-10 NONZERO'
+  [../]
+  [./p3]
+    type = SMP
+    full = true
+    petsc_options_iname = '-pc_type -ksp_type -sub_pc_type -pc_asm_overlap -ksp_rtol -ksp_atol -ksp_max_it -snes_rtol -snes_atol -sub_pc_factor_shift_type'
+    petsc_options_value = 'asm gmres lu 2 1e-12 1e-10 20 1e-8 1e-10 NONZERO'
   [../]
 []
 
