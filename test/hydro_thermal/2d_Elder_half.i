@@ -1,27 +1,28 @@
 [Mesh]
   type = FileMesh
-  file = elder.msh
-  uniform_refine = 2
+  file = Elder_half.msh
 []
 
-#[Adaptivity]
-#  max_h_level = 2
-#  cycles_per_step = 1
-#  marker = error_frac
-#  [./Markers]
-#    [./error_frac]
-#      indicator = ind
-#      type = ErrorFractionMarker
-#      refine = 0.05
-#    [../]
-#  [../]
-#  [./Indicators]
-#    [./ind]
-#      type = GradientJumpIndicator
-#      variable = temperature
-#    [../]
-#  [../]
-#[]
+[Adaptivity]
+  max_h_level = 2
+  initial_marker = error_frac
+  marker = error_frac
+  cycles_per_step = 2
+  [./Markers]
+    [./error_frac]
+      indicator = ind
+      type = ErrorFractionMarker
+      refine = 0.8
+      coarsen = 0.01
+    [../]
+  [../]
+  [./Indicators]
+    [./ind]
+      type = GradientJumpIndicator
+      variable = temperature
+    [../]
+  [../]
+[]
 
 [UserObjects]
   [./water_uo]
@@ -64,7 +65,7 @@
     has_supg = true
     is_supg_consistent = true
     supg_eff_length = max
-    supg_coeficient = transient_brooks
+    supg_coeficient = critical
     output_Pe_Cr_numbers = true
   [../]
 []
@@ -73,14 +74,14 @@
   [./tp_p]
     type = DirichletBC
     variable = pore_pressure
-    boundary = 'tp2 tp3'
+    boundary = tp
     value = 0
   [../]
   [./top_t]
     type = DirichletBC
     variable = temperature
     boundary = t2
-    value = 1
+    value =  1
   [../]
   [./bottom_t]
     type = DirichletBC
@@ -190,24 +191,24 @@
 []
 
 [Preconditioning]
-  active = 'p3'
+  active = 'p1'
   [./p1]
     type = SMP
     full = true
-    petsc_options_iname = '-pc_type -pc_hypre_type -ksp_rtol -ksp_atol -ksp_max_it -snes_rtol -snes_atol'
-    petsc_options_value = 'hypre boomeramg 1e-12 1e-10 20 1e-8 1e-10'
+    petsc_options_iname = '-pc_type -pc_hypre_type'
+    petsc_options_value = 'hypre boomeramg'
   [../]
   [./p2]
     type = SMP
     full = true
-    petsc_options_iname = '-pc_type -sub_pc_type -ksp_rtol -ksp_atol -ksp_max_it -snes_rtol -snes_atol -sub_pc_factor_shift_type'
-    petsc_options_value = 'asm lu 1e-12 1e-10 20 1e-8 1e-10 NONZERO'
+    petsc_options_iname = '-pc_type -sub_pc_type -sub_pc_factor_shift_type'
+    petsc_options_value = 'asm lu NONZERO'
   [../]
   [./p3]
     type = SMP
     full = true
-    petsc_options_iname = '-pc_type -ksp_type -sub_pc_type -pc_asm_overlap -ksp_rtol -ksp_atol -ksp_max_it -snes_rtol -snes_atol -sub_pc_factor_shift_type'
-    petsc_options_value = 'asm gmres lu 2 1e-12 1e-10 20 1e-8 1e-10 NONZERO'
+    petsc_options_iname = '-pc_type -ksp_type -sub_pc_type -pc_asm_overlap -sub_pc_factor_shift_type'
+    petsc_options_value = 'asm gmres lu 2 NONZERO'
   [../]
 []
 
@@ -216,16 +217,18 @@
   num_steps = 2000
   end_time = 6.28992e8
   solve_type = NEWTON
-  #[./TimeIntegrator]
-  #  type = BDF2
-  #[../]
+  l_tol = 1e-8
+  l_max_its = 25
+  nl_rel_tol = 1e-09
+  nl_abs_tol = 1e-14
+  nl_max_its = 50
+  scheme = implicit-euler
 []
 
 [Outputs]
   print_linear_residuals = false
   [./maz]
     type = Exodus
-    file_base = elder/elder
-    interval = 10
+    file_base = elder/elder_half
   [../]
 []

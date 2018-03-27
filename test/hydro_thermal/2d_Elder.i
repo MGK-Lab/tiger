@@ -190,35 +190,38 @@
 []
 
 [Preconditioning]
-  active = 'p3'
+  active = 'p1'
   [./p1]
     type = SMP
     full = true
-    petsc_options_iname = '-pc_type -pc_hypre_type -ksp_rtol -ksp_atol -ksp_max_it -snes_rtol -snes_atol'
-    petsc_options_value = 'hypre boomeramg 1e-12 1e-10 20 1e-8 1e-10'
+    petsc_options_iname = '-pc_type -pc_hypre_type'
+    petsc_options_value = 'hypre boomeramg'
   [../]
   [./p2]
     type = SMP
     full = true
-    petsc_options_iname = '-pc_type -sub_pc_type -ksp_rtol -ksp_atol -ksp_max_it -snes_rtol -snes_atol -sub_pc_factor_shift_type'
-    petsc_options_value = 'asm lu 1e-12 1e-10 20 1e-8 1e-10 NONZERO'
+    petsc_options_iname = '-pc_type -sub_pc_type -sub_pc_factor_shift_type'
+    petsc_options_value = 'asm lu NONZERO'
   [../]
   [./p3]
     type = SMP
     full = true
-    petsc_options_iname = '-pc_type -ksp_type -sub_pc_type -pc_asm_overlap -ksp_rtol -ksp_atol -ksp_max_it -snes_rtol -snes_atol -sub_pc_factor_shift_type'
-    petsc_options_value = 'asm gmres lu 2 1e-12 1e-10 20 1e-8 1e-10 NONZERO'
+    petsc_options_iname = '-pc_type -ksp_type -sub_pc_type -pc_asm_overlap -sub_pc_factor_shift_type'
+    petsc_options_value = 'asm gmres lu 2 NONZERO'
   [../]
 []
 
 [Executioner]
   type = Transient
-  num_steps = 2000
+  num_steps = 3000
   end_time = 6.28992e8
   solve_type = NEWTON
-  #[./TimeIntegrator]
-  #  type = BDF2
-  #[../]
+  l_tol = 1e-8
+  l_max_its = 25
+  nl_rel_tol = 1e-08
+  nl_abs_tol = 1e-14
+  nl_max_its = 50
+  scheme = implicit-euler
 []
 
 [Outputs]
@@ -226,6 +229,5 @@
   [./maz]
     type = Exodus
     file_base = elder/elder
-    interval = 10
   [../]
 []
