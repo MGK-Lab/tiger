@@ -47,7 +47,8 @@ protected:
 
   const MaterialProperty<Real> & _scaling_lowerD;
   const MaterialProperty<Real> & _rho_cp_f;
-  const MaterialProperty<RealVectorValue> * _SUPG_p;
+  const MaterialProperty<RealVectorValue> & _SUPG_p;
+  const MaterialProperty<bool> & _SUPG_ind;
   const MaterialProperty<RealVectorValue> & _darcy_v;
   unsigned int _pressure_var;
   const MaterialProperty<RankTwoTensor> * _k_vis;

@@ -55,18 +55,21 @@ TigerAdvectionMaterialTH::TigerAdvectionMaterialTH(const InputParameters & param
   _method(getParam<MooseEnum>("supg_coeficient")),
   _gradient_pore_press(coupledGradient("pressure")),
   _dv(declareProperty<RealVectorValue>("darcy_velocity")),
-  _SUPG_p(_has_supg ? &declareProperty<RealVectorValue>("petrov_supg_p_function") : NULL),
+  _SUPG_p(declareProperty<RealVectorValue>("petrov_supg_p_function")),
   _Pe(_has_PeCr ? &declareProperty<Real>("peclet_number") : NULL),
   _Cr(_has_PeCr ? &declareProperty<Real>("courant_number") : NULL),
-  _SUPG_p_consistent((_is_supg_consistent && _has_supg) ? &declareProperty<RealVectorValue>("petrov_supg_p_function_consistent") : NULL),
   _rho_cp_f(declareProperty<Real>("fluid_thermal_capacity")),
   _scaling_lowerD(declareProperty<Real>("lowerD_scale_factor_th")),
   _vel_func(_has_user_vel ? &getFunction("user_velocity") : NULL),
-  _supg_scale(getParam<Real>("supg_coeficient_scale"))
-
+  _supg_scale(getParam<Real>("supg_coeficient_scale")),
+  _SUPG_ind(declareProperty<bool>("supg_indicator")),
+  _SUPG_consistency_ind(declareProperty<bool>("supg_consistent_indicator"))
 {
   if (!_pure_advection)
+  {
     _lambda_sf_eq = &getMaterialProperty<Real>("conductivity_mixture_equivalent");
+    _T_Kernel_dt = &getMaterialProperty<Real>("T_Kernel_dt_coefficient");
+  }
 
   if (!_has_user_vel)
   {
@@ -103,8 +106,8 @@ TigerAdvectionMaterialTH::computeQpProperties()
     }
     else
     {
-      alpha = 0.5 * norm_v * h_ele / (*_lambda_sf_eq)[_qp];
-      lambda = (*_lambda_sf_eq)[_qp];
+      lambda = (*_lambda_sf_eq)[_qp] / (*_T_Kernel_dt)[_qp];
+      alpha = 0.5 * norm_v * h_ele / lambda;
     }
   }
 
@@ -117,9 +120,17 @@ TigerAdvectionMaterialTH::computeQpProperties()
 
   if (_has_supg && _dv[_qp].norm()!=0.0) // should be multiplied by gradient of the test function to build the Petrov P function
   {
-    (*_SUPG_p)[_qp] = _supg_scale * tau(norm_v, alpha, lambda, _dt, h_ele) * _dv[_qp];
+    _SUPG_p[_qp] = _supg_scale * tau(norm_v, alpha, lambda, _dt, h_ele) * _dv[_qp];
+
     if (_is_supg_consistent)
-      (*_SUPG_p_consistent)[_qp] = (*_SUPG_p)[_qp];
+      _SUPG_consistency_ind[_qp] = true;
+
+    _SUPG_ind[_qp] = true;
+  }
+  else
+  {
+    _SUPG_consistency_ind[_qp] = false;
+    _SUPG_ind[_qp] = false;
   }
 }
 
@@ -139,7 +150,7 @@ TigerAdvectionMaterialTH::tau(Real & norm_v, Real & alpha, Real & diff, Real & d
     case 3:
       tau += Critical(alpha) * h_ele / (2.0 * norm_v);
       break;
-    case 4: // Brooks & Hughes
+    case 4: // Brooks & Hughes 1982
       tau += h_ele / (sqrt(15.0) * norm_v);
       break;
     case 5: // Tezduyar & Osawa 2000

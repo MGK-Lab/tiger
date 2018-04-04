@@ -58,18 +58,20 @@ protected:
   MooseEnum _method;
 
   const MaterialProperty<Real> * _lambda_sf_eq;
+  const MaterialProperty<Real> * _T_Kernel_dt;
   const VariableGradient & _gradient_pore_press;
   const MaterialProperty<RankTwoTensor> * _k_vis;
   const MaterialProperty<RealVectorValue> * _rhof_g;
   MaterialProperty<RealVectorValue> & _dv;
-  MaterialProperty<RealVectorValue> * _SUPG_p;
+  MaterialProperty<RealVectorValue> & _SUPG_p;
   MaterialProperty<Real> * _Pe;
   MaterialProperty<Real> * _Cr;
-  MaterialProperty<RealVectorValue> * _SUPG_p_consistent;
   MaterialProperty<Real> & _rho_cp_f;
   MaterialProperty<Real> & _scaling_lowerD;
   Function * _vel_func;
   Real _supg_scale;
+  MaterialProperty<bool> & _SUPG_ind;
+  MaterialProperty<bool> & _SUPG_consistency_ind;
 };
 
 #endif /* TIGERADVECTIONMATERIALTH_H */

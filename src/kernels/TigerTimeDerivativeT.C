@@ -33,9 +33,7 @@ validParams<TigerTimeDerivativeT>()
 
 TigerTimeDerivativeT::TigerTimeDerivativeT(const InputParameters & parameters)
   : TimeDerivative(parameters),
-    _has_supg(hasMaterialProperty<RealVectorValue>("petrov_supg_p_function_consistent")),
     _pure_advection(!hasMaterialProperty<Real>("conductivity_mixture_equivalent")),
-    _SUPG_p(_has_supg ? &getMaterialProperty<RealVectorValue>("petrov_supg_p_function_consistent") : NULL),
     _T_Kernel_dt(!_pure_advection ? getMaterialProperty<Real>("T_Kernel_dt_coefficient") : getMaterialProperty<Real>("fluid_thermal_capacity"))
 {
 }
@@ -43,23 +41,11 @@ TigerTimeDerivativeT::TigerTimeDerivativeT(const InputParameters & parameters)
 Real
 TigerTimeDerivativeT::computeQpResidual()
 {
-  Real R;
-  if (_has_supg)
-    R = _test[_i][_qp] + (*_SUPG_p)[_qp] * _grad_test[_i][_qp];
-  else
-    R = _test[_i][_qp];
-
-  return _T_Kernel_dt[_qp] * R * _u_dot[_qp];
+  return _T_Kernel_dt[_qp] * TimeDerivative::computeQpResidual();
 }
 
 Real
 TigerTimeDerivativeT::computeQpJacobian()
 {
-  Real R;
-  if (_has_supg)
-    R = _test[_i][_qp] + (*_SUPG_p)[_qp] * _grad_test[_i][_qp];
-  else
-    R = _test[_i][_qp];
-
-  return _T_Kernel_dt[_qp] * R * _phi[_j][_qp] * _du_dot_du[_qp];
+  return _T_Kernel_dt[_qp] * TimeDerivative::computeQpJacobian();
 }

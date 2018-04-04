@@ -28,13 +28,12 @@ public:
   TigerTimeDerivativeT(const InputParameters & parameters);
 
 private:
-  bool _has_supg;
   bool _pure_advection;
+
 protected:
   virtual Real computeQpResidual() override;
   virtual Real computeQpJacobian() override;
 
-  const MaterialProperty<RealVectorValue> * _SUPG_p;
   const MaterialProperty<Real> & _T_Kernel_dt;
 };
 

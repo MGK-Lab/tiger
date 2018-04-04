@@ -3,8 +3,10 @@
   file = 3d_egs.e
   boundary_id = '1 2 3 4 5 6'
   boundary_name = 'back front left right bottom top'
-  block_id = '0 1 2 3 4 5'
-  block_name = 'unit_top unit_bottom frac_inclined frac_vertical well_vertical well_inclined'
+  #block_id = '0 1 2 3 4 5'
+  #block_name = 'unit_top unit_bottom frac_inclined frac_vertical well_vertical well_inclined'
+  block_id = '0 1 4 5'
+  block_name = 'unit_top unit_bottom well_vertical well_inclined'
 []
 
 [MeshModifiers]
@@ -13,6 +15,14 @@
     new_boundary = inject
     coord = '-300.0 100.0 -1900.0'
     tolerance = 1
+  [../]
+  [./frac1]
+    type = BlockDeleter
+    block_id = 2
+  [../]
+  [./frac2]
+    type = BlockDeleter
+    block_id = 3
   [../]
 []
 
@@ -54,7 +64,7 @@
   [./ub_uo]
     type =  TigerPermeabilityConst
     permeability_type = isotropic
-    k0 = '1.0e-16'
+    k0 = '1.0e-15'
   [../]
   [./fi_uo]
     type =  TigerPermeabilityConst
@@ -83,7 +93,7 @@
   [./ut_h]
     type = TigerRockMaterialH
     kf_UO = ut_uo
-    porosity = 0.1
+    porosity = 0.05
     compressibility = 1.0e-10
     block = unit_top
   [../]
@@ -94,22 +104,22 @@
     compressibility = 1.0e-10
     block = unit_bottom
   [../]
-  [./fv_h]
-    type = TigerRockMaterialH
-    scaling_factor = 0.01
-    kf_UO = fv_uo
-    porosity = 1
-    compressibility = 4.0e-10
-    block = frac_vertical
-  [../]
-  [./fi_h]
-    type = TigerRockMaterialH
-    scaling_factor = 0.01
-    kf_UO = fi_uo
-    porosity = 1
-    compressibility = 4.0e-10
-    block = frac_inclined
-  [../]
+  #[./fv_h]
+  #  type = TigerRockMaterialH
+  #  scaling_factor = 0.01
+  #  kf_UO = fv_uo
+  #  porosity = 1
+  #  compressibility = 4.0e-10
+  #  block = frac_vertical
+  #[../]
+  #[./fi_h]
+  #  type = TigerRockMaterialH
+  #  scaling_factor = 0.01
+  #  kf_UO = fi_uo
+  #  porosity = 1
+  #  compressibility = 4.0e-10
+  #  block = frac_inclined
+  #[../]
   [./w_h]
     type = TigerRockMaterialH
     scaling_factor = 0.108
@@ -120,10 +130,10 @@
   [../]
   [./ut_t]
     type = TigerRockMaterialT
-    porosity = 0.1
+    porosity = 0.05
     conductivity_type = isotropic
     mean_calculation_type = geometric
-    lambda = 2
+    lambda = 3
     density = 2600
     specific_heat = 950
     block = unit_top
@@ -133,22 +143,22 @@
     porosity = 0.05
     conductivity_type = isotropic
     mean_calculation_type = geometric
-    lambda = 3
+    lambda = 2
     density = 2600
     specific_heat = 950
     block = unit_bottom
   [../]
-  [./f_t]
-    type = TigerRockMaterialT
-    porosity = 1.0
-    conductivity_type = isotropic
-    mean_calculation_type = geometric
-    lambda = 3
-    scaling_factor = 0.01
-    density = 2600
-    specific_heat = 950
-    block = 'frac_vertical frac_inclined'
-  [../]
+  #[./f_t]
+  #  type = TigerRockMaterialT
+  #  porosity = 1.0
+  #  conductivity_type = isotropic
+  #  mean_calculation_type = geometric
+  #  lambda = 3
+  #  scaling_factor = 0.01
+  #  density = 2600
+  #  specific_heat = 950
+  #  block = 'frac_vertical frac_inclined'
+  #[../]
   [./w_t]
     type = TigerRockMaterialT
     porosity = 1.0
@@ -164,28 +174,30 @@
     type = TigerAdvectionMaterialTH
     pressure = pressure
     has_supg = true
-    is_supg_consistent = true
-    supg_eff_length = average
-    supg_coeficient = transient_brooks
+    is_supg_consistent = false
+    supg_eff_length = max
+    supg_coeficient_scale = 1
+    supg_coeficient = optimal
     block = 'unit_top unit_bottom'
   [../]
-  [./f_th]
-    type = TigerAdvectionMaterialTH
-    pressure = pressure
-    has_supg = true
-    is_supg_consistent = true
-    supg_eff_length = average
-    supg_coeficient = transient_brooks
-    scaling_factor = 0.01
-    block = 'frac_vertical frac_inclined'
-  [../]
+  #[./f_th]
+  #  type = TigerAdvectionMaterialTH
+  #  pressure = pressure
+  #  has_supg = false
+  #  is_supg_consistent = false
+  #  supg_eff_length = average
+  #  supg_coeficient = transient_brooks
+  #  supg_coeficient_scale = 1
+  #  scaling_factor = 0.01
+  #  block = 'frac_vertical frac_inclined'
+  #[../]
   [./w_th]
     type = TigerAdvectionMaterialTH
     pressure = pressure
     has_supg = true
-    is_supg_consistent = true
+    is_supg_consistent = false
     supg_eff_length = min
-    supg_coeficient = transient_brooks
+    supg_coeficient = transient_tezduyar
     scaling_factor = 0.108
     block = 'well_vertical well_inclined'
   [../]
@@ -274,19 +286,19 @@
     variable = pressure
     function = hydrostatic
   [../]
-  [./temp_ic]
-    type = FunctionIC
-    variable = temperature
-    function = temp
-  [../]
+  #[./temp_ic]
+  #  type = FunctionIC
+  #  variable = temperature
+  #  function = temp
+  #[../]
 []
 
 [Variables]
   [./pressure]
-    scaling = 1e7
+    scaling = 1e6
   [../]
   [./temperature]
-    #initial_condition = 200
+    initial_condition = 200
   [../]
 []
 
@@ -384,7 +396,7 @@
   l_tol = 1e-10
   l_max_its = 50
   nl_rel_tol = 1e-7
-  #nl_abs_tol = 1
+  nl_abs_tol = 1
   nl_max_its = 50
   #scheme = crank-nicolson
   [./TimeStepper]
@@ -397,7 +409,7 @@
 [Outputs]
   [./maz]
     type = Exodus
-    file_base = 3d_egs/3d_egs_dt_supg
+    file_base = 3d_egs/3d_egs_1
   [../]
   print_linear_residuals = true
 

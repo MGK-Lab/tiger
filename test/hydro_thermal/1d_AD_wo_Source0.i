@@ -16,7 +16,7 @@
   [./matrix_uo1]
     type =  TigerPermeabilityConst
     permeability_type = isotropic
-    k0 = '1.0e-8'
+    k0 = '1.0e-10'
   [../]
 []
 
@@ -43,18 +43,19 @@
     pressure =  pressure
     fp_UO = water_uo
     has_supg = true
+    is_supg_consistent = true
     supg_eff_length = min
     supg_coeficient = optimal
   [../]
 []
 
 [BCs]
-  [./left_h]
-    type = DirichletBC
-    variable = pressure
-    boundary = left
-    value = 1e6
-  [../]
+  #[./left_h]
+  #  type = DirichletBC
+  #  variable = pressure
+  #  boundary = left
+  #  value = 1e6
+  #[../]
   [./right_h]
     type = DirichletBC
     variable = pressure
@@ -114,12 +115,26 @@
   [./pressure]
   [../]
   [./temperature]
+    initial_condition = 1
+  [../]
+[]
+
+[DiracKernels]
+  [./pump_in]
+    type = TigerPointSourceH
+    point = '0.0 0.0 0.0'
+    mass_flux = 50.0
+    variable = pressure
   [../]
 []
 
 [Kernels]
   [./H_diff]
     type = TigerKernelH
+    variable = pressure
+  [../]
+  [./H_time]
+    type = TigerTimeDerivativeH
     variable = pressure
   [../]
   [./T_advect]
@@ -130,10 +145,16 @@
     type = TigerDiffusionKernelT
     variable = temperature
   [../]
+  [./T_time]
+    type = TigerTimeDerivativeT
+    variable = temperature
+  [../]
 []
 
 [Executioner]
-  type = Steady
+  type = Transient
+  num_steps = 50
+  end_time = 8000
   solve_type = NEWTON
   petsc_options = '-snes_ksp_ew'
   petsc_options_iname = '-ksp_type -pc_type -snes_atol -snes_rtol -snes_max_it -ksp_max_it -sub_pc_type -sub_pc_factor_shift_type'

@@ -37,16 +37,14 @@ class TigerHeatSourceT : public Kernel
 public:
   TigerHeatSourceT(const InputParameters & parameters);
 
-private:
-  bool _has_supg;
-
 protected:
   virtual Real computeQpResidual() override;
 
   const Real & _scale;
 
   Function & _function;
-  const MaterialProperty<RealVectorValue> * _SUPG_p;
+  const MaterialProperty<RealVectorValue> & _SUPG_p;
+  const MaterialProperty<bool> & _SUPG_ind;
 };
 
 #endif  //TIGERHEATSOURCET_H
