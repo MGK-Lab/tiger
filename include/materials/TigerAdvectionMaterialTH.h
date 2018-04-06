@@ -38,10 +38,11 @@ public:
   TigerAdvectionMaterialTH(const InputParameters & parameters);
 
 private:
-  Real tau(Real & norm_v, Real & alpha, Real & diff, Real & dt, Real & h_ele) const;
-  Real EEL(const Elem * ele) const;
+  Real tau(Real & norm_v, Real & alpha, Real & diff, Real & dt, Real & h_ele, const RealVectorValue & v, const RealVectorValue & h) const;
+  RealVectorValue EEL(const Elem * ele) const;
+  void ActualEEL(const Elem * ele, RealVectorValue & l, const unsigned & ind) const;
   Real Optimal(Real) const;
-  Real Temporal(Real, Real, Real, Real) const;
+  Real Temporal(const RealVectorValue &, const RealVectorValue &, Real, Real) const;
   Real DoublyAsymptotic(Real) const;
   Real Critical(Real) const;
 

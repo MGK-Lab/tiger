@@ -16,16 +16,16 @@
   [../]
 []
 
-#[Adaptivity]
+# [Adaptivity]
 #  max_h_level = 2
 #  initial_marker = error_frac
 #  marker = error_frac
-#  cycles_per_step = 1
+#  cycles_per_step = 2
 #  [./Markers]
 #    [./error_frac]
 #      indicator = ind
 #      type = ErrorFractionMarker
-#      refine = 0.6
+#      refine = 0.7
 #      coarsen = 0.1
 #    [../]
 #  [../]
@@ -35,7 +35,7 @@
 #      variable = temperature
 #    [../]
 #  [../]
-#[]
+# []
 
 [UserObjects]
   [./water_uo]
@@ -165,7 +165,7 @@
     pressure = pressure
     has_supg = true
     is_supg_consistent = true
-    supg_eff_length = average
+    supg_eff_length = min
     supg_coeficient = transient_brooks
     block = 'unit_top unit_bottom'
   [../]
@@ -174,7 +174,7 @@
     pressure = pressure
     has_supg = true
     is_supg_consistent = true
-    supg_eff_length = average
+    supg_eff_length = min
     supg_coeficient = transient_brooks
     scaling_factor = 0.01
     block = 'frac_vertical frac_inclined'
@@ -378,7 +378,7 @@
 [Executioner]
   type = Transient
   end_time = 946080000
-  dtmax = 2.59e6
+  dtmax = 31449600
   #dt = 2.59e5
   solve_type = NEWTON
   l_tol = 1e-10
@@ -389,7 +389,7 @@
   #scheme = crank-nicolson
   [./TimeStepper]
     type = SolutionTimeAdaptiveDT
-     dt = 60
+    dt = 1
     percent_change = 0.5
   [../]
 []
@@ -397,7 +397,7 @@
 [Outputs]
   [./maz]
     type = Exodus
-    file_base = 3d_egs/3d_egs_dt_supg
+    file_base = 3d_egs/3d_egs_brooks_dirmax
   [../]
   print_linear_residuals = true
 

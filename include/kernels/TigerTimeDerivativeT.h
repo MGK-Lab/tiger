@@ -35,6 +35,8 @@ protected:
   virtual Real computeQpJacobian() override;
 
   const MaterialProperty<Real> & _T_Kernel_dt;
+  const MaterialProperty<RealVectorValue> & _SUPG_p;
+  const MaterialProperty<bool> & _SUPG_ind;
 };
 
 #endif // TIGERTIMEDERIVATIVET_H

@@ -154,7 +154,7 @@
 [Executioner]
   type = Transient
   num_steps = 50
-  end_time = 8000
+  end_time = 2000
   solve_type = NEWTON
   petsc_options = '-snes_ksp_ew'
   petsc_options_iname = '-ksp_type -pc_type -snes_atol -snes_rtol -snes_max_it -ksp_max_it -sub_pc_type -sub_pc_factor_shift_type'
