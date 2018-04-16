@@ -19,8 +19,6 @@
 
 //Material
 #include "TigerRockMaterialH.h"
-#include "TigerRockMaterialT.h"
-#include "TigerAdvectionMaterialTH.h"
 
 //User Objects
 #include "TigerFluidPropertiesTP.h"
@@ -85,8 +83,6 @@ void
 TigerApp::registerObjects(Factory & factory)
 {
   registerMaterial(TigerRockMaterialH);
-  registerMaterial(TigerRockMaterialT);
-  registerMaterial(TigerAdvectionMaterialTH);
 
   registerUserObject(TigerWaterTP);
   registerUserObject(TigerWaterElder);

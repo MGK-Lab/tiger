@@ -26,6 +26,7 @@
 
 #include "TigerMaterialGeneral.h"
 #include "RankTwoTensor.h"
+#include "Function.h"
 
 class TigerUncoupledThermalMaterialTH;
 
