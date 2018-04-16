@@ -59,7 +59,7 @@ TigerAdvectionMaterialTH::TigerAdvectionMaterialTH(const InputParameters & param
   _Pe(_has_PeCr ? &declareProperty<Real>("peclet_number") : NULL),
   _Cr(_has_PeCr ? &declareProperty<Real>("courant_number") : NULL),
   _rho_cp_f(declareProperty<Real>("fluid_thermal_capacity")),
-  _scaling_lowerD(declareProperty<Real>("lowerD_scale_factor_th")),
+  _scaling_lowerD(declareProperty<Real>("lowerD_scale_factor_t")),
   _vel_func(_has_user_vel ? &getFunction("user_velocity") : NULL),
   _supg_scale(getParam<Real>("supg_coeficient_scale")),
   _SUPG_ind(declareProperty<bool>("supg_indicator")),
@@ -168,16 +168,16 @@ TigerAdvectionMaterialTH::tau(Real & norm_v, Real & alpha, Real & diff, Real & d
     switch (_method)
     {
       case 1:
-        tau = Optimal(a(0)) * std::fabs(h(0) / v(0)) +
-              Optimal(a(1)) * std::fabs(h(1) / v(1)) +
-              Optimal(a(2)) * std::fabs(h(2) / v(2));
-        tau *= 0.5;
+        tau = Optimal(a(0)) * std::fabs(h(0) * v(0)) +
+              Optimal(a(1)) * std::fabs(h(1) * v(1)) +
+              Optimal(a(2)) * std::fabs(h(2) * v(2));
+        tau *= 0.5 * v.norm_sq();
         break;
       case 2:
-        tau = DoublyAsymptotic(a(0)) * std::fabs(h(0) / v(0)) +
-              DoublyAsymptotic(a(1)) * std::fabs(h(1) / v(1)) +
-              DoublyAsymptotic(a(2)) * std::fabs(h(2) / v(2));
-        tau *= 0.5;
+        tau = DoublyAsymptotic(a(0)) * std::fabs(h(0) * v(0)) +
+              DoublyAsymptotic(a(1)) * std::fabs(h(1) * v(1)) +
+              DoublyAsymptotic(a(2)) * std::fabs(h(2) * v(2));
+        tau *= 0.5 * v.norm_sq();
         break;
       case 3:
         tau = Critical(a(0)) * std::fabs(h(0) * v(0)) +
@@ -302,21 +302,22 @@ TigerAdvectionMaterialTH::ActualEEL(const Elem * ele, RealVectorValue & l, const
       switch (ind)
       {
         case 4: // min
-          l(0) = std::min(l(0), diff(0));
-          l(1) = std::min(l(1), diff(1));
-          l(2) = std::min(l(2), diff(2));
+          l(0) = std::min(l(0), std::fabs(diff(0)));
+          l(1) = std::min(l(1), std::fabs(diff(1)));
+          l(2) = std::min(l(2), std::fabs(diff(2)));
           break;
         case 5: // max
-          l(0) = std::max(l(0), diff(0));
-          l(1) = std::max(l(1), diff(1));
-          l(2) = std::max(l(2), diff(2));
+          l(0) = std::max(l(0), std::fabs(diff(0)));
+          l(1) = std::max(l(1), std::fabs(diff(1)));
+          l(2) = std::max(l(2), std::fabs(diff(2)));
           break;
         case 6: // average
-          l += diff;
+          l(0) += std::fabs(diff(0));
+          l(1) += std::fabs(diff(1));
+          l(2) += std::fabs(diff(2));
           break;
       }
       counter++;
     }
-
     if (ind == 6) l /= counter;
 }

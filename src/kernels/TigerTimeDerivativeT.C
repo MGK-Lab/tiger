@@ -33,10 +33,9 @@ validParams<TigerTimeDerivativeT>()
 
 TigerTimeDerivativeT::TigerTimeDerivativeT(const InputParameters & parameters)
   : TimeDerivative(parameters),
-    _pure_advection(!hasMaterialProperty<Real>("conductivity_mixture_equivalent")),
-    _T_Kernel_dt(!_pure_advection ? getMaterialProperty<Real>("T_Kernel_dt_coefficient") : getMaterialProperty<Real>("fluid_thermal_capacity")),
+    _T_Kernel_dt(getMaterialProperty<Real>("T_Kernel_dt_coefficient")),
     _SUPG_p(getMaterialProperty<RealVectorValue>("petrov_supg_p_function")),
-    _SUPG_ind(getMaterialProperty<bool>("supg_consistent_indicator"))
+    _SUPG_ind(getMaterialProperty<bool>("supg_indicator"))
 {
 }
 

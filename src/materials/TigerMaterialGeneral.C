@@ -33,7 +33,10 @@ validParams<TigerMaterialGeneral>()
   params.addCoupledVar("pressure", 0.0, "Fluid pressure (Pa)");
   params.addCoupledVar("temperature", 0.0, "Fluid temperature (C)");
   params.addRequiredParam<UserObjectName>("fp_UO", "The name of the userobject for fluid properties");
-  params.addParam<Real>("scaling_factor", 1.0, "The scaling factor for lower dimensional elements (2D & 1D elements in 2D & 3D simulations)");
+  params.addParam<Real>("scaling_factor", 1.0, "The scaling factor for lower dimensional elements "
+                        "(if mesh is 3D, fracture apreture for 2D elements and radius for 1D elements "
+                        "should be used; if mesh is 2D, height for 2D elements and apreture*height for "
+                        "1D elements should be used)");
   params.addClassDescription("General properties");
   return params;
 }

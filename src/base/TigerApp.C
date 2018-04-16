@@ -49,6 +49,7 @@ TigerApp::TigerApp(InputParameters parameters) : MooseApp(parameters)
   Moose::registerObjects(_factory);
   ModulesApp::registerObjects(_factory);
   TigerApp::registerObjects(_factory);
+  Registry::registerObjectsTo(_factory, {type()});
 
   Moose::associateSyntax(_syntax, _action_factory);
   ModulesApp::associateSyntax(_syntax, _action_factory);

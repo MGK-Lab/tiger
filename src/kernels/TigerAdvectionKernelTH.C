@@ -38,7 +38,7 @@ validParams<TigerAdvectionKernelTH>()
 
 TigerAdvectionKernelTH::TigerAdvectionKernelTH(const InputParameters & parameters)
   : Kernel(parameters),
-  _scaling_lowerD(getMaterialProperty<Real>("lowerD_scale_factor_th")),
+  _scaling_lowerD(getMaterialProperty<Real>("lowerD_scale_factor_t")),
   _rho_cp_f(getMaterialProperty<Real>("fluid_thermal_capacity")),
   _SUPG_p(getMaterialProperty<RealVectorValue>("petrov_supg_p_function")),
   _SUPG_ind(getMaterialProperty<bool>("supg_indicator")),

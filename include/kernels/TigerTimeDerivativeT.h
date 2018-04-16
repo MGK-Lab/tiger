@@ -27,9 +27,6 @@ class TigerTimeDerivativeT : public TimeDerivative
 public:
   TigerTimeDerivativeT(const InputParameters & parameters);
 
-private:
-  bool _pure_advection;
-
 protected:
   virtual Real computeQpResidual() override;
   virtual Real computeQpJacobian() override;

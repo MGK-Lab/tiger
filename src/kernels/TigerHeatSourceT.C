@@ -41,7 +41,7 @@ TigerHeatSourceT::TigerHeatSourceT(const InputParameters & parameters)
     _scale(getParam<Real>("value")),
     _function(getFunction("function")),
     _SUPG_p(getMaterialProperty<RealVectorValue>("petrov_supg_p_function")),
-    _SUPG_ind(getMaterialProperty<bool>("supg_consistent_indicator"))
+    _SUPG_ind(getMaterialProperty<bool>("supg_indicator"))
 {
 }
 
