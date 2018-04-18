@@ -1,18 +1,16 @@
 [Mesh]
   type = GeneratedMesh
-  dim = 3
-  nx = 1
-  ny = 1
-  nz = 10
-  zmax = 0
-  zmin = -1.0
+  dim = 1
+  xmin = 0
+  xmax = 10
+  nx = 10
 []
 
 [UserObjects]
   [./water_uo]
     type = TigerFluidConst
   [../]
-  [./rock_uo]
+  [./rock_uo1]
     type =  TigerPermeabilityConst
     permeability_type = isotropic
     k0 = '1.0e-10'
@@ -20,32 +18,35 @@
 []
 
 [Materials]
-  [./rock_h]
+  [./rock_h1]
     type = TigerRockMaterialH
-    pressure = 1.0e6
-    temperature = 100.0
     fp_UO = water_uo
-    has_gravity = true
-    gravity_acceleration = 9.81
-    porosity = 0.4
-    compressibility = 1.0e-9
-    kf_UO = rock_uo
+    porosity = 0.0
+    compressibility = 7.5e-8
+    kf_UO = rock_uo1
   [../]
 []
 
 [BCs]
-  [./front]
-    type =  DirichletBC
+  [./left]
+    type = NeumannBC
     variable = pressure
-    boundary = 'front'
-    value = 0
+    boundary = left
+    value = -0.02
   [../]
-  #[./back]
-  #  type =  DirichletBC
-  #  variable = pressure
-  #  boundary = 'back'
-  #  value = 9810.0
-  #[../]
+  [./right]
+    type = DirichletBC
+    variable = pressure
+    boundary = right
+    value = 0.0
+  [../]
+[]
+
+[Functions]
+  [./analytical_function]
+    type = ParsedFunction
+    value = '2e5*x-2e6'
+  [../]
 []
 
 [AuxVariables]
@@ -53,13 +54,9 @@
     family = MONOMIAL
     order = CONSTANT
   [../]
-  [./vy]
-    family = MONOMIAL
-    order = CONSTANT
-  [../]
-  [./vz]
-    family = MONOMIAL
-    order = CONSTANT
+  [./analytical_solution]
+    family = LAGRANGE
+    order = FIRST
   [../]
 []
 
@@ -70,17 +67,11 @@
     variable =  vx
     component = x
   [../]
-  [./vy_ker]
-    type = TigerDarcyVelocityComponent
-    gradient_variable = pressure
-    variable =  vy
-    component = y
-  [../]
-  [./vz_ker]
-    type = TigerDarcyVelocityComponent
-    gradient_variable = pressure
-    variable =  vz
-    component = z
+  [./a_ker]
+    type = FunctionAux
+    function = analytical_function
+    variable = analytical_solution
+    execute_on = initial
   [../]
 []
 
@@ -102,8 +93,8 @@
 
 [Executioner]
   type = Transient
-  dt = 0.01
-  end_time = 0.3
+  num_steps = 50
+  end_time = 1000.0
   l_tol = 1e-10 #difference between first and last linear step
   nl_rel_step_tol = 1e-14 #machine percision
   solve_type = 'PJFNK'
@@ -111,6 +102,15 @@
   petsc_options_value = 'hypre boomeramg'
 []
 
+[Postprocessors]
+  [./error]
+    type = NodalL2Error
+    variable = pressure
+    function = analytical_function
+  [../]
+[]
+
 [Outputs]
   exodus = true
+  print_linear_residuals = false
 []

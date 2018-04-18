@@ -1,0 +1,17 @@
+[Tests]
+  [./1D_flux]
+    type = 'Exodiff'
+    input = '1d_flux.i'
+    exodiff = '1d_flux_out.e'
+  [../]
+  [./1D_well]
+    type = 'Exodiff'
+    input = '1d_well.i'
+    exodiff = '1d_well_out.e'
+  [../]
+  [./gravity]
+    type = 'Exodiff'
+    input = 'gravity.i'
+    exodiff = 'gravity_out.e'
+  [../]
+[]

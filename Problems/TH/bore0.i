@@ -1,8 +1,7 @@
-# Creates the mesh for the remainder of the tutorial
 [Mesh]
   type = FileMesh
-  file = untitled.msh
-  parallel_type = REPLICATED
+  file = bore.msh
+  parallel_type = replicated
 []
 
 [UserObjects]
@@ -13,45 +12,38 @@
 
 [Materials]
   [./matrix_t]
-    type = TigerRockMaterialT
+    type = TigerUncoupledThermalMaterialTH
     fp_UO = water_uo
     porosity = 0
     conductivity_type = isotropic
-    mean_calculation_type = arithmetic
     lambda = 1e-4
     density = 1
     specific_heat = 1
+    user_velocity = maz
     block = unit
   [../]
   [./well_t]
-    type = TigerRockMaterialT
+    type = TigerUncoupledThermalMaterialTH
     fp_UO = water_uo
     porosity = 0
     conductivity_type = isotropic
-    mean_calculation_type = arithmetic
     lambda = 1e-2
     density = 1
     specific_heat = 1
-    scaling_factor = 0.1
-    block = well
-  [../]
-  [./w_th]
-    type = TigerAdvectionMaterialTH
-    fp_UO = water_uo
-    has_supg = false
     user_velocity = maz
+    block = well
   [../]
 []
 
 [ICs]
   [./tu]
     type = FunctionIC
-    function = ic
+    function = icu
     variable = temperature_u
   [../]
   [./tw]
     type = FunctionIC
-    function = ic
+    function = icw
     variable = temperature_w
   [../]
 []
@@ -60,9 +52,13 @@
   [./maz]
     type = ParsedVectorFunction
   [../]
-  [./ic]
+  [./icu]
     type = ParsedFunction
-    value = 'if(x<1 & y>=0, 20, 100)'
+    value = 'if(x<1, 20, 100)'
+  [../]
+  [./icw]
+    type = ParsedFunction
+    value = 'if(x<=1 & y>=0, 20, 0)'
   [../]
 []
 
@@ -70,43 +66,39 @@
   [./right_tu]
     type = DirichletBC
     variable = temperature_u
-    boundary = rightu
+    boundary = right
     value = 100
   [../]
+  # [./inject_tu]
+  #   type = DirichletBC
+  #   variable = temperature_u
+  #   boundary = inject
+  #   value = 20
+  # [../]
   [./inject_tw]
     type = DirichletBC
     variable = temperature_w
-    boundary = inject
+    boundary = topw
     value = 20
   [../]
-  # [./inject_tu1]
-  #   type = MatchedValueBC
-  #   variable = temperature_u
-  #   boundary = leftu
-  #   v = temperature_w
-  # [../]
+  [./inject_tu1]
+    type = CoupledConvectiveFlux
+    boundary = int
+    variable = temperature_u
+    T_infinity = temperature_w
+    coefficient = 100
+  [../]
   # [./inject_tw1]
   #   type = MatchedValueBC
   #   variable = temperature_w
-  #   boundary = left
+  #   boundary = int
   #   v = temperature_u
   # [../]
 []
 
-[Constraints]
-  [./value]
-    type = CoupledTiedValueConstraint
-    variable = temperature_u
-    slave = 2
-    master = 5
-    master_variable = temperature_w
-    scaling = 1e1
-  [../]
-[]
-
 [Variables]
   [./temperature_u]
-     block = unit
+    block = unit
   [../]
   [./temperature_w]
     block = well
@@ -134,19 +126,13 @@
     variable = temperature_u
     block = unit
   [../]
-  # [./maz]
-  #   type = CoupledForce
-  #   variable = temperature_w
-  #   v = temperature_u
-  #   coef = 4e-6
-  # [../]
 []
 
-[Problem]
-  coord_type = RZ
-  type = FEProblem
-  rz_coord_axis = Y
-[]
+# [Problem]
+#   coord_type = RZ
+#   type = FEProblem
+#   rz_coord_axis = Y
+# []
 
 [Preconditioning]
   active = 'p3'
@@ -176,15 +162,16 @@
 [Executioner]
   type = Transient
   num_steps = 100
-  end_time = 5e6
+  end_time = 3e7
   solve_type = NEWTON
-  l_tol = 1e-10
+  l_tol = 1e-14
   l_max_its = 50
   nl_rel_tol = 1e-7
   nl_abs_tol = 1e-13
-  nl_max_its = 50
+  nl_max_its = 100
 []
 
 [Outputs]
   exodus = true
+  print_linear_residuals = false
 []

@@ -2,8 +2,8 @@
   type = GeneratedMesh
   dim = 1
   xmin = 0
-  xmax = 20
-  nx = 100
+  xmax = 10
+  nx = 10
 []
 
 [UserObjects]
@@ -13,7 +13,7 @@
   [./rock_uo1]
     type =  TigerPermeabilityConst
     permeability_type = isotropic
-    k0 = '2.0e-10'
+    k0 = '1.0e-10'
   [../]
 []
 
@@ -28,12 +28,6 @@
 []
 
 [BCs]
-  [./left]
-    type = NeumannBC
-    variable = pressure
-    boundary = left
-    value = -0.04
-  [../]
   [./right]
     type = DirichletBC
     variable = pressure
@@ -42,10 +36,21 @@
   [../]
 []
 
+[Functions]
+  [./analytical_function]
+    type = ParsedFunction
+    value = '2e5*x-2e6'
+  [../]
+[]
+
 [AuxVariables]
   [./vx]
     family = MONOMIAL
     order = CONSTANT
+  [../]
+  [./analytical_solution]
+    family = LAGRANGE
+    order = FIRST
   [../]
 []
 
@@ -56,12 +61,28 @@
     variable =  vx
     component = x
   [../]
+  [./a_ker]
+    type = FunctionAux
+    function = analytical_function
+    variable = analytical_solution
+    execute_on = initial
+  [../]
 []
 
 [Variables]
   [./pressure]
   [../]
 []
+
+[DiracKernels]
+  [./pumpout]
+    type = TigerPointSourceH
+    point = '0.0 0.0 0.0'
+    mass_flux = -20.0
+    variable = pressure
+  [../]
+[]
+
 
 [Kernels]
   [./diff]
@@ -83,6 +104,14 @@
   solve_type = 'PJFNK'
   petsc_options_iname = '-pc_type -pc_hypre_type'
   petsc_options_value = 'hypre boomeramg'
+[]
+
+[Postprocessors]
+  [./error]
+    type = NodalL2Error
+    variable = pressure
+    function = analytical_function
+  [../]
 []
 
 [Outputs]
