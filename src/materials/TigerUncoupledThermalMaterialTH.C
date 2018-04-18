@@ -48,7 +48,7 @@ validParams<TigerUncoupledThermalMaterialTH>()
   params.addParam<MooseEnum>("supg_coeficient", Method = "optimal" , "The method for calculating SU/PG coefficent (tau)");
   params.addParam<Real>("supg_coeficient_scale", 1.0 , "The user defined factor to scale SU/PG coefficent (tau)");
   params.addClassDescription("Thermal properties for TH simulation using a provided velocity vector");
-  params.addRequiredParam<FunctionName>("user_velocity", "a vector function to define the velocity field");
+  params.addParam<FunctionName>("user_velocity", 0.0, "a vector function to define the velocity field");
   return params;
 }
 

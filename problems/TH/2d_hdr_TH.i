@@ -1,6 +1,6 @@
 [Mesh]
   type = FileMesh
-  file = ex_hdr2.msh
+  file = ex_hdr.msh
 []
 
 [GlobalParams]
@@ -20,12 +20,12 @@
   [./matrix_uo1]
     type =  TigerPermeabilityConst
     permeability_type = isotropic
-    k0 = '1.0e-15'
+    k0 = '1.0e-17'
   [../]
   [./fracture_uo1]
     type =  TigerPermeabilityConst
     permeability_type = isotropic
-    k0 = '8.3333e-10'
+    k0 = '8.333333e-10'
   [../]
 []
 
@@ -33,39 +33,34 @@
   [./matrix_h]
     type = TigerRockMaterialH
     kf_UO = matrix_uo1
-    scaling_factor = 100 #height of the unit
-    porosity = 0.1
+    scaling_factor = 300
+    porosity = 0.01
     compressibility = 1.0e-10
-    block = 'unit'
+    block = 'matrix'
   [../]
   [./matrix_t]
-    type = TigerRockMaterialT
-    porosity = 0.1
+    type = TigerCoupledThermalMaterialTH
+    porosity = 0.01
     scaling_factor = 1.0
     conductivity_type = isotropic
     mean_calculation_type = geometric
     lambda = 3
     density = 2600
     specific_heat = 950
-    block = 'unit'
-  [../]
-  [./matrix_th]
-    type = TigerAdvectionMaterialTH
-    scaling_factor = 1.0
     pressure = pressure
     has_supg = false
-    block = 'unit'
+    block = 'matrix'
   [../]
   [./fracure_h]
     type = TigerRockMaterialH
     kf_UO = fracture_uo1
-    scaling_factor = 0.01 #area of the fracture
     porosity = 1.0
     compressibility = 4.0e-10
-    block = 'frac1 frac2'
+    scaling_factor = 0.03
+    block = 'frac'
   [../]
   [./fracture_t]
-    type = TigerRockMaterialT
+    type = TigerCoupledThermalMaterialTH
     porosity = 1.0
     conductivity_type = isotropic
     mean_calculation_type = geometric
@@ -73,14 +68,9 @@
     scaling_factor = 0.0001
     density = 2600
     specific_heat = 950
-    block = 'frac1 frac2'
-  [../]
-  [./fracture_th]
-    type = TigerAdvectionMaterialTH
-    scaling_factor = 0.0001
-    pressure = pressure
     has_supg = false
-    block = 'frac1 frac2'
+    pressure = pressure
+    block = 'frac'
   [../]
 []
 
@@ -95,7 +85,7 @@
     type =  DirichletBC
     variable = temperature
     boundary = circum
-    value = 150
+    value = 200
   [../]
   [./well_t]
     type =  DirichletBC
@@ -155,7 +145,7 @@
     scaling = 1e9
   [../]
   [./temperature]
-    initial_condition = 150
+    initial_condition = 200
     #scaling = 1e2
   [../]
 []
@@ -163,14 +153,14 @@
 [DiracKernels]
   [./pump_in]
     type = TigerPointSourceH
-    point = '150.0 250.0 0.0'
-    mass_flux = 3.0
+    point = '175.0 250.0 0.0'
+    mass_flux = 1.0
     variable = pressure
   [../]
   [./pump_out]
     type = TigerPointSourceH
-    point = '350.0 250.0 0.0'
-    mass_flux = -3.0
+    point = '325.0 250.0 0.0'
+    mass_flux = -1.0
     variable = pressure
   [../]
 []
@@ -200,7 +190,7 @@
 []
 
 [Preconditioning]
-  active = 'p2'
+  active = 'p1'
   [./p1]
     type = SMP
     full = true
@@ -223,8 +213,8 @@
 
 [Executioner]
   type = Transient
-  num_steps = 600
-  end_time = 1892160000
+  num_steps = 300
+  end_time = 946080000
   solve_type = NEWTON
 []
 

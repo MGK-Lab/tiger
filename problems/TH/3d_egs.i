@@ -1,6 +1,6 @@
 [Mesh]
   type = FileMesh
-  file = 3d_egs.e
+  file = 3d_egs_mesh.e
   boundary_id = '1 2 3 4 5 6'
   boundary_name = 'back front left right bottom top'
   block_id = '0 1 2 3 4 5'
@@ -119,27 +119,35 @@
     block = 'well_vertical well_inclined'
   [../]
   [./ut_t]
-    type = TigerRockMaterialT
+    type = TigerCoupledThermalMaterialTH
     porosity = 0.1
     conductivity_type = isotropic
     mean_calculation_type = geometric
     lambda = 2
     density = 2600
     specific_heat = 950
+    pressure = pressure
+    has_supg = true
+    supg_eff_length = directional_average
+    supg_coeficient = transient_tezduyar
     block = unit_top
   [../]
   [./ub_t]
-    type = TigerRockMaterialT
+    type = TigerCoupledThermalMaterialTH
     porosity = 0.05
     conductivity_type = isotropic
     mean_calculation_type = geometric
     lambda = 3
     density = 2600
     specific_heat = 950
+    pressure = pressure
+    has_supg = true
+    supg_eff_length = directional_average
+    supg_coeficient = transient_tezduyar
     block = unit_bottom
   [../]
   [./f_t]
-    type = TigerRockMaterialT
+    type = TigerCoupledThermalMaterialTH
     porosity = 1.0
     conductivity_type = isotropic
     mean_calculation_type = geometric
@@ -147,10 +155,14 @@
     scaling_factor = 0.01
     density = 2600
     specific_heat = 950
+    pressure = pressure
+    has_supg = true
+    supg_eff_length = average
+    supg_coeficient = transient_tezduyar
     block = 'frac_vertical frac_inclined'
   [../]
   [./w_t]
-    type = TigerRockMaterialT
+    type = TigerCoupledThermalMaterialTH
     porosity = 1.0
     conductivity_type = isotropic
     mean_calculation_type = geometric
@@ -158,35 +170,10 @@
     scaling_factor = 0.108
     density = 2600
     specific_heat = 950
-    block = 'well_vertical well_inclined'
-  [../]
-  [./u_th]
-    type = TigerAdvectionMaterialTH
     pressure = pressure
     has_supg = true
-    is_supg_consistent = true
-    supg_eff_length = directional_average
-    supg_coeficient = transient_tezduyar
-    block = 'unit_top unit_bottom'
-  [../]
-  [./f_th]
-    type = TigerAdvectionMaterialTH
-    pressure = pressure
-    has_supg = true
-    is_supg_consistent = true
-    supg_eff_length = average
-    supg_coeficient = transient_tezduyar
-    scaling_factor = 0.01
-    block = 'frac_vertical frac_inclined'
-  [../]
-  [./w_th]
-    type = TigerAdvectionMaterialTH
-    pressure = pressure
-    has_supg = true
-    is_supg_consistent = true
     supg_eff_length = min
     supg_coeficient = transient_tezduyar
-    scaling_factor = 0.108
     block = 'well_vertical well_inclined'
   [../]
 []

@@ -1,6 +1,6 @@
 [Mesh]
   type = FileMesh
-  file = Inclined_Frac.msh
+  file = 3d_curvedfrac.msh
 []
 
 [UserObjects]
@@ -9,32 +9,24 @@
   [../]
 []
 
+[GlobalParams]
+  porosity = 0.0
+  conductivity_type = isotropic
+  density = 2600
+  specific_heat = 840
+  fp_UO = water_uo
+[]
+
 [Materials]
   [./rock_t1]
-    type = TigerRockMaterialT
-    pressure = 1.0e6
-    temperature = 100.0
-    fp_UO = water_uo
-    porosity = 0.0
-    conductivity_type = isotropic
+    type = TigerUncoupledThermalMaterialTH
     lambda = 2
-    density = 2600
-    specific_heat = 840
     block = 'b1 b2'
-    material_type = matrix
   [../]
   [./rock_t2]
-    type = TigerRockMaterialT
-    pressure = 1.0e6
-    temperature = 100.0
-    fp_UO = water_uo
-    porosity = 0.0
-    conductivity_type = isotropic
+    type = TigerUncoupledThermalMaterialTH
     lambda = 200
-    density = 2600
-    specific_heat = 840
     block = frac
-    material_type = fracture
   [../]
 []
 
@@ -72,8 +64,8 @@
 
 [Executioner]
   type = Transient
-  num_steps = 50
-  end_time = 6.0e5
+  num_steps = 10
+  end_time = 1.0e5
   l_tol = 1e-10 #difference between first and last linear step
   nl_rel_step_tol = 1e-14 #machine percision
   solve_type = 'PJFNK'
@@ -83,4 +75,5 @@
 
 [Outputs]
   exodus = true
+  print_linear_residuals = false
 []

@@ -5,7 +5,7 @@
   ny = 1
   nz = 100
   zmax = 0
-  zmin = -10000
+  zmin = -1000
 []
 
 [UserObjects]
@@ -16,9 +16,7 @@
 
 [Materials]
   [./rock_t]
-    type = TigerRockMaterialT
-    pressure = 1.0e6
-    temperature = 100.0
+    type = TigerUncoupledThermalMaterialTH
     fp_UO = water_uo
     porosity = 0.0
     conductivity_type = isotropic
@@ -40,6 +38,31 @@
     variable = temperature
     boundary = 'back'
     value = 8.0e-2
+  [../]
+[]
+
+[AuxVariables]
+  [./analytical_solution]
+    family = LAGRANGE
+    order = FIRST
+  [../]
+[]
+
+[Functions]
+  [./analytical_function]
+    type = ParsedFunction
+    vars = 'q T D A l'
+    vals = '8.0e-2 10 3 1e-6 1000'
+    value = 'T - (q+A*l)/D*z - A*z*z/2/D'
+  [../]
+[]
+
+[AuxKernels]
+  [./a_ker]
+    type = FunctionAux
+    function = analytical_function
+    variable = analytical_solution
+    execute_on = initial
   [../]
 []
 
@@ -67,11 +90,11 @@
 
 [Executioner]
   type = Transient
-  num_steps = 50
-  end_time = 2.0e6
+  num_steps = 10
+  end_time = 2.5e4
   #type = Steady
   l_tol = 1e-10 #difference between first and last linear step
-  nl_rel_step_tol = 1e-14 #machine percision
+  nl_rel_step_tol = 1e-10 #machine percision
   solve_type = 'PJFNK'
   petsc_options_iname = '-pc_type -pc_hypre_type'
   petsc_options_value = 'hypre boomeramg'

@@ -1,9 +1,7 @@
 [Mesh]
   type = GeneratedMesh
-  dim = 3
+  dim = 1
   nx = 10
-  ny = 10
-  nz = 10
 []
 
 [UserObjects]
@@ -14,10 +12,9 @@
 
 [Materials]
   [./rock_t]
-    type = TigerRockMaterialT
+    type = TigerUncoupledThermalMaterialTH
     fp_UO = water_uo
-    porosity = 0.0
-    mean_calculation_type = arithmetic
+    porosity = 0
     conductivity_type = isotropic
     lambda = 2
     density = 2600
@@ -29,13 +26,13 @@
   [./front]
     type =  DirichletBC
     variable = temperature
-    boundary = 'front'
+    boundary = left
     value = 0
   [../]
   [./back]
     type =  DirichletBC
     variable = temperature
-    boundary = 'back'
+    boundary = right
     value = 100.0
   [../]
 []

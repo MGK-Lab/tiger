@@ -1,27 +1,28 @@
 [Mesh]
   type = FileMesh
-  file = elder.msh
-  uniform_refine = 2
+  file = Elder_half.msh
 []
 
-#[Adaptivity]
-#  max_h_level = 2
-#  cycles_per_step = 1
-#  marker = error_frac
-#  [./Markers]
-#    [./error_frac]
-#      indicator = ind
-#      type = ErrorFractionMarker
-#      refine = 0.05
-#    [../]
-#  [../]
-#  [./Indicators]
-#    [./ind]
-#      type = GradientJumpIndicator
-#      variable = temperature
-#    [../]
-#  [../]
-#[]
+[Adaptivity]
+  max_h_level = 2
+  initial_marker = error_frac
+  marker = error_frac
+  cycles_per_step = 2
+  [./Markers]
+    [./error_frac]
+      indicator = ind
+      type = ErrorFractionMarker
+      refine = 0.8
+      coarsen = 0.01
+    [../]
+  [../]
+  [./Indicators]
+    [./ind]
+      type = GradientJumpIndicator
+      variable = temperature
+    [../]
+  [../]
+[]
 
 [UserObjects]
   [./water_uo]
@@ -45,26 +46,19 @@
     porosity = 1.0
     compressibility = 0
   [../]
-  [./rock_t]
-    type = TigerRockMaterialT
+  [./rock_th]
+    type = TigerCoupledThermalMaterialTH
+    pressure = pore_pressure
     temperature = temperature
     fp_UO = water_uo
-    mean_calculation_type = arithmetic
     conductivity_type = isotropic
     lambda = 0
     porosity = 0.1
     density = 0
     specific_heat = 0
-  [../]
-[./matrix_th]
-    type = TigerAdvectionMaterialTH
-    pressure = pore_pressure
-    temperature = temperature
-    fp_UO = water_uo
     has_supg = true
-    is_supg_consistent = true
     supg_eff_length = max
-    supg_coeficient = transient_brooks
+    supg_coeficient = critical
     output_Pe_Cr_numbers = true
   [../]
 []
@@ -73,14 +67,14 @@
   [./tp_p]
     type = DirichletBC
     variable = pore_pressure
-    boundary = 'tp2 tp3'
+    boundary = tp
     value = 0
   [../]
   [./top_t]
     type = DirichletBC
     variable = temperature
     boundary = t2
-    value = 1
+    value =  1
   [../]
   [./bottom_t]
     type = DirichletBC
@@ -182,6 +176,7 @@
   [./T_advect]
     type = TigerAdvectionKernelTH
     variable = temperature
+    pressure_varible = pore_pressure
   [../]
   [./T_dt]
     type = TigerTimeDerivativeT
@@ -213,12 +208,12 @@
 
 [Executioner]
   type = Transient
-  num_steps = 3000
+  num_steps = 2000
   end_time = 6.28992e8
   solve_type = NEWTON
   l_tol = 1e-8
   l_max_its = 25
-  nl_rel_tol = 1e-08
+  nl_rel_tol = 1e-09
   nl_abs_tol = 1e-14
   nl_max_its = 50
   scheme = implicit-euler
@@ -228,6 +223,6 @@
   print_linear_residuals = false
   [./maz]
     type = Exodus
-    file_base = elder/elder
+    file_base = elder/elder_half
   [../]
 []
