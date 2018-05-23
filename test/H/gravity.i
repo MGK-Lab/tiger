@@ -8,10 +8,15 @@
   zmin = -1.0
 []
 
-[UserObjects]
-  [./water_uo]
-    type = TigerFluidConst
+[Modules]
+  [./FluidProperties]
+    [./water_uo]
+      type = SimpleFluidProperties
+    [../]
   [../]
+[]
+
+[UserObjects]
   [./rock_uo]
     type =  TigerPermeabilityConst
     permeability_type = isotropic

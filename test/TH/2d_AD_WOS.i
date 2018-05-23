@@ -4,13 +4,18 @@
   uniform_refine = 1
 []
 
-[UserObjects]
-  [./water_uo]
-    type = TigerFluidConst
-    density = 1
-    specific_heat = 1
-    conductivity = 1e-4
+[Modules]
+  [./FluidProperties]
+    [./water_uo]
+      type = SimpleFluidProperties
+      density0 = 1
+      cp = 1
+      thermal_conductivity = 1e-4
+    [../]
   [../]
+[]
+
+[UserObjects]
   [./matrix_uo1]
     type =  TigerPermeabilityConst
     permeability_type = isotropic

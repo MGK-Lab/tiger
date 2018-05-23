@@ -6,12 +6,11 @@
   nx = 100
 []
 
-[UserObjects]
-  [./water_uo]
-    type = TigerFluidConst
-    density = 1
-    specific_heat = 1
-    conductivity = 0.01
+[Modules]
+  [./FluidProperties]
+    [./water_uo]
+      type = SimpleFluidProperties
+    [../]
   [../]
 []
 

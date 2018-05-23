@@ -108,10 +108,12 @@ TigerRockMaterialH::computeProperties()
 void
 TigerRockMaterialH::computeQpProperties()
 {
+  Real _rho_f = _fp_UO.rho(_P[_qp], _T[_qp]);
+  Real _beta_f = 1.0/(std::pow(_fp_UO.c(_P[_qp], _T[_qp]),2.0)*_rho_f);
   _k_vis[_qp] = _kf_UO.PermeabilityTensorCalculator(_current_elem->dim()) / _fp_UO.mu(_P[_qp], _T[_qp]);
-  _H_Kernel_dt[_qp] = _beta_s + _fp_UO.beta(_P[_qp], _T[_qp]) * _n0;
-  _rhof_g[_qp] = _fp_UO.rho(_P[_qp], _T[_qp]) * _gravity;
-  _rhof[_qp] = _fp_UO.rho(_P[_qp], _T[_qp]);
+  _H_Kernel_dt[_qp] = _beta_s + _beta_f * _n0;
+  _rhof_g[_qp] = _rho_f * _gravity;
+  _rhof[_qp] = _rho_f;
 
   _scaling_lowerD[_qp] = LowerDScaling();
 

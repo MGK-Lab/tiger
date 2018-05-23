@@ -93,6 +93,7 @@ compile_commands.json
 !**/gold/*.vtk
 !**/gold/*.vtu
 !**/gold/*.pvtu
+!*msh.e
 
 peacock_run_tmp.i
 yaml_dump*

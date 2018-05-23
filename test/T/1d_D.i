@@ -4,9 +4,11 @@
   nx = 10
 []
 
-[UserObjects]
-  [./water_uo]
-    type = TigerFluidConst
+[Modules]
+  [./FluidProperties]
+    [./water_uo]
+      type = SimpleFluidProperties
+    [../]
   [../]
 []
 

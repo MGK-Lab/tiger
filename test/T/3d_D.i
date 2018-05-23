@@ -3,9 +3,11 @@
   file = 3d_curvedfrac.msh
 []
 
-[UserObjects]
-  [./water_uo]
-    type = TigerFluidConst
+[Modules]
+  [./FluidProperties]
+    [./water_uo]
+      type = SimpleFluidProperties
+    [../]
   [../]
 []
 

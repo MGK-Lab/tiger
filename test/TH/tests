@@ -1,5 +1,5 @@
 [Tests]
-  [./1D_PA]
+  [./1D_Pure_A]
     type = 'Exodiff'
     input = '1d_A.i'
     exodiff = '1d_A_out.e'

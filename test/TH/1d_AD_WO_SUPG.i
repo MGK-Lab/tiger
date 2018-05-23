@@ -6,12 +6,18 @@
   xmin = 0
 []
 
-[UserObjects]
-  [./water_uo]
-    type = TigerFluidConst
-    specific_heat = 840
-    density = 2600
+[Modules]
+  [./FluidProperties]
+    [./water_uo]
+      type = SimpleFluidProperties
+      density0 = 2600
+      viscosity = 0.001
+      cp = 840
+    [../]
   [../]
+[]
+
+[UserObjects]
   [./rock_uo]
     type =  TigerPermeabilityConst
     permeability_type = isotropic

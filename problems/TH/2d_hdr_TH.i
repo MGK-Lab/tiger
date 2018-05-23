@@ -8,15 +8,20 @@
   output_Pe_Cr_numbers = true
 []
 
-[UserObjects]
-  [./water_uo]
-    type = TigerFluidConst
-    density = 1000
-    viscosity = 2e-4
-    specific_heat = 4200
-    conductivity = 0.65
-    compressibility = 4.0e-10
+[Modules]
+  [./FluidProperties]
+    [./water_uo]
+      type = SimpleFluidProperties
+      density0 = 1000
+      viscosity = 0.0002
+      cp = 4200
+      thermal_conductivity = 0.65
+      bulk_modulus = 2.5e+09
+    [../]
   [../]
+[]
+
+[UserObjects]
   [./matrix_uo1]
     type =  TigerPermeabilityConst
     permeability_type = isotropic

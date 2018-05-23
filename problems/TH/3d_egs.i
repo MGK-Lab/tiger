@@ -1,6 +1,6 @@
 [Mesh]
   type = FileMesh
-  file = 3d_egs_mesh.e
+  file = 3d_egs_msh.e
   boundary_id = '1 2 3 4 5 6'
   boundary_name = 'back front left right bottom top'
   block_id = '0 1 2 3 4 5'
@@ -37,15 +37,17 @@
 #  [../]
 # []
 
-[UserObjects]
-  [./water_uo]
-    type = TigerFluidConst
-    density = 1000
-    viscosity = 2e-4
-    specific_heat = 4200
-    conductivity = 0.65
-    compressibility = 4.0e-10
+[Modules]
+  [./FluidProperties]
+    [./water_uo]
+      type = SimpleFluidProperties
+      viscosity = 0.0002
+    [../]
   [../]
+[]
+
+
+[UserObjects]
   [./ut_uo]
     type =  TigerPermeabilityConst
     permeability_type = isotropic

@@ -9,9 +9,11 @@
   ny = 20
 []
 
-[UserObjects]
-  [./water_uo]
-    type = TigerFluidConst
+[Modules]
+  [./FluidProperties]
+    [./water_uo]
+      type = SimpleFluidProperties
+    [../]
   [../]
 []
 
