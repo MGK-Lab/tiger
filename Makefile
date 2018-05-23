@@ -28,11 +28,11 @@ ALL_MODULES         := no
 
 CHEMICAL_REACTIONS  := no
 CONTACT             := no
-FLUID_PROPERTIES    := no
-HEAT_CONDUCTION     := yes
+FLUID_PROPERTIES    := yes
+HEAT_CONDUCTION     := no
 MISC                := no
 NAVIER_STOKES       := no
-PHASE_FIELD         := yes
+PHASE_FIELD         := no
 RDG                 := no
 RICHARDS            := no
 SOLID_MECHANICS     := no

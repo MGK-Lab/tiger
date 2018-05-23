@@ -25,10 +25,10 @@
 #define TIGERMATERIALGENERAL_H
 
 #include "Material.h"
-#include "TigerFluidPropertiesTP.h"
 #include "RankTwoTensor.h"
 #include "MooseMesh.h"
 #include <cfloat>
+#include "SinglePhaseFluidPropertiesPT.h"
 
 class TigerMaterialGeneral;
 
@@ -55,7 +55,7 @@ protected:
   /// compute scaling factor for lower dimensional elements
   Real LowerDScaling();
   /// Tiger Fluid properties UserObject
- const TigerFluidPropertiesTP & _fp_UO;
+ const SinglePhaseFluidPropertiesPT & _fp_UO;
 };
 
 #endif /* TIGERMATERIALGENERAL_H */

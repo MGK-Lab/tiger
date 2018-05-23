@@ -46,7 +46,7 @@ TigerMaterialGeneral::TigerMaterialGeneral(const InputParameters & parameters)
     _P(coupledValue("pressure")),
     _T(coupledValue("temperature")),
     _scaling_factor0(getParam<Real>("scaling_factor")),
-    _fp_UO(getUserObject<TigerFluidPropertiesTP>("fp_UO"))
+    _fp_UO(getUserObject<SinglePhaseFluidPropertiesPT>("fp_UO"))
 {
 }
 

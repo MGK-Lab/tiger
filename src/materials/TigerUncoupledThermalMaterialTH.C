@@ -121,7 +121,7 @@ TigerUncoupledThermalMaterialTH::computeQpProperties()
 {
   _T_Kernel_dt[_qp] = (1.0-_n0)*_rho0*_cp0 + _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp])*_n0;
 
-  ConductivityTensorCalculator(_n0, _fp_UO.lambda(_P[_qp], _T[_qp]), _lambda0, _ct, _mean, _current_elem->dim());
+  ConductivityTensorCalculator(_n0, _fp_UO.k(_P[_qp], _T[_qp]), _lambda0, _ct, _mean, _current_elem->dim());
   _lambda_sf     [_qp] = _lambda_sf_tensor;
 
   _scaling_lowerD[_qp] = LowerDScaling();
