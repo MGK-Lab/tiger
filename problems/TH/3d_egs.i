@@ -40,7 +40,7 @@
 [Modules]
   [./FluidProperties]
     [./water_uo]
-      type = SimpleFluidProperties
+      type = TigerWaterConst
       viscosity = 0.0002
     [../]
   [../]
