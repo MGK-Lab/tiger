@@ -31,7 +31,7 @@ validParams<TigerMaterialGeneral>()
 {
   InputParameters params = validParams<Material>();
   params.addCoupledVar("pressure", 0.0, "Fluid pressure (Pa)");
-  params.addCoupledVar("temperature", 0.0, "Fluid temperature (C)");
+  params.addCoupledVar("temperature", 273.15, "Fluid temperature (K)");
   params.addRequiredParam<UserObjectName>("fp_UO", "The name of the userobject for fluid properties");
   params.addParam<Real>("scaling_factor", 1.0, "The scaling factor for lower dimensional elements "
                         "(if mesh is 3D, fracture apreture for 2D elements and radius for 1D elements "

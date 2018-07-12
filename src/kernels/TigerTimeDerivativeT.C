@@ -33,6 +33,7 @@ validParams<TigerTimeDerivativeT>()
 
 TigerTimeDerivativeT::TigerTimeDerivativeT(const InputParameters & parameters)
   : TimeDerivative(parameters),
+    _scaling_lowerD(getMaterialProperty<Real>("lowerD_scale_factor_t")),
     _T_Kernel_dt(getMaterialProperty<Real>("T_Kernel_dt_coefficient")),
     _SUPG_p(getMaterialProperty<RealVectorValue>("petrov_supg_p_function")),
     _SUPG_ind(getMaterialProperty<bool>("supg_indicator"))
@@ -47,7 +48,7 @@ TigerTimeDerivativeT::computeQpResidual()
     test = _test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp];
   else
     test = _test[_i][_qp];
-  return _T_Kernel_dt[_qp] * test * _u_dot[_qp];
+  return _scaling_lowerD[_qp] * _T_Kernel_dt[_qp] * test * _u_dot[_qp];
 }
 
 Real
@@ -58,5 +59,5 @@ TigerTimeDerivativeT::computeQpJacobian()
     test = _test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp];
   else
     test = _test[_i][_qp];
-  return _T_Kernel_dt[_qp] * test * _phi[_j][_qp] * _du_dot_du[_qp];
+  return _scaling_lowerD[_qp] * _T_Kernel_dt[_qp] * test * _phi[_j][_qp] * _du_dot_du[_qp];
 }

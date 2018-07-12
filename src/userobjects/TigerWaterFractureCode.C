@@ -102,7 +102,7 @@ Real TigerWaterFractureCode::s(Real /*pressure*/, Real /*temperature*/) const
 Real
 TigerWaterFractureCode::rho(Real pressure, Real temperature) const
 {
-  Real _a = -9.9559 + 7.0845*std::exp(-1.638e-4*temperature)+3.909*std::exp(2.551e-10*pressure);
+  Real _a = -9.9559 + 7.0845*std::exp(-1.638e-4*(temperature-273.15))+3.909*std::exp(2.551e-10*pressure);
   return (-3.033405 + 10.128163*_a - 8.750567*_a*_a + 2.663107*_a*_a*_a)*1.0e3;
 }
 
@@ -111,9 +111,9 @@ TigerWaterFractureCode::rho_dpT(
     Real pressure, Real temperature, Real & rho, Real & drho_dp, Real & drho_dT) const
 {
   rho = this->rho(pressure, temperature);
-  Real _a = -9.9559 + 7.0845*std::exp(-1.638e-4*temperature)+3.909*std::exp(2.551e-10*pressure);
+  Real _a = -9.9559 + 7.0845*std::exp(-1.638e-4*(temperature-273.15))+3.909*std::exp(2.551e-10*pressure);
   drho_dp = (10.128163 - 17.501134*_a + 7.989321*_a*_a)*9.971859e-7*std::exp(2.551e-10*pressure);
-  drho_dT = -(10.128163 - 17.501134*_a + 7.989321*_a*_a)*1.1604411*std::exp(-1.638e-4*temperature);
+  drho_dT = -(10.128163 - 17.501134*_a + 7.989321*_a*_a)*1.1604411*std::exp(-1.638e-4*(temperature-273.15));
 }
 
 Real
@@ -156,7 +156,7 @@ TigerWaterFractureCode::rho_e_dpT(Real pressure,
 
 Real TigerWaterFractureCode::mu(Real /*pressure*/, Real temperature) const
 {
-  return 2.4e-5*std::pow(10.0, 248.37/(temperature+133.15));
+  return 2.4e-5*std::pow(10.0, 248.37/(temperature-140));
 }
 
 void
@@ -165,7 +165,7 @@ TigerWaterFractureCode::mu_dpT(
 {
   mu = this->mu(pressure, temperature);
   dmu_dp = 0.0;
-  dmu_dT = mu*-571.893/std::pow((temperature+133.15),2.0);
+  dmu_dT = mu*-571.893/std::pow((temperature-140),2.0);
 }
 
 void
