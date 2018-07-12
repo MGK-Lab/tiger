@@ -7,8 +7,8 @@
 [Modules]
   [./FluidProperties]
     [./water_uo]
-      type = SimpleFluidProperties
-      density0 = 1
+      type = TigerWaterConst
+      density = 1
       cp = 1
       thermal_conductivity = 1e-4
     [../]

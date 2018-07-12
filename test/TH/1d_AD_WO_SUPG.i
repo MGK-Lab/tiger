@@ -9,8 +9,8 @@
 [Modules]
   [./FluidProperties]
     [./water_uo]
-      type = SimpleFluidProperties
-      density0 = 2600
+      type = TigerWaterConst
+      density = 2600
       viscosity = 0.001
       cp = 840
     [../]

@@ -6,7 +6,7 @@
 [Modules]
   [./FluidProperties]
     [./water_uo]
-      type = SimpleFluidProperties
+      type = TigerWaterConst
     [../]
   [../]
 []
