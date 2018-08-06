@@ -25,7 +25,7 @@
 #include "MooseMesh.h"
 #include "libmesh/quadrature.h"
 
-registerMooseObject("TigerApp", TigerCoupledThermalMaterialTH);
+// registerMooseObject("TigerApp", TigerCoupledThermalMaterialTH);
 
 template <>
 InputParameters

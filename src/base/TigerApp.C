@@ -19,6 +19,8 @@
 
 //Material
 #include "TigerRockMaterialH.h"
+#include "TigerUncoupledThermalMaterialTH.h"
+#include "TigerCoupledThermalMaterialTH.h"
 
 #include "TigerPermeability.h"
 #include "TigerPermeabilityConst.h"
@@ -77,6 +79,8 @@ void
 TigerApp::registerObjects(Factory & factory)
 {
   registerMaterial(TigerRockMaterialH);
+  registerMaterial(TigerUncoupledThermalMaterialTH);
+  registerMaterial(TigerCoupledThermalMaterialTH);
 
   registerUserObject(TigerPermeabilityConst);
   registerUserObject(TigerPermeabilityCubicLaw);
