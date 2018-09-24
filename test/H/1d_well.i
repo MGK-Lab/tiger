@@ -15,7 +15,7 @@
 []
 
 [UserObjects]
-  [./rock_uo1]
+  [./rock_uo]
     type =  TigerPermeabilityConst
     permeability_type = isotropic
     k0 = '1.0e-10'
@@ -23,12 +23,15 @@
 []
 
 [Materials]
-  [./rock_h1]
+  [./rock_g]
+    type = TigerGeometryMaterial
+    porosity = 0
+  [../]
+  [./rock_h]
     type = TigerRockMaterialH
     fp_UO = water_uo
-    porosity = 0.0
     compressibility = 7.5e-8
-    kf_UO = rock_uo1
+    kf_UO = rock_uo
   [../]
 []
 

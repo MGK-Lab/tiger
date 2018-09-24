@@ -33,7 +33,7 @@ validParams<TigerTimeDerivativeH>()
 
 TigerTimeDerivativeH::TigerTimeDerivativeH(const InputParameters & parameters)
   : TimeDerivative(parameters),
-    _scaling_lowerD(getMaterialProperty<Real>("lowerD_scale_factor_h")),
+    _scale_factor(getMaterialProperty<Real>("scale_factor")),
     _H_Kernel_dt(getMaterialProperty<Real>("H_Kernel_dt_coefficient"))
 {
 }
@@ -41,11 +41,11 @@ TigerTimeDerivativeH::TigerTimeDerivativeH(const InputParameters & parameters)
 Real
 TigerTimeDerivativeH::computeQpResidual()
 {
-  return _scaling_lowerD[_qp] * _H_Kernel_dt[_qp] * TimeDerivative::computeQpResidual();
+  return _scale_factor[_qp] * _H_Kernel_dt[_qp] * TimeDerivative::computeQpResidual();
 }
 
 Real
 TigerTimeDerivativeH::computeQpJacobian()
 {
-  return _scaling_lowerD[_qp] * _H_Kernel_dt[_qp] * TimeDerivative::computeQpJacobian();
+  return _scale_factor[_qp] * _H_Kernel_dt[_qp] * TimeDerivative::computeQpJacobian();
 }

@@ -39,31 +39,31 @@ public:
   TigerRockMaterialH(const InputParameters & parameters);
 
 protected:
-  virtual void computeProperties() override;
   virtual void computeQpProperties() override;
 
-  /// initial compressibility
+  // initial compressibility of solid phase
   Real _beta_s;
-  /// gravity vector
+  // gravity vector
   RealVectorValue _gravity;
-  /// initial porosity
-  Real _n0;
-  /// permeability tensor
+  // permeability tensor divided by viscosity
   MaterialProperty<RankTwoTensor> & _k_vis;
-  /// compressibility
+  // compressibility
   MaterialProperty<Real> & _H_Kernel_dt;
-  /// density
+  // density
   MaterialProperty<Real> & _rhof;
-  /// compressibility
+  // compressibility
   MaterialProperty<RealVectorValue> & _rhof_g;
-  /// Tiger permeability calculater UserObject
+  // Tiger permeability calculater UserObject
   const TigerPermeability & _kf_UO;
-  /// gravity option
+
+  // imported props from TigerGeometryMaterial
+  const MaterialProperty<Real> & _n;
+  const MaterialProperty<RankTwoTensor> & _rot_mat;
+
+  // gravity option
   bool _has_gravity;
-  /// gravity acceleration (m/s^2)
+  // gravity acceleration (m/s^2)
   Real _g;
-  /// scaling factor for lowerdimensional element
-  MaterialProperty<Real> & _scaling_lowerD;
 };
 
 #endif /* TIGERROCKMATERIALH_H */

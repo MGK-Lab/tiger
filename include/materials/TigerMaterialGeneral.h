@@ -25,9 +25,6 @@
 #define TIGERMATERIALGENERAL_H
 
 #include "Material.h"
-#include "RankTwoTensor.h"
-#include "MooseMesh.h"
-#include <cfloat>
 #include "SinglePhaseFluidPropertiesPT.h"
 
 class TigerMaterialGeneral;
@@ -41,20 +38,12 @@ public:
   TigerMaterialGeneral(const InputParameters & parameters);
 
 protected:
-  /// Pressure (Pa)
+  // Pore pressure nonlinear variable
   const VariableValue & _P;
-  /// Temperature (K)
+  // Temperature nonlinear variable
   const VariableValue & _T;
-  /// rotation matrix for local cordinates
-  RankTwoTensor _rot_mat = RankTwoTensor();
-  /// initial scaling factor
-  Real _scaling_factor0;
 
-  /// compute rotation matrix
-  void computeRotationMatrix(int dim);
-  /// compute scaling factor for lower dimensional elements
-  Real LowerDScaling();
-  /// Tiger Fluid properties UserObject
+  // Userobject from fluid_properties_module for calculating fluid properties
  const SinglePhaseFluidPropertiesPT & _fp_UO;
 };
 

@@ -39,18 +39,16 @@ public:
   TigerUncoupledThermalMaterialTH(const InputParameters & parameters);
 
 private:
-  /// enum for selecting thermal conductivity distribution for solid phase
+  // enum for selecting thermal conductivity distribution for solid phase
   MooseEnum _ct;
-  /// enum for selecting calculation method for mixture
+  // enum for selecting calculation method for mixture
   MooseEnum _mean;
-  /// initial thermal conductivity for solid phase
+  // initial thermal conductivity for solid phase
   std::vector<Real> _lambda0;
-  /// initial specific heat for solid phase
+  // initial specific heat for solid phase
   Real _cp0;
-  /// initial density for solid phase
+  // initial density for solid phase
   Real _rho0;
-  /// initial porosity
-  Real _n0;
 
   RankTwoTensor _lambda_sf_tensor = RankTwoTensor();
   Real _lambda_sf_real = 0.0;
@@ -73,23 +71,24 @@ private:
 
 protected:
   virtual void computeQpProperties() override;
-  virtual void computeProperties() override;
 
   Function & _vel_func;
   MaterialProperty<Real> * _Pe;
   MaterialProperty<Real> * _Cr;
 
-  /// equivalent conductivity for mixture
+  // equivalent conductivity for mixture
   MaterialProperty<RankTwoTensor> & _lambda_sf;
-  /// coefficient for time derivative kernel
+  // coefficient for time derivative kernel
   MaterialProperty<Real> & _T_Kernel_dt;
-  /// scaling factor for lowerdimensional element
-  MaterialProperty<Real> & _scaling_lowerD;
 
   MaterialProperty<Real> & _rho_cp_f;
   MaterialProperty<bool> & _SUPG_ind;
   MaterialProperty<RealVectorValue> & _dv;
   MaterialProperty<RealVectorValue> & _SUPG_p;
+
+  // imported props from TigerGeometryMaterial
+  const MaterialProperty<Real> & _n;
+  const MaterialProperty<RankTwoTensor> & _rot_mat;
 };
 
 #endif /* TIGERCOUPLEDTHERMALMATERIALTH_H */

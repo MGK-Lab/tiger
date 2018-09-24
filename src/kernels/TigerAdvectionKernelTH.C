@@ -38,7 +38,7 @@ validParams<TigerAdvectionKernelTH>()
 
 TigerAdvectionKernelTH::TigerAdvectionKernelTH(const InputParameters & parameters)
   : Kernel(parameters),
-  _scaling_lowerD(getMaterialProperty<Real>("lowerD_scale_factor_t")),
+  _scale_factor(getMaterialProperty<Real>("scale_factor")),
   _rho_cp_f(getMaterialProperty<Real>("fluid_thermal_capacity")),
   _SUPG_p(getMaterialProperty<RealVectorValue>("petrov_supg_p_function")),
   _SUPG_ind(getMaterialProperty<bool>("supg_indicator")),
@@ -58,7 +58,7 @@ TigerAdvectionKernelTH::computeQpResidual()
   else
     R = _rho_cp_f[_qp] * (_test[_i][_qp] * ( _darcy_v[_qp] * _grad_u[_qp]));
 
-  return _scaling_lowerD[_qp] * R;
+  return _scale_factor[_qp] * R;
 }
 
 Real
@@ -70,7 +70,7 @@ TigerAdvectionKernelTH::computeQpJacobian()
   else
     R = _rho_cp_f[_qp] * (_test[_i][_qp] * ( _darcy_v[_qp] * _grad_phi[_j][_qp]));
 
-  return _scaling_lowerD[_qp] * R;
+  return _scale_factor[_qp] * R;
 }
 
 Real
@@ -84,7 +84,7 @@ TigerAdvectionKernelTH::computeQpOffDiagJacobian(unsigned int jvar)
     else
       R = _rho_cp_f[_qp] * (_test[_i][_qp] * ( -(*_k_vis)[_qp] * _grad_phi[_j][_qp] * _grad_u[_qp]));
 
-    R *=_scaling_lowerD[_qp];
+    R *=_scale_factor[_qp];
   }
   else
     R = 0.0;

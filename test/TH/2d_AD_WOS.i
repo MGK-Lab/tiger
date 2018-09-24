@@ -24,18 +24,20 @@
 []
 
 [Materials]
+  [./rock_g]
+    type = TigerGeometryMaterial
+    porosity = 1
+  [../]
   [./matrix_h]
     type = TigerRockMaterialH
     fp_UO = water_uo
     kf_UO = matrix_uo1
-    porosity = 1.0
     compressibility = 1.0e-10
   [../]
   [./matrix_t]
     type = TigerCoupledThermalMaterialTH
     fp_UO = water_uo
     pressure =  pressure
-    porosity = 1.0
     conductivity_type = isotropic
     mean_calculation_type = arithmetic
     lambda = 1e-4

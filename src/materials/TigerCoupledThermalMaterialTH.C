@@ -32,9 +32,9 @@ InputParameters
 validParams<TigerCoupledThermalMaterialTH>()
 {
   InputParameters params = validParams<TigerMaterialGeneral>();
+
   params.addRequiredParam<Real>("specific_heat", "Specific heat of rock matrix (J/(kg K))");
   params.addRequiredParam<Real>("density", "density of rock matrix (kg/m^3)");
-  params.addRequiredParam<Real>("porosity", "Porosity of rock matrix");
   params.addRequiredParam<std::vector<Real>>("lambda", "Initial thermal conductivity of rock matrix (W/(m K))");
   MooseEnum CT("isotropic=1 orthotropic=2 anisotropic=3");
   params.addRequiredParam<MooseEnum>("conductivity_type", CT, "Thermal conductivity distribution type [isotropic, orthotropic, anisotropic].");
@@ -48,6 +48,7 @@ validParams<TigerCoupledThermalMaterialTH>()
   params.addParam<MooseEnum>("supg_coeficient", Method = "optimal" , "The method for calculating SU/PG coefficent (tau)");
   params.addParam<Real>("supg_coeficient_scale", 1.0 , "The user defined factor to scale SU/PG coefficent (tau)");
   params.addClassDescription("Thermal properties for a fully coupled TH simulation");
+
   return params;
 }
 
@@ -58,7 +59,6 @@ TigerCoupledThermalMaterialTH::TigerCoupledThermalMaterialTH(const InputParamete
     _lambda0(getParam<std::vector<Real>>("lambda")),
     _cp0(getParam<Real>("specific_heat")),
     _rho0(getParam<Real>("density")),
-    _n0(getParam<Real>("porosity")),
     _has_PeCr(getParam<bool>("output_Pe_Cr_numbers")),
     _has_supg(getParam<bool>("has_supg")),
     _effective_length(getParam<MooseEnum>("supg_eff_length")),
@@ -71,64 +71,26 @@ TigerCoupledThermalMaterialTH::TigerCoupledThermalMaterialTH(const InputParamete
     _Cr(_has_PeCr ? &declareProperty<Real>("courant_number") : NULL),
     _lambda_sf(declareProperty<RankTwoTensor>("conductivity_mixture")),
     _T_Kernel_dt(declareProperty<Real>("T_Kernel_dt_coefficient")),
-    _scaling_lowerD(declareProperty<Real>("lowerD_scale_factor_t")),
     _rho_cp_f(declareProperty<Real>("fluid_thermal_capacity")),
     _SUPG_ind(declareProperty<bool>("supg_indicator")),
     _dv(declareProperty<RealVectorValue>("darcy_velocity")),
-    _SUPG_p(declareProperty<RealVectorValue>("petrov_supg_p_function"))
+    _SUPG_p(declareProperty<RealVectorValue>("petrov_supg_p_function")),
+    _n(getMaterialProperty<Real>("porosity")),
+    _rot_mat(getMaterialProperty<RankTwoTensor>("lowerD_rotation_matrix"))
 {
-}
-
-void
-TigerCoupledThermalMaterialTH::computeProperties()
-{
-  if (_constant_option == ConstantTypeEnum::SUBDOMAIN)
-    return;
-
-  // If this Material has the _constant_on_elem flag set, we take the
-  // value computed for _qp==0 and use it at all the quadrature points
-  // in the Elem.
-  if (_constant_option == ConstantTypeEnum::ELEMENT)
-  {
-    // Compute MaterialProperty values at the first qp.
-    _qp = 0;
-    if (_current_elem->dim() < _mesh.dimension())
-      computeRotationMatrix(_current_elem->dim());
-    computeQpProperties();
-
-    // Reference to *all* the MaterialProperties in the MaterialData object, not
-    // just the ones for this Material.
-    MaterialProperties & props = _material_data->props();
-
-    // Now copy the values computed at qp 0 to all the other qps.
-    for (const auto & prop_id : _supplied_prop_ids)
-    {
-      auto nqp = _qrule->n_points();
-      for (decltype(nqp) qp = 1; qp < nqp; ++qp)
-        props[prop_id]->qpCopy(qp, props[prop_id], 0);
-    }
-  }
-  else
-  {
-    if (_current_elem->dim() < _mesh.dimension())
-      computeRotationMatrix(_current_elem->dim());
-    for (_qp = 0; _qp < _qrule->n_points(); ++_qp)
-      computeQpProperties();
-  }
 }
 
 void
 TigerCoupledThermalMaterialTH::computeQpProperties()
 {
-  _T_Kernel_dt[_qp] = (1.0-_n0)*_rho0*_cp0 + _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp])*_n0;
+  _T_Kernel_dt[_qp] = (1.0-_n[_qp])*_rho0*_cp0 + _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp])*_n[_qp];
 
-  ConductivityTensorCalculator(_n0, _fp_UO.k(_P[_qp], _T[_qp]), _lambda0, _ct, _mean, _current_elem->dim());
+  ConductivityTensorCalculator(_n[_qp], _fp_UO.k(_P[_qp], _T[_qp]), _lambda0, _ct, _mean, _current_elem->dim());
   _lambda_sf     [_qp] = _lambda_sf_tensor;
 
-  _scaling_lowerD[_qp] = LowerDScaling();
 
   if (_current_elem->dim() < _mesh.dimension())
-    _lambda_sf[_qp].rotate(_rot_mat);
+    _lambda_sf[_qp].rotate(_rot_mat[_qp]);
 
   _rho_cp_f[_qp] = _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp]);
 

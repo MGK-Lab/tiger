@@ -40,7 +40,7 @@ public:
 protected:
   virtual Real computeQpResidual() override;
 
-  const MaterialProperty<Real> & _scaling_lowerD;
+  const MaterialProperty<Real> & _scale_factor;
   const Real & _scale;
 
   Function & _function;

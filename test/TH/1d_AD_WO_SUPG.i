@@ -26,10 +26,13 @@
 []
 
 [Materials]
+  [./rock_g]
+    type = TigerGeometryMaterial
+    porosity = 0
+  [../]
   [./rock_h]
     type = TigerRockMaterialH
     fp_UO = water_uo
-    porosity = 0.0
     compressibility = 1.0e-9
     kf_UO = rock_uo
   [../]
@@ -37,7 +40,6 @@
     type = TigerCoupledThermalMaterialTH
     fp_UO = water_uo
     pressure = pressure
-    porosity = 0.0
     conductivity_type = isotropic
     lambda = 2.184
     density = 2600

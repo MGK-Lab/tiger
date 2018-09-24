@@ -12,7 +12,6 @@
 []
 
 [GlobalParams]
-  porosity = 0.0
   conductivity_type = isotropic
   density = 2600
   specific_heat = 840
@@ -20,15 +19,20 @@
 []
 
 [Materials]
-  [./rock_t1]
-    type = TigerUncoupledThermalMaterialTH
-    lambda = 2
+  [./rock_g1]
+    type = TigerGeometryMaterial
+    porosity = 0
     block = 'b1 b2'
   [../]
-  [./rock_t2]
-    type = TigerUncoupledThermalMaterialTH
-    lambda = 200
+  [./rock_g2]
+    type = TigerGeometryMaterial
+    porosity = 0
+    scale_factor = 0.1
     block = frac
+  [../]
+  [./rock_t]
+    type = TigerUncoupledThermalMaterialTH
+    lambda = 2
   [../]
 []
 

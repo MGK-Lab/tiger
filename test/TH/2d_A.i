@@ -18,11 +18,14 @@
 []
 
 [Materials]
+  [./rock_g]
+    type = TigerGeometryMaterial
+    porosity = 1
+  [../]
   [./advect_th]
     type = TigerUncoupledThermalMaterialTH
     fp_UO = water_uo
     user_velocity = vel
-    porosity = 1.0
     conductivity_type = isotropic
     lambda = 0
     density = 0

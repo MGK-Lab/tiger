@@ -33,7 +33,6 @@ validParams<TigerRockMaterialH>()
   InputParameters params = validParams<TigerMaterialGeneral>();
   params.addParam<bool>("has_gravity", false, "Is the gravity enabled?");
   params.addParam<Real>("gravity_acceleration", 9.81, "The magnitude of the gravity acceleration (m/s^2)");
-  params.addRequiredParam<Real>("porosity", "Porosity of rock matrix");
   params.addRequiredParam<Real>("compressibility", "Compressibility of rock matrix (1/Pa)");
   params.addRequiredParam<UserObjectName>("kf_UO", "The name of the userobject for permeability calculation");
   params.addClassDescription("Hydraulic properties");
@@ -43,15 +42,15 @@ validParams<TigerRockMaterialH>()
 TigerRockMaterialH::TigerRockMaterialH(const InputParameters & parameters)
   : TigerMaterialGeneral(parameters),
     _beta_s(getParam<Real>("compressibility")),
-    _n0(getParam<Real>("porosity")),
     _k_vis(declareProperty<RankTwoTensor>("permeability_by_viscosity")),
     _H_Kernel_dt(declareProperty<Real>("H_Kernel_dt_coefficient")),
     _rhof(declareProperty<Real>("fluid_density")),
     _rhof_g(declareProperty<RealVectorValue>("rho_times_gravity")),
     _kf_UO(getUserObject<TigerPermeability>("kf_UO")),
+    _n(getMaterialProperty<Real>("porosity")),
+    _rot_mat(getMaterialProperty<RankTwoTensor>("lowerD_rotation_matrix")),
     _has_gravity(getParam<bool>("has_gravity")),
-    _g(getParam<Real>("gravity_acceleration")),
-    _scaling_lowerD(declareProperty<Real>("lowerD_scale_factor_h"))
+    _g(getParam<Real>("gravity_acceleration"))
 {
   if (_has_gravity)
   {
@@ -66,57 +65,16 @@ TigerRockMaterialH::TigerRockMaterialH(const InputParameters & parameters)
     _gravity = RealVectorValue(0., 0., 0.);
 }
 
-
-void
-TigerRockMaterialH::computeProperties()
-{
-  if (_constant_option == ConstantTypeEnum::SUBDOMAIN)
-    return;
-
-  // If this Material has the _constant_on_elem flag set, we take the
-  // value computed for _qp==0 and use it at all the quadrature points
-  // in the Elem.
-  if (_constant_option == ConstantTypeEnum::ELEMENT)
-  {
-    // Compute MaterialProperty values at the first qp.
-    _qp = 0;
-    if (_current_elem->dim() < _mesh.dimension())
-      computeRotationMatrix(_current_elem->dim());
-    computeQpProperties();
-
-    // Reference to *all* the MaterialProperties in the MaterialData object, not
-    // just the ones for this Material.
-    MaterialProperties & props = _material_data->props();
-
-    // Now copy the values computed at qp 0 to all the other qps.
-    for (const auto & prop_id : _supplied_prop_ids)
-    {
-      auto nqp = _qrule->n_points();
-      for (decltype(nqp) qp = 1; qp < nqp; ++qp)
-        props[prop_id]->qpCopy(qp, props[prop_id], 0);
-    }
-  }
-  else
-  {
-    if (_current_elem->dim() < _mesh.dimension())
-      computeRotationMatrix(_current_elem->dim());
-    for (_qp = 0; _qp < _qrule->n_points(); ++_qp)
-      computeQpProperties();
-  }
-}
-
 void
 TigerRockMaterialH::computeQpProperties()
 {
   Real _rho_f = _fp_UO.rho(_P[_qp], _T[_qp]);
   Real _beta_f = 1.0/(std::pow(_fp_UO.c(_P[_qp], _T[_qp]),2.0)*_rho_f);
   _k_vis[_qp] = _kf_UO.PermeabilityTensorCalculator(_current_elem->dim()) / _fp_UO.mu(_P[_qp], _T[_qp]);
-  _H_Kernel_dt[_qp] = _beta_s + _beta_f * _n0;
+  _H_Kernel_dt[_qp] = _beta_s + _beta_f * _n[_qp];
   _rhof_g[_qp] = _rho_f * _gravity;
   _rhof[_qp] = _rho_f;
 
-  _scaling_lowerD[_qp] = LowerDScaling();
-
   if (_current_elem->dim() < _mesh.dimension())
-    _k_vis[_qp].rotate(_rot_mat);
+    _k_vis[_qp].rotate(_rot_mat[_qp]);
 }

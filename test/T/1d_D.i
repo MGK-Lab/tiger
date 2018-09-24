@@ -13,10 +13,13 @@
 []
 
 [Materials]
+  [./rock_g]
+    type = TigerGeometryMaterial
+    porosity = 0
+  [../]
   [./rock_t]
     type = TigerUncoupledThermalMaterialTH
     fp_UO = water_uo
-    porosity = 0
     conductivity_type = isotropic
     lambda = 2
     density = 2600

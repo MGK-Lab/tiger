@@ -45,7 +45,7 @@ protected:
   virtual Real computeQpJacobian() override;
   virtual Real computeQpOffDiagJacobian(unsigned int jvar) override;
 
-  const MaterialProperty<Real> & _scaling_lowerD;
+  const MaterialProperty<Real> & _scale_factor;
   const MaterialProperty<Real> & _rho_cp_f;
   const MaterialProperty<RealVectorValue> & _SUPG_p;
   const MaterialProperty<bool> & _SUPG_ind;

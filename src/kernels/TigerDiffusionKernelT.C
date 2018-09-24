@@ -33,7 +33,7 @@ validParams<TigerDiffusionKernelT>()
 
 TigerDiffusionKernelT::TigerDiffusionKernelT(const InputParameters & parameters)
   : Kernel(parameters),
-    _scaling_lowerD(getMaterialProperty<Real>("lowerD_scale_factor_t")),
+    _scale_factor(getMaterialProperty<Real>("scale_factor")),
     _lambda_sf(getMaterialProperty<RankTwoTensor>("conductivity_mixture"))
 {
 }
@@ -41,11 +41,11 @@ TigerDiffusionKernelT::TigerDiffusionKernelT(const InputParameters & parameters)
 Real
 TigerDiffusionKernelT::computeQpResidual()
 {
-  return _grad_test[_i][_qp] * ( _scaling_lowerD[_qp] * _lambda_sf[_qp] * _grad_u[_qp]);
+  return _grad_test[_i][_qp] * ( _scale_factor[_qp] * _lambda_sf[_qp] * _grad_u[_qp]);
 }
 
 Real
 TigerDiffusionKernelT::computeQpJacobian()
 {
-  return _grad_test[_i][_qp] * ( _scaling_lowerD[_qp] * _lambda_sf[_qp] * _grad_phi[_j][_qp]);
+  return _grad_test[_i][_qp] * ( _scale_factor[_qp] * _lambda_sf[_qp] * _grad_phi[_j][_qp]);
 }
