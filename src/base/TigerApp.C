@@ -15,7 +15,6 @@
 
 //AuxKernels
 #include "TigerDarcyVelocityComponent.h"
-#include "test.h"
 
 //Material
 #include "TigerRockMaterialH.h"
@@ -93,7 +92,6 @@ TigerApp::registerObjects(Factory & factory)
   registerKernel(TigerHeatSourceT);
 
   registerAux(TigerDarcyVelocityComponent);
-  registerAux(test);
 
   registerDiracKernel(TigerPointSourceH);
 

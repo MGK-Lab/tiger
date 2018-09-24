@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  TIGER - Hydro-thermal sImulator GEothermal Reservoirs                 */
+/*  TIGER - THMC sImulator for GEoscience Research                        */
 /*                                                                        */
 /*  Copyright (C) 2017 by Maziar Gholami Korzani                          */
 /*  Karlsruhe Institute of Technology, Institute of Applied Geosciences   */
