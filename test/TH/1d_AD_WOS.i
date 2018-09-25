@@ -32,13 +32,13 @@
   [../]
   [./matrix_h]
     type = TigerRockMaterialH
-    fp_UO = water_uo
-    kf_UO = matrix_uo1
+    fp_uo = water_uo
+    kf_uo = matrix_uo1
     compressibility = 1.0e-10
   [../]
   [./matrix_t]
     type = TigerCoupledThermalMaterialTH
-    fp_UO = water_uo
+    fp_uo = water_uo
     pressure =  pressure
     conductivity_type = isotropic
     mean_calculation_type = arithmetic

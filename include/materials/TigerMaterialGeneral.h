@@ -44,7 +44,7 @@ protected:
   const VariableValue & _T;
 
   // Userobject from fluid_properties_module for calculating fluid properties
- const SinglePhaseFluidPropertiesPT & _fp_UO;
+ const SinglePhaseFluidPropertiesPT & _fp_uo;
 };
 
 #endif /* TIGERMATERIALGENERAL_H */

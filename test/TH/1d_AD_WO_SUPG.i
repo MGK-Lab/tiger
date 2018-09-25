@@ -32,13 +32,13 @@
   [../]
   [./rock_h]
     type = TigerRockMaterialH
-    fp_UO = water_uo
+    fp_uo = water_uo
     compressibility = 1.0e-9
-    kf_UO = rock_uo
+    kf_uo = rock_uo
   [../]
   [./rock_t]
     type = TigerCoupledThermalMaterialTH
-    fp_UO = water_uo
+    fp_uo = water_uo
     pressure = pressure
     conductivity_type = isotropic
     lambda = 2.184

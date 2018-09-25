@@ -34,7 +34,7 @@ validParams<TigerRockMaterialH>()
   params.addParam<bool>("has_gravity", false, "Is the gravity enabled?");
   params.addParam<Real>("gravity_acceleration", 9.81, "The magnitude of the gravity acceleration (m/s^2)");
   params.addRequiredParam<Real>("compressibility", "Compressibility of rock matrix (1/Pa)");
-  params.addRequiredParam<UserObjectName>("kf_UO", "The name of the userobject for permeability calculation");
+  params.addRequiredParam<UserObjectName>("kf_uo", "The name of the userobject for permeability calculation");
   params.addClassDescription("Hydraulic properties");
   return params;
 }
@@ -46,7 +46,7 @@ TigerRockMaterialH::TigerRockMaterialH(const InputParameters & parameters)
     _H_Kernel_dt(declareProperty<Real>("H_Kernel_dt_coefficient")),
     _rhof(declareProperty<Real>("fluid_density")),
     _rhof_g(declareProperty<RealVectorValue>("rho_times_gravity")),
-    _kf_UO(getUserObject<TigerPermeability>("kf_UO")),
+    _kf_uo(getUserObject<TigerPermeability>("kf_uo")),
     _n(getMaterialProperty<Real>("porosity")),
     _rot_mat(getMaterialProperty<RankTwoTensor>("lowerD_rotation_matrix")),
     _has_gravity(getParam<bool>("has_gravity")),
@@ -68,9 +68,9 @@ TigerRockMaterialH::TigerRockMaterialH(const InputParameters & parameters)
 void
 TigerRockMaterialH::computeQpProperties()
 {
-  Real _rho_f = _fp_UO.rho(_P[_qp], _T[_qp]);
-  Real _beta_f = 1.0/(std::pow(_fp_UO.c(_P[_qp], _T[_qp]),2.0)*_rho_f);
-  _k_vis[_qp] = _kf_UO.PermeabilityTensorCalculator(_current_elem->dim()) / _fp_UO.mu(_P[_qp], _T[_qp]);
+  Real _rho_f = _fp_uo.rho(_P[_qp], _T[_qp]);
+  Real _beta_f = 1.0/(std::pow(_fp_uo.c(_P[_qp], _T[_qp]),2.0)*_rho_f);
+  _k_vis[_qp] = _kf_uo.PermeabilityTensorCalculator(_current_elem->dim()) / _fp_uo.mu(_P[_qp], _T[_qp]);
   _H_Kernel_dt[_qp] = _beta_s + _beta_f * _n[_qp];
   _rhof_g[_qp] = _rho_f * _gravity;
   _rhof[_qp] = _rho_f;

@@ -24,7 +24,7 @@
   [../]
   [./advect_th]
     type = TigerUncoupledThermalMaterialTH
-    fp_UO = water_uo
+    fp_uo = water_uo
     user_velocity = vel
     conductivity_type = isotropic
     lambda = 0

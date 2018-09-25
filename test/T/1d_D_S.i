@@ -23,7 +23,7 @@
   [../]
   [./rock_t]
     type = TigerUncoupledThermalMaterialTH
-    fp_UO = water_uo
+    fp_uo = water_uo
     conductivity_type = isotropic
     lambda = 3
     density = 0.1 #artificial value to reach steady in the transient simulation

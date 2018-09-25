@@ -21,49 +21,42 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERROCKMATERIALH_H
-#define TIGERROCKMATERIALH_H
+#ifndef TIGERFLUIDMATERIAL_H
+#define TIGERFLUIDMATERIAL_H
 
-#include "TigerMaterialGeneral.h"
-#include "RankTwoTensor.h"
-#include "TigerPermeability.h"
+#include "Material.h"
+#include "SinglePhaseFluidPropertiesPT.h"
 
-class TigerRockMaterialH;
+class TigerFluidMaterial;
 
 template <>
-InputParameters validParams<TigerRockMaterialH>();
+InputParameters validParams<TigerFluidMaterial>();
 
-class TigerRockMaterialH : public TigerMaterialGeneral
+class TigerFluidMaterial : public Material
 {
 public:
-  TigerRockMaterialH(const InputParameters & parameters);
-
-protected:
+  TigerFluidMaterial(const InputParameters & parameters);
   virtual void computeQpProperties() override;
 
-  // initial compressibility of solid phase
-  Real _beta_s;
-  // gravity vector
-  RealVectorValue _gravity;
-  // permeability tensor divided by viscosity
-  MaterialProperty<RankTwoTensor> & _k_vis;
-  // compressibility
-  MaterialProperty<Real> & _H_Kernel_dt;
-  // density
-  MaterialProperty<Real> & _rhof;
-  // compressibility
-  MaterialProperty<RealVectorValue> & _rhof_g;
-  // Tiger permeability calculater UserObject
-  const TigerPermeability & _kf_uo;
+protected:
+  // Pore pressure nonlinear variable
+  const VariableValue & _P;
+  // Temperature nonlinear variable
+  const VariableValue & _T;
+  // Userobject from fluid_properties_module for calculating fluid properties
+  const SinglePhaseFluidPropertiesPT & _fp_uo;
 
-  // imported props from TigerGeometryMaterial
-  const MaterialProperty<Real> & _n;
-  const MaterialProperty<RankTwoTensor> & _rot_mat;
+  // Density of the fluid
+  MaterialProperty<Real> & _rho_f;
+  // Viscosity of the fluid
+  MaterialProperty<Real> & _mu;
+  // Compressibility of the fluid
+  MaterialProperty<Real> & _beta_f;
+  // Specific heat at constant pressure for the fluid
+  MaterialProperty<Real> & _cp_f;
+  // Thermal conductivity of the fluid
+  MaterialProperty<Real> & _lambda_f;
 
-  // gravity option
-  bool _has_gravity;
-  // gravity acceleration (m/s^2)
-  Real _g;
 };
 
-#endif /* TIGERROCKMATERIALH_H */
+#endif /* TIGERFLUIDMATERIAL_H */

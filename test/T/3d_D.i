@@ -15,7 +15,7 @@
   conductivity_type = isotropic
   density = 2600
   specific_heat = 840
-  fp_UO = water_uo
+  fp_uo = water_uo
 []
 
 [Materials]

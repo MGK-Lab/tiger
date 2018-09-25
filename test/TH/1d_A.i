@@ -21,7 +21,7 @@
   [../]
   [./matrix_t]
     type = TigerUncoupledThermalMaterialTH
-    fp_UO = water_uo
+    fp_uo = water_uo
     conductivity_type = isotropic
     lambda = 0
     density = 0

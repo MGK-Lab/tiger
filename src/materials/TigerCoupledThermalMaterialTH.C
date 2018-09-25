@@ -83,16 +83,16 @@ TigerCoupledThermalMaterialTH::TigerCoupledThermalMaterialTH(const InputParamete
 void
 TigerCoupledThermalMaterialTH::computeQpProperties()
 {
-  _T_Kernel_dt[_qp] = (1.0-_n[_qp])*_rho0*_cp0 + _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp])*_n[_qp];
+  _T_Kernel_dt[_qp] = (1.0-_n[_qp])*_rho0*_cp0 + _fp_uo.rho(_P[_qp], _T[_qp])*_fp_uo.cp(_P[_qp], _T[_qp])*_n[_qp];
 
-  ConductivityTensorCalculator(_n[_qp], _fp_UO.k(_P[_qp], _T[_qp]), _lambda0, _ct, _mean, _current_elem->dim());
+  ConductivityTensorCalculator(_n[_qp], _fp_uo.k(_P[_qp], _T[_qp]), _lambda0, _ct, _mean, _current_elem->dim());
   _lambda_sf     [_qp] = _lambda_sf_tensor;
 
 
   if (_current_elem->dim() < _mesh.dimension())
     _lambda_sf[_qp].rotate(_rot_mat[_qp]);
 
-  _rho_cp_f[_qp] = _fp_UO.rho(_P[_qp], _T[_qp])*_fp_UO.cp(_P[_qp], _T[_qp]);
+  _rho_cp_f[_qp] = _fp_uo.rho(_P[_qp], _T[_qp])*_fp_uo.cp(_P[_qp], _T[_qp]);
 
   _dv[_qp] = -_k_vis[_qp] * (_gradient_pore_press[_qp] - _rhof_g[_qp]);
 

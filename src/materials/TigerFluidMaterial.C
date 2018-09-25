@@ -21,49 +21,43 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERROCKMATERIALH_H
-#define TIGERROCKMATERIALH_H
+#include "TigerFluidMaterial.h"
 
-#include "TigerMaterialGeneral.h"
-#include "RankTwoTensor.h"
-#include "TigerPermeability.h"
-
-class TigerRockMaterialH;
+registerMooseObject("TigerApp", TigerFluidMaterial);
 
 template <>
-InputParameters validParams<TigerRockMaterialH>();
-
-class TigerRockMaterialH : public TigerMaterialGeneral
+InputParameters
+validParams<TigerFluidMaterial>()
 {
-public:
-  TigerRockMaterialH(const InputParameters & parameters);
+  InputParameters params = validParams<Material>();
 
-protected:
-  virtual void computeQpProperties() override;
+  params.addCoupledVar("pressure", 0.0, "Pore pressure nonlinear variable (Pa)");
+  params.addCoupledVar("temperature", 273.15, "temperature nonlinear variable (K)");
+  params.addRequiredParam<UserObjectName>("fp_uo", "The name of the userobject "
+                                          "for fluid properties");
 
-  // initial compressibility of solid phase
-  Real _beta_s;
-  // gravity vector
-  RealVectorValue _gravity;
-  // permeability tensor divided by viscosity
-  MaterialProperty<RankTwoTensor> & _k_vis;
-  // compressibility
-  MaterialProperty<Real> & _H_Kernel_dt;
-  // density
-  MaterialProperty<Real> & _rhof;
-  // compressibility
-  MaterialProperty<RealVectorValue> & _rhof_g;
-  // Tiger permeability calculater UserObject
-  const TigerPermeability & _kf_uo;
+  return params;
+}
 
-  // imported props from TigerGeometryMaterial
-  const MaterialProperty<Real> & _n;
-  const MaterialProperty<RankTwoTensor> & _rot_mat;
+TigerFluidMaterial::TigerFluidMaterial(const InputParameters & parameters)
+  : Material(parameters),
+    _P(coupledValue("pressure")),
+    _T(coupledValue("temperature")),
+    _fp_uo(getUserObject<SinglePhaseFluidPropertiesPT>("fp_uo")),
+    _rho_f(declareProperty<Real>("fluid_density")),
+    _mu(declareProperty<Real>("fluid_viscosity")),
+    _beta_f(declareProperty<Real>("fluid_compressibility")),
+    _cp_f(declareProperty<Real>("fluid_specific_heat")),
+    _lambda_f(declareProperty<Real>("fluid_thermal_conductivity"))
+{
+}
 
-  // gravity option
-  bool _has_gravity;
-  // gravity acceleration (m/s^2)
-  Real _g;
-};
-
-#endif /* TIGERROCKMATERIALH_H */
+void
+TigerFluidMaterial::computeQpProperties()
+{
+  _rho_f[_qp] = _fp_uo.rho(_P[_qp], _T[_qp]);
+  _mu[_qp] = _fp_uo.mu(_P[_qp], _T[_qp]);
+  _beta_f[_qp] = 1.0 / (std::pow(_fp_uo.c(_P[_qp], _T[_qp]),2.0) * _rho_f[_qp]);
+  _cp_f[_qp] = _fp_uo.cp(_P[_qp], _T[_qp]);
+  _lambda_f[_qp] = _fp_uo.k(_P[_qp], _T[_qp]);
+}

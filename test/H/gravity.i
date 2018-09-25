@@ -31,11 +31,11 @@
   [../]
   [./rock_h]
     type = TigerRockMaterialH
-    fp_UO = water_uo
+    fp_uo = water_uo
     has_gravity = true
     gravity_acceleration = 9.81
     compressibility = 1.0e-9
-    kf_UO = rock_uo
+    kf_uo = rock_uo
   [../]
 []
 

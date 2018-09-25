@@ -31,7 +31,7 @@ validParams<TigerMaterialGeneral>()
 
   params.addCoupledVar("pressure", 0.0, "Pore pressure nonlinear variable (Pa)");
   params.addCoupledVar("temperature", 273.15, "temperature nonlinear variable (K)");
-  params.addRequiredParam<UserObjectName>("fp_UO", "The name of the userobject "
+  params.addRequiredParam<UserObjectName>("fp_uo", "The name of the userobject "
                                           "for fluid properties");
 
   return params;
@@ -41,6 +41,6 @@ TigerMaterialGeneral::TigerMaterialGeneral(const InputParameters & parameters)
   : Material(parameters),
     _P(coupledValue("pressure")),
     _T(coupledValue("temperature")),
-    _fp_UO(getUserObject<SinglePhaseFluidPropertiesPT>("fp_UO"))
+    _fp_uo(getUserObject<SinglePhaseFluidPropertiesPT>("fp_uo"))
 {
 }
