@@ -29,9 +29,12 @@
     type = TigerGeometryMaterial
     porosity = 0.4
   [../]
-  [./rock_h]
-    type = TigerRockMaterialH
+  [./rock_f]
+    type = TigerFluidMaterial
     fp_uo = water_uo
+  [../]
+  [./rock_h]
+    type = TigerHydraulicMaterialH
     has_gravity = true
     gravity_acceleration = 9.81
     compressibility = 1.0e-9

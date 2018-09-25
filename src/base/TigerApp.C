@@ -17,7 +17,6 @@
 #include "TigerDarcyVelocityComponent.h"
 
 //Material
-#include "TigerRockMaterialH.h"
 #include "TigerUncoupledThermalMaterialTH.h"
 #include "TigerCoupledThermalMaterialTH.h"
 
@@ -77,7 +76,6 @@ TigerApp__registerObjects(Factory & factory)
 void
 TigerApp::registerObjects(Factory & factory)
 {
-  registerMaterial(TigerRockMaterialH);
   registerMaterial(TigerUncoupledThermalMaterialTH);
   registerMaterial(TigerCoupledThermalMaterialTH);
 

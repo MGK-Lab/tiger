@@ -66,7 +66,8 @@ TigerCoupledThermalMaterialTH::TigerCoupledThermalMaterialTH(const InputParamete
     _supg_scale(getParam<Real>("supg_coeficient_scale")),
     _gradient_pore_press(coupledGradient("pressure")),
     _k_vis(getMaterialProperty<RankTwoTensor>("permeability_by_viscosity")),
-    _rhof_g(getMaterialProperty<RealVectorValue>("rho_times_gravity")),
+    _rho_f(getMaterialProperty<Real>("fluid_density")),
+    _g(getMaterialProperty<RealVectorValue>("gravity_vector")),
     _Pe(_has_PeCr ? &declareProperty<Real>("peclet_number") : NULL),
     _Cr(_has_PeCr ? &declareProperty<Real>("courant_number") : NULL),
     _lambda_sf(declareProperty<RankTwoTensor>("conductivity_mixture")),
@@ -94,7 +95,7 @@ TigerCoupledThermalMaterialTH::computeQpProperties()
 
   _rho_cp_f[_qp] = _fp_uo.rho(_P[_qp], _T[_qp])*_fp_uo.cp(_P[_qp], _T[_qp]);
 
-  _dv[_qp] = -_k_vis[_qp] * (_gradient_pore_press[_qp] - _rhof_g[_qp]);
+  _dv[_qp] = -_k_vis[_qp] * (_gradient_pore_press[_qp] - _rho_f[_qp] * _g[_qp]);
 
   Real norm_v, h_ele, alpha, lambda;
 

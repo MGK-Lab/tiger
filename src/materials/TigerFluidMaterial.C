@@ -31,10 +31,12 @@ validParams<TigerFluidMaterial>()
 {
   InputParameters params = validParams<Material>();
 
-  params.addCoupledVar("pressure", 0.0, "Pore pressure nonlinear variable (Pa)");
-  params.addCoupledVar("temperature", 273.15, "temperature nonlinear variable (K)");
-  params.addRequiredParam<UserObjectName>("fp_uo", "The name of the userobject "
-                                          "for fluid properties");
+  params.addCoupledVar("pressure", 0.0,
+        "Pore pressure nonlinear variable (Pa)");
+  params.addCoupledVar("temperature", 273.15,
+        "temperature nonlinear variable (K)");
+  params.addRequiredParam<UserObjectName>("fp_uo",
+        "The name of the userobject for fluid properties");
 
   return params;
 }

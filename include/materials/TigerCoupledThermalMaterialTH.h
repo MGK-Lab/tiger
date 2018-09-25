@@ -73,7 +73,8 @@ protected:
 
   const VariableGradient & _gradient_pore_press;
   const MaterialProperty<RankTwoTensor> & _k_vis;
-  const MaterialProperty<RealVectorValue> & _rhof_g;
+  const MaterialProperty<Real> & _rho_f;
+  const MaterialProperty<RealVectorValue> & _g;
   MaterialProperty<Real> * _Pe;
   MaterialProperty<Real> * _Cr;
 

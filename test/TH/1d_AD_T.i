@@ -25,9 +25,12 @@
     type = TigerGeometryMaterial
     porosity = 0.4
   [../]
-  [./rock_h]
-    type = TigerRockMaterialH
+  [./rock_f]
+    type = TigerFluidMaterial
     fp_uo = water_uo
+  [../]
+  [./rock_h]
+    type = TigerHydraulicMaterialH
     compressibility = 1.0e-4
     kf_uo = rock_uo
   [../]

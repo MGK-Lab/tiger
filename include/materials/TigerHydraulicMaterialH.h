@@ -21,49 +21,50 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERROCKMATERIALH_H
-#define TIGERROCKMATERIALH_H
+#ifndef TIGERHYDRAULICMATERIALH_H
+#define TIGERHYDRAULICMATERIALH_H
 
-#include "TigerMaterialGeneral.h"
+#include "Material.h"
 #include "RankTwoTensor.h"
 #include "TigerPermeability.h"
 
-class TigerRockMaterialH;
+class TigerHydraulicMaterialH;
 
 template <>
-InputParameters validParams<TigerRockMaterialH>();
+InputParameters validParams<TigerHydraulicMaterialH>();
 
-class TigerRockMaterialH : public TigerMaterialGeneral
+class TigerHydraulicMaterialH : public Material
 {
 public:
-  TigerRockMaterialH(const InputParameters & parameters);
+  TigerHydraulicMaterialH(const InputParameters & parameters);
 
 protected:
   virtual void computeQpProperties() override;
 
-  // initial compressibility of solid phase
-  Real _beta_s;
-  // gravity vector
-  RealVectorValue _gravity;
-  // permeability tensor divided by viscosity
+  // Permeability tensor divided by viscosity (rotated in lowerD)
   MaterialProperty<RankTwoTensor> & _k_vis;
-  // compressibility
+  // Hydraulic time derivative coefficient
   MaterialProperty<Real> & _H_Kernel_dt;
-  // density
-  MaterialProperty<Real> & _rhof;
-  // compressibility
-  MaterialProperty<RealVectorValue> & _rhof_g;
-  // Tiger permeability calculater UserObject
+  // Gravity vector
+  MaterialProperty<RealVectorValue> & _gravity;
+  // Tiger permeability calculater userobject
   const TigerPermeability & _kf_uo;
 
   // imported props from TigerGeometryMaterial
   const MaterialProperty<Real> & _n;
   const MaterialProperty<RankTwoTensor> & _rot_mat;
 
-  // gravity option
+  // imported props from TigerFluidMaterial
+  const MaterialProperty<Real> & _mu;
+  const MaterialProperty<Real> & _beta_f;
+
+private:
+  // Gravity activation option
   bool _has_gravity;
-  // gravity acceleration (m/s^2)
-  Real _g;
+  // Gravity vector
+  RealVectorValue _g;
+  // Compressibility of the solid phase
+  Real _beta_s;
 };
 
-#endif /* TIGERROCKMATERIALH_H */
+#endif /* TIGERHYDRAULICMATERIALH_H */

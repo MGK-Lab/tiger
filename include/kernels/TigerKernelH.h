@@ -43,7 +43,8 @@ protected:
 
   const MaterialProperty<Real> & _scale_factor;
   const MaterialProperty<RankTwoTensor> & _k_vis;
-  const MaterialProperty<RealVectorValue> & _rhof_g;
+  const MaterialProperty<Real> & _rho_f;
+  const MaterialProperty<RealVectorValue> & _g;
 };
 
 #endif // TIGERKERNELH_H

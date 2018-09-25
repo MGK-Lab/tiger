@@ -35,14 +35,15 @@ TigerKernelH::TigerKernelH(const InputParameters & parameters)
   : Kernel(parameters),
     _scale_factor(getMaterialProperty<Real>("scale_factor")),
     _k_vis(getMaterialProperty<RankTwoTensor>("permeability_by_viscosity")),
-    _rhof_g(getMaterialProperty<RealVectorValue>("rho_times_gravity"))
+    _rho_f(getMaterialProperty<Real>("fluid_density")),
+    _g(getMaterialProperty<RealVectorValue>("gravity_vector"))
 {
 }
 
 Real
 TigerKernelH::computeQpResidual()
 {
-  return _grad_test[_i][_qp] * (_scale_factor[_qp] * _k_vis[_qp] * ( _grad_u[_qp] - _rhof_g[_qp] ) );
+  return _grad_test[_i][_qp] * (_scale_factor[_qp] * _k_vis[_qp] * ( _grad_u[_qp] - _rho_f[_qp] * _g[_qp] ) );
 }
 
 Real
