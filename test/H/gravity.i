@@ -35,6 +35,7 @@
   [../]
   [./rock_h]
     type = TigerHydraulicMaterialH
+    pressure = pressure
     has_gravity = true
     gravity_acceleration = 9.81
     compressibility = 1.0e-9

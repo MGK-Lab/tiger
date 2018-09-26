@@ -31,6 +31,7 @@
   [../]
   [./rock_h]
     type = TigerHydraulicMaterialH
+    pressure = pressure
     compressibility = 1.0e-4
     kf_uo = rock_uo
   [../]

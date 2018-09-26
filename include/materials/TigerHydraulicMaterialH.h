@@ -41,6 +41,9 @@ public:
 protected:
   virtual void computeQpProperties() override;
 
+  // Gradient of pressure
+  const VariableGradient & _grad_p;
+
   // Permeability tensor divided by viscosity (rotated in lowerD)
   MaterialProperty<RankTwoTensor> & _k_vis;
   // Hydraulic time derivative coefficient
@@ -49,14 +52,21 @@ protected:
   MaterialProperty<RealVectorValue> & _gravity;
   // Tiger permeability calculater userobject
   const TigerPermeability & _kf_uo;
+  // Dracy velocity
+  MaterialProperty<RealVectorValue> & _dv;
+  // Derivative of Dracy velocity wrt temperature
+  MaterialProperty<RealVectorValue> & _ddv_dT;
 
-  // imported props from TigerGeometryMaterial
+  // Imported props from TigerGeometryMaterial
   const MaterialProperty<Real> & _n;
   const MaterialProperty<RankTwoTensor> & _rot_mat;
 
   // imported props from TigerFluidMaterial
-  const MaterialProperty<Real> & _mu;
+  const MaterialProperty<Real> & _rho_f;
+  const MaterialProperty<Real> & _mu_f;
   const MaterialProperty<Real> & _beta_f;
+  const MaterialProperty<Real> & _drho_dT_f;
+  const MaterialProperty<Real> & _dmu_dT_f;
 
 private:
   // Gravity activation option

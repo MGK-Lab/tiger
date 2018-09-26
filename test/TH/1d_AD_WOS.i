@@ -36,6 +36,7 @@
   [../]
   [./matrix_h]
     type = TigerHydraulicMaterialH
+    pressure = pressure
     kf_uo = matrix_uo1
     compressibility = 1.0e-10
   [../]

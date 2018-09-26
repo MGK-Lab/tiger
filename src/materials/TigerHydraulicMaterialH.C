@@ -31,6 +31,9 @@ InputParameters
 validParams<TigerHydraulicMaterialH>()
 {
   InputParameters params = validParams<Material>();
+
+  params.addRequiredCoupledVar("pressure",
+          "Pore pressure nonlinear variable (Pa)");
   params.addParam<bool>("has_gravity", false, "Is the gravity enabled?");
   params.addParam<Real>("gravity_acceleration", 9.81,
         "The magnitude of the gravity acceleration (m/s^2)");
@@ -45,14 +48,20 @@ validParams<TigerHydraulicMaterialH>()
 
 TigerHydraulicMaterialH::TigerHydraulicMaterialH(const InputParameters & parameters)
   : Material(parameters),
+    _grad_p(coupledGradient("pressure")),
     _k_vis(declareProperty<RankTwoTensor>("permeability_by_viscosity")),
     _H_Kernel_dt(declareProperty<Real>("H_Kernel_dt_coefficient")),
     _gravity(declareProperty<RealVectorValue>("gravity_vector")),
     _kf_uo(getUserObject<TigerPermeability>("kf_uo")),
+    _dv(declareProperty<RealVectorValue>("darcy_velocity_vector")),
+    _ddv_dT(declareProperty<RealVectorValue>("d_darcy_velocity_dT")),
     _n(getMaterialProperty<Real>("porosity")),
     _rot_mat(getMaterialProperty<RankTwoTensor>("lowerD_rotation_matrix")),
-    _mu(getMaterialProperty<Real>("fluid_viscosity")),
+    _rho_f(getMaterialProperty<Real>("fluid_density")),
+    _mu_f(getMaterialProperty<Real>("fluid_viscosity")),
     _beta_f(getMaterialProperty<Real>("fluid_compressibility")),
+    _drho_dT_f(getMaterialProperty<Real>("fluid_drho_dT")),
+    _dmu_dT_f(getMaterialProperty<Real>("fluid_dmu_dT")),
     _has_gravity(getParam<bool>("has_gravity")),
     _beta_s(getParam<Real>("compressibility"))
 {
@@ -73,10 +82,13 @@ TigerHydraulicMaterialH::TigerHydraulicMaterialH(const InputParameters & paramet
 void
 TigerHydraulicMaterialH::computeQpProperties()
 {
-  _k_vis[_qp] = _kf_uo.PermeabilityTensorCalculator(_current_elem->dim()) / _mu[_qp];
+  _k_vis[_qp] = _kf_uo.PermeabilityTensorCalculator(_current_elem->dim()) / _mu_f[_qp];
   _H_Kernel_dt[_qp] = _beta_s + _beta_f[_qp] * _n[_qp];
   _gravity[_qp] = _g;
 
   if (_current_elem->dim() < _mesh.dimension())
     _k_vis[_qp].rotate(_rot_mat[_qp]);
+
+  _dv[_qp] = - _k_vis[_qp] * (_grad_p[_qp] - _rho_f[_qp] * _gravity[_qp]);
+  _ddv_dT[_qp] = _k_vis[_qp] * _gravity[_qp] * (_drho_dT_f[_qp] - _dmu_dT_f[_qp] * _rho_f[_qp] / _mu_f[_qp]);
 }
