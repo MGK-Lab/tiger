@@ -21,31 +21,33 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerTimeDerivativeH.h"
+#ifndef TIGERHYDRAULICKERNELH_H
+#define TIGERHYDRAULICKERNELH_H
+
+#include "Kernel.h"
+#include "RankTwoTensor.h"
+
+class TigerHydraulicKernelH;
 
 template <>
-InputParameters
-validParams<TigerTimeDerivativeH>()
-{
-  InputParameters params = validParams<TimeDerivative>();
-  return params;
-}
+InputParameters validParams<TigerHydraulicKernelH>();
 
-TigerTimeDerivativeH::TigerTimeDerivativeH(const InputParameters & parameters)
-  : TimeDerivative(parameters),
-    _scale_factor(getMaterialProperty<Real>("scale_factor")),
-    _H_Kernel_dt(getMaterialProperty<Real>("H_Kernel_dt_coefficient"))
+class TigerHydraulicKernelH : public Kernel
 {
-}
+public:
+  TigerHydraulicKernelH(const InputParameters & parameters);
 
-Real
-TigerTimeDerivativeH::computeQpResidual()
-{
-  return _scale_factor[_qp] * _H_Kernel_dt[_qp] * TimeDerivative::computeQpResidual();
-}
+protected:
+  virtual Real computeQpResidual() override;
+  virtual Real computeQpJacobian() override;
 
-Real
-TigerTimeDerivativeH::computeQpJacobian()
-{
-  return _scale_factor[_qp] * _H_Kernel_dt[_qp] * TimeDerivative::computeQpJacobian();
-}
+  const MaterialProperty<Real> & _scale_factor;
+  const MaterialProperty<RankTwoTensor> & _k_vis;
+  const MaterialProperty<Real> & _rho_f;
+  const MaterialProperty<Real> & _drho_dp_f;
+  const MaterialProperty<Real> & _mu_f;
+  const MaterialProperty<Real> & _dmu_dp_f;
+  const MaterialProperty<RealVectorValue> & _g;
+};
+
+#endif // TIGERHYDRAULICKERNELH_H

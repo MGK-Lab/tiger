@@ -21,27 +21,47 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERTIMEDERIVATIVEH_H
-#define TIGERTIMEDERIVATIVEH_H
+#include "TigerHydraulicKernelH.h"
 
-#include "TimeDerivative.h"
-
-class TigerTimeDerivativeH;
+registerMooseObject("TigerApp", TigerHydraulicKernelH);
 
 template <>
-InputParameters validParams<TigerTimeDerivativeH>();
-
-class TigerTimeDerivativeH : public TimeDerivative
+InputParameters
+validParams<TigerHydraulicKernelH>()
 {
-public:
-  TigerTimeDerivativeH(const InputParameters & parameters);
+  InputParameters params = validParams<Kernel>();
+  return params;
+}
 
-protected:
-  virtual Real computeQpResidual() override;
-  virtual Real computeQpJacobian() override;
+TigerHydraulicKernelH::TigerHydraulicKernelH(const InputParameters & parameters)
+  : Kernel(parameters),
+    _scale_factor(getMaterialProperty<Real>("scale_factor")),
+    _k_vis(getMaterialProperty<RankTwoTensor>("permeability_by_viscosity")),
+    _rho_f(getMaterialProperty<Real>("fluid_density")),
+    _drho_dp_f(getMaterialProperty<Real>("fluid_drho_dp")),
+    _mu_f(getMaterialProperty<Real>("fluid_viscosity")),
+    _dmu_dp_f(getMaterialProperty<Real>("fluid_dmu_dp")),
+    _g(getMaterialProperty<RealVectorValue>("gravity_vector"))
+{
+}
 
-  const MaterialProperty<Real> & _scale_factor;
-  const MaterialProperty<Real> & _H_Kernel_dt;
-};
+Real
+TigerHydraulicKernelH::computeQpResidual()
+{
+  RealVectorValue r;
+  r = _k_vis[_qp] * ( _grad_u[_qp] - _rho_f[_qp] * _g[_qp] );
 
-#endif // TIGERTIMEDERIVATIVEH_H
+  return _scale_factor[_qp] * _grad_test[_i][_qp] * r;
+}
+
+Real
+TigerHydraulicKernelH::computeQpJacobian()
+{
+  RealVectorValue j;
+  j  = _k_vis[_qp] * ( _grad_phi[_j][_qp] + _drho_dp_f[_qp]
+        * _phi[_j][_qp] * _g[_qp] );
+  j -= _dmu_dp_f[_qp] / _mu_f[_qp] * _k_vis[_qp] * _phi[_j][_qp]
+        * ( _grad_u[_qp] - _rho_f[_qp] * _g[_qp] );
+
+  return _scale_factor[_qp] * _grad_test[_i][_qp] * j;
+}

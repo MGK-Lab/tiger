@@ -5,11 +5,9 @@
 #include "MooseSyntax.h"
 
 //Kernels
-#include "TigerKernelH.h"
 #include "TigerDiffusionKernelT.h"
 #include "TigerAdvectionKernelTH.h"
 #include "TigerPointSourceH.h"
-#include "TigerTimeDerivativeH.h"
 #include "TigerTimeDerivativeT.h"
 #include "TigerHeatSourceT.h"
 
@@ -82,10 +80,8 @@ TigerApp::registerObjects(Factory & factory)
   registerUserObject(TigerPermeabilityConst);
   registerUserObject(TigerPermeabilityCubicLaw);
 
-  registerKernel(TigerKernelH);
   registerKernel(TigerDiffusionKernelT);
   registerKernel(TigerAdvectionKernelTH);
-  registerKernel(TigerTimeDerivativeH);
   registerKernel(TigerTimeDerivativeT);
   registerKernel(TigerHeatSourceT);
 

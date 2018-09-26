@@ -48,8 +48,16 @@ protected:
 
   // Density of the fluid
   MaterialProperty<Real> & _rho_f;
+  // Density derivative wrt pressure for the fluid
+  MaterialProperty<Real> & _drho_dp_f;
+  // Density derivative wrt pressure for the fluid
+  MaterialProperty<Real> & _drho_dT_f;
   // Viscosity of the fluid
-  MaterialProperty<Real> & _mu;
+  MaterialProperty<Real> & _mu_f;
+  // Viscosity derivative wrt pressure for the fluid
+  MaterialProperty<Real> & _dmu_dp_f;
+  // Viscosity derivative wrt temperature for the fluid
+  MaterialProperty<Real> & _dmu_dT_f;
   // Compressibility of the fluid
   MaterialProperty<Real> & _beta_f;
   // Specific heat at constant pressure for the fluid

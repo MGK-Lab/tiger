@@ -21,30 +21,27 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERKERNELH_H
-#define TIGERKERNELH_H
+#ifndef TIGERHYDRAULICTIMEKERNELH_H
+#define TIGERHYDRAULICTIMEKERNELH_H
 
-#include "Kernel.h"
-#include "RankTwoTensor.h"
+#include "TimeDerivative.h"
 
-class TigerKernelH;
+class TigerHydraulicTimeKernelH;
 
 template <>
-InputParameters validParams<TigerKernelH>();
+InputParameters validParams<TigerHydraulicTimeKernelH>();
 
-class TigerKernelH : public Kernel
+class TigerHydraulicTimeKernelH : public TimeDerivative
 {
 public:
-  TigerKernelH(const InputParameters & parameters);
+  TigerHydraulicTimeKernelH(const InputParameters & parameters);
 
 protected:
   virtual Real computeQpResidual() override;
   virtual Real computeQpJacobian() override;
 
   const MaterialProperty<Real> & _scale_factor;
-  const MaterialProperty<RankTwoTensor> & _k_vis;
-  const MaterialProperty<Real> & _rho_f;
-  const MaterialProperty<RealVectorValue> & _g;
+  const MaterialProperty<Real> & _H_Kernel_dt;
 };
 
-#endif // TIGERKERNELH_H
+#endif // TIGERHYDRAULICTIMEKERNELH_H

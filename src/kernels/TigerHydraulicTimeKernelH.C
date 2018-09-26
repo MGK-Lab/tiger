@@ -21,33 +21,33 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerKernelH.h"
+#include "TigerHydraulicTimeKernelH.h"
+
+registerMooseObject("TigerApp", TigerHydraulicTimeKernelH);
 
 template <>
 InputParameters
-validParams<TigerKernelH>()
+validParams<TigerHydraulicTimeKernelH>()
 {
-  InputParameters params = validParams<Kernel>();
+  InputParameters params = validParams<TimeDerivative>();
   return params;
 }
 
-TigerKernelH::TigerKernelH(const InputParameters & parameters)
-  : Kernel(parameters),
+TigerHydraulicTimeKernelH::TigerHydraulicTimeKernelH(const InputParameters & parameters)
+  : TimeDerivative(parameters),
     _scale_factor(getMaterialProperty<Real>("scale_factor")),
-    _k_vis(getMaterialProperty<RankTwoTensor>("permeability_by_viscosity")),
-    _rho_f(getMaterialProperty<Real>("fluid_density")),
-    _g(getMaterialProperty<RealVectorValue>("gravity_vector"))
+    _H_Kernel_dt(getMaterialProperty<Real>("H_Kernel_dt_coefficient"))
 {
 }
 
 Real
-TigerKernelH::computeQpResidual()
+TigerHydraulicTimeKernelH::computeQpResidual()
 {
-  return _grad_test[_i][_qp] * (_scale_factor[_qp] * _k_vis[_qp] * ( _grad_u[_qp] - _rho_f[_qp] * _g[_qp] ) );
+  return _scale_factor[_qp] * _H_Kernel_dt[_qp] * TimeDerivative::computeQpResidual();
 }
 
 Real
-TigerKernelH::computeQpJacobian()
+TigerHydraulicTimeKernelH::computeQpJacobian()
 {
-  return _grad_test[_i][_qp] * (_scale_factor[_qp] *  _k_vis[_qp] * _grad_phi[_j][_qp] );
+  return _scale_factor[_qp] * _H_Kernel_dt[_qp] * TimeDerivative::computeQpJacobian();
 }

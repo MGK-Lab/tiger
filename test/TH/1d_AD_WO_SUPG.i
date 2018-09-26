@@ -130,7 +130,7 @@
     pressure_varible = pressure
   [../]
   [./H_diff]
-    type = TigerKernelH
+    type = TigerHydraulicKernelH
     variable = pressure
   [../]
 []

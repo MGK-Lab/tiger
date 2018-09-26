@@ -125,7 +125,7 @@
 
 [Kernels]
   [./H_diff]
-    type = TigerKernelH
+    type = TigerHydraulicKernelH
     variable = pressure
   [../]
   [./T_advect]
