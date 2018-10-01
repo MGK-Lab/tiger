@@ -23,6 +23,11 @@
     permeability_type = isotropic
     k0 = '1.0e-8'
   [../]
+  [./supg]
+    type = TigerSUPG
+    effective_length = min
+    supg_coeficient = optimal
+  [../]
 []
 
 [Materials]
@@ -50,8 +55,7 @@
     density = 1
     specific_heat = 1
     has_supg = true
-    supg_eff_length = min
-    supg_coeficient = optimal
+    supg_uo = supg
   [../]
 []
 

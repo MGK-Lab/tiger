@@ -52,18 +52,8 @@ private:
   RankTwoTensor _lambda_sf_tensor = RankTwoTensor();
   Real _lambda_sf_real = 0.0;
 
-  Real tau(Real & norm_v, Real & alpha, Real & diff, Real & dt, Real & h_ele, const RealVectorValue & v, const RealVectorValue & h) const;
-  RealVectorValue EEL(const Elem * ele) const;
-  void ActualEEL(const Elem * ele, RealVectorValue & l, const unsigned & ind) const;
-  Real Optimal(Real) const;
-  Real Temporal(const RealVectorValue &, const RealVectorValue &, Real, Real) const;
-  Real DoublyAsymptotic(Real) const;
-  Real Critical(Real) const;
-
   bool _has_PeCr;
   bool _has_supg;
-  MooseEnum _effective_length;
-  MooseEnum _method;
   Real _supg_scale;
 
   void ConductivityTensorCalculator(Real const & n, Real const & lambda_f, std::vector<Real> lambda_s, MooseEnum conductivity_type, MooseEnum mean_type, int dim);

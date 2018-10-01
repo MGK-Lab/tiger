@@ -17,6 +17,14 @@
   [../]
 []
 
+[UserObjects]
+  [./supg]
+    type = TigerSUPG
+    effective_length = min
+    supg_coeficient = transient_tezduyar
+  [../]
+[]
+
 [Materials]
   [./rock_g]
     type = TigerGeometryMaterial
@@ -30,10 +38,8 @@
     lambda = 0
     density = 0
     specific_heat = 0
-    output_Pe_Cr_numbers = true
     has_supg = true
-    supg_eff_length = min
-    supg_coeficient = transient_tezduyar
+    supg_uo = supg
   [../]
 []
 

@@ -18,6 +18,11 @@
     permeability_type = isotropic
     k0 = '1.0e-10'
   [../]
+  [./supg]
+    type = TigerSUPG
+    effective_length = min
+    supg_coeficient = transient_tezduyar
+  [../]
 []
 
 [Materials]
@@ -45,7 +50,7 @@
     specific_heat = 840
     output_Pe_Cr_numbers = true
     has_supg = true
-    supg_coeficient = transient_tezduyar
+    supg_uo = supg
   [../]
 []
 

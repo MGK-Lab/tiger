@@ -33,6 +33,8 @@ validParams<TigerMaterialGeneral>()
   params.addCoupledVar("temperature", 273.15, "temperature nonlinear variable (K)");
   params.addRequiredParam<UserObjectName>("fp_uo", "The name of the userobject "
                                           "for fluid properties");
+  params.addParam<UserObjectName>("supg_uo", "", "The name of the userobject "
+                                          "for SU/PG");
 
   return params;
 }
@@ -43,4 +45,8 @@ TigerMaterialGeneral::TigerMaterialGeneral(const InputParameters & parameters)
     _T(coupledValue("temperature")),
     _fp_uo(getUserObject<SinglePhaseFluidPropertiesPT>("fp_uo"))
 {
+  if (parameters.isParamSetByUser("supg_uo"))
+    _supg_uo = &getUserObject<TigerSUPG>("supg_uo");
+  else
+    _supg_uo = NULL;
 }
