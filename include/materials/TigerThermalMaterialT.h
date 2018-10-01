@@ -21,25 +21,30 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERCOUPLEDTHERMALMATERIALTH_H
-#define TIGERCOUPLEDTHERMALMATERIALTH_H
+#ifndef TIGERTHERMALMATERIALT_H
+#define TIGERTHERMALMATERIALT_H
 
-#include "TigerMaterialGeneral.h"
+#include "Material.h"
 #include "RankTwoTensor.h"
+#include "TigerSUPG.h"
+#include "Function.h"
 
-class TigerCoupledThermalMaterialTH;
+class TigerThermalMaterialT;
 
 template <>
-InputParameters validParams<TigerCoupledThermalMaterialTH>();
+InputParameters validParams<TigerThermalMaterialT>();
 
-class TigerCoupledThermalMaterialTH : public TigerMaterialGeneral
+class TigerThermalMaterialT : public Material
 {
 public:
-  TigerCoupledThermalMaterialTH(const InputParameters & parameters);
+  TigerThermalMaterialT(const InputParameters & parameters);
 
 private:
+  enum AT {pure_diffusion, darcy_velocity, user_velocity, darcy_user_velocities};
   // enum for selecting thermal conductivity distribution for solid phase
   MooseEnum _ct;
+  // enum for selecting thermal conductivity distribution for solid phase
+  MooseEnum _at;
   // enum for selecting calculation method for mixture
   MooseEnum _mean;
   // initial thermal conductivity for solid phase
@@ -61,10 +66,8 @@ private:
 protected:
   virtual void computeQpProperties() override;
 
-  const VariableGradient & _gradient_pore_press;
-  const MaterialProperty<RankTwoTensor> & _k_vis;
-  const MaterialProperty<Real> & _rho_f;
-  const MaterialProperty<RealVectorValue> & _g;
+  Function * _vel_func;
+  const MaterialProperty<RealVectorValue> * _d_v;
   MaterialProperty<Real> * _Pe;
   MaterialProperty<Real> * _Cr;
 
@@ -73,7 +76,6 @@ protected:
   // coefficient for time derivative kernel
   MaterialProperty<Real> & _T_Kernel_dt;
 
-  MaterialProperty<Real> & _rho_cp_f;
   MaterialProperty<bool> & _SUPG_ind;
   MaterialProperty<RealVectorValue> & _dv;
   MaterialProperty<RealVectorValue> & _SUPG_p;
@@ -81,6 +83,12 @@ protected:
   // imported props from TigerGeometryMaterial
   const MaterialProperty<Real> & _n;
   const MaterialProperty<RankTwoTensor> & _rot_mat;
+
+  // imported props from TigerFluidMaterial
+  const MaterialProperty<Real> & _rho_f;
+  const MaterialProperty<Real> & _cp_f;
+  const MaterialProperty<Real> & _lambda_f;
+  const TigerSUPG * _supg_uo;
 };
 
-#endif /* TIGERCOUPLEDTHERMALMATERIALTH_H */
+#endif /* TIGERTHERMALMATERIALT_H */

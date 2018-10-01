@@ -21,37 +21,29 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERADVECTIONKERNELTH_H
-#define TIGERADVECTIONKERNELTH_H
+#ifndef TIGERTHERMALTIMEKERNELT_H
+#define TIGERTHERMALTIMEKERNELT_H
 
-#include "Kernel.h"
-#include "RankTwoTensor.h"
+#include "TimeDerivative.h"
 
-class TigerAdvectionKernelTH;
+class TigerThermalTimeKernelT;
 
 template <>
-InputParameters validParams<TigerAdvectionKernelTH>();
+InputParameters validParams<TigerThermalTimeKernelT>();
 
-class TigerAdvectionKernelTH : public Kernel
+class TigerThermalTimeKernelT : public TimeDerivative
 {
 public:
-  TigerAdvectionKernelTH(const InputParameters & parameters);
-
-private:
-  bool _has_supg;
+  TigerThermalTimeKernelT(const InputParameters & parameters);
 
 protected:
   virtual Real computeQpResidual() override;
   virtual Real computeQpJacobian() override;
-  virtual Real computeQpOffDiagJacobian(unsigned int jvar) override;
 
   const MaterialProperty<Real> & _scale_factor;
-  const MaterialProperty<Real> & _rho_cp_f;
+  const MaterialProperty<Real> & _T_Kernel_dt;
   const MaterialProperty<RealVectorValue> & _SUPG_p;
   const MaterialProperty<bool> & _SUPG_ind;
-  const MaterialProperty<RealVectorValue> & _darcy_v;
-  unsigned int _pressure_var;
-  const MaterialProperty<RankTwoTensor> * _k_vis;
 };
 
-#endif // TIGERADVECTIONKERNELTH_H
+#endif // TIGERTHERMALTIMEKERNELT_H

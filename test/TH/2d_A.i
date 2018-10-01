@@ -26,13 +26,17 @@
 []
 
 [Materials]
+  [./rock_f]
+    type = TigerFluidMaterial
+    fp_uo = water_uo
+  [../]
   [./rock_g]
     type = TigerGeometryMaterial
     porosity = 1
   [../]
   [./advect_th]
-    type = TigerUncoupledThermalMaterialTH
-    fp_uo = water_uo
+    type = TigerThermalMaterialT
+    advection_type = user_velocity
     user_velocity = vel
     conductivity_type = isotropic
     lambda = 0
@@ -123,11 +127,11 @@
 
 [Kernels]
   [./T_advect]
-    type = TigerAdvectionKernelTH
+    type = TigerThermalAdvectionKernelT
     variable = temperature
   [../]
-  [./T_diff]
-    type = TigerTimeDerivativeT
+  [./T_dt]
+    type = TigerThermalTimeKernelT
     variable = temperature
   [../]
 []

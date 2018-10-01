@@ -41,9 +41,7 @@
     kf_uo = rock_uo
   [../]
   [./rock_t]
-    type = TigerCoupledThermalMaterialTH
-    fp_uo = water_uo
-    pressure = pressure
+    type = TigerThermalMaterialT
     conductivity_type = isotropic
     lambda = 2.184
     density = 2600
@@ -122,11 +120,11 @@
 
 [Kernels]
   [./T_diff]
-    type = TigerDiffusionKernelT
+    type = TigerThermalDiffusionKernelT
     variable = temperature
   [../]
   [./T_advect]
-    type = TigerAdvectionKernelTH
+    type = TigerThermalAdvectionKernelT
     variable = temperature
     pressure_varible = pressure
   [../]

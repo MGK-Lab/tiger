@@ -21,39 +21,45 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerHeatSourceT.h"
+#include "TigerThermalTimeKernelT.h"
 
-// MOOSE
-#include "Function.h"
+registerMooseObject("TigerApp", TigerThermalTimeKernelT);
 
 template <>
 InputParameters
-validParams<TigerHeatSourceT>()
+validParams<TigerThermalTimeKernelT>()
 {
-  InputParameters params = validParams<Kernel>();
-  params.addParam<Real>("value", 1.0, "Constant heat source (sink) (W/m^3) (positive is a source, and negative is a sink) or a multiplier for the the provided function");
-  params.addParam<FunctionName>("function", "1", "Heat source (sink) as a function (W/m^3) (positive is a source, and negative is a sink)");
+  InputParameters params = validParams<TimeDerivative>();
   return params;
 }
 
-TigerHeatSourceT::TigerHeatSourceT(const InputParameters & parameters)
-  : Kernel(parameters),
+TigerThermalTimeKernelT::TigerThermalTimeKernelT(const InputParameters & parameters)
+  : TimeDerivative(parameters),
     _scale_factor(getMaterialProperty<Real>("scale_factor")),
-    _scale(getParam<Real>("value")),
-    _function(getFunction("function")),
+    _T_Kernel_dt(getMaterialProperty<Real>("T_Kernel_dt_coefficient")),
     _SUPG_p(getMaterialProperty<RealVectorValue>("petrov_supg_p_function")),
     _SUPG_ind(getMaterialProperty<bool>("supg_indicator"))
 {
 }
 
 Real
-TigerHeatSourceT::computeQpResidual()
+TigerThermalTimeKernelT::computeQpResidual()
 {
-  Real factor = _scale * _function.value(_t, _q_point[_qp]);
-  Real R;
+  Real test;
   if (_SUPG_ind[_qp])
-    R = (_test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp]) * -factor;
+    test = _test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp];
   else
-    R = _test[_i][_qp] * -factor;
-  return _scale_factor[_qp] * R;
+    test = _test[_i][_qp];
+  return _scale_factor[_qp] * _T_Kernel_dt[_qp] * test * _u_dot[_qp];
+}
+
+Real
+TigerThermalTimeKernelT::computeQpJacobian()
+{
+  Real test;
+  if (_SUPG_ind[_qp])
+    test = _test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp];
+  else
+    test = _test[_i][_qp];
+  return _scale_factor[_qp] * _T_Kernel_dt[_qp] * test * _phi[_j][_qp] * _du_dot_du[_qp];
 }

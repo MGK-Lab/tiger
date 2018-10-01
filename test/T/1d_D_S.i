@@ -21,9 +21,13 @@
     type = TigerGeometryMaterial
     porosity = 0
   [../]
-  [./rock_t]
-    type = TigerUncoupledThermalMaterialTH
+  [./rock_f]
+    type = TigerFluidMaterial
     fp_uo = water_uo
+  [../]
+  [./rock_t]
+    type = TigerThermalMaterialT
+    advection_type = pure_diffusion
     conductivity_type = isotropic
     lambda = 3
     density = 0.1 #artificial value to reach steady in the transient simulation
@@ -79,17 +83,17 @@
 
 [Kernels]
   [./T_diff]
-    type = TigerDiffusionKernelT
+    type = TigerThermalDiffusionKernelT
+    variable = temperature
+  [../]
+  [./T_dt]
+    type = TigerThermalTimeKernelT
     variable = temperature
   [../]
   [./T_Source]
-    type = TigerHeatSourceT
+    type = TigerThermalSourceKernelT
     variable = temperature
     value = 1.0e-6
-  [../]
-  [./T_dt]
-    type = TigerTimeDerivativeT
-    variable = temperature
   [../]
 []
 

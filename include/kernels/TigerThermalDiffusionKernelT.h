@@ -21,43 +21,28 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerTimeDerivativeT.h"
+#ifndef TIGERTHERMALDIFFUSIONKERNELT_H
+#define TIGERTHERMALDIFFUSIONKERNELT_H
+
+#include "Kernel.h"
+#include "RankTwoTensor.h"
+
+class TigerThermalDiffusionKernelT;
 
 template <>
-InputParameters
-validParams<TigerTimeDerivativeT>()
-{
-  InputParameters params = validParams<TimeDerivative>();
-  return params;
-}
+InputParameters validParams<TigerThermalDiffusionKernelT>();
 
-TigerTimeDerivativeT::TigerTimeDerivativeT(const InputParameters & parameters)
-  : TimeDerivative(parameters),
-    _scale_factor(getMaterialProperty<Real>("scale_factor")),
-    _T_Kernel_dt(getMaterialProperty<Real>("T_Kernel_dt_coefficient")),
-    _SUPG_p(getMaterialProperty<RealVectorValue>("petrov_supg_p_function")),
-    _SUPG_ind(getMaterialProperty<bool>("supg_indicator"))
+class TigerThermalDiffusionKernelT : public Kernel
 {
-}
+public:
+  TigerThermalDiffusionKernelT(const InputParameters & parameters);
 
-Real
-TigerTimeDerivativeT::computeQpResidual()
-{
-  Real test;
-  if (_SUPG_ind[_qp])
-    test = _test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp];
-  else
-    test = _test[_i][_qp];
-  return _scale_factor[_qp] * _T_Kernel_dt[_qp] * test * _u_dot[_qp];
-}
+protected:
+  virtual Real computeQpResidual() override;
+  virtual Real computeQpJacobian() override;
 
-Real
-TigerTimeDerivativeT::computeQpJacobian()
-{
-  Real test;
-  if (_SUPG_ind[_qp])
-    test = _test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp];
-  else
-    test = _test[_i][_qp];
-  return _scale_factor[_qp] * _T_Kernel_dt[_qp] * test * _phi[_j][_qp] * _du_dot_du[_qp];
-}
+  const MaterialProperty<Real> & _scale_factor;
+  const MaterialProperty<RankTwoTensor> & _lambda_sf;
+};
+
+#endif // TIGERTHERMALDIFFUSIONKERNELT_H

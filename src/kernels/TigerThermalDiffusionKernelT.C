@@ -21,31 +21,33 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERHEATSOURCET_H
-#define TIGERHEATSOURCET_H
+#include "TigerThermalDiffusionKernelT.h"
 
-#include "Kernel.h"
-
-class TigerHeatSourceT;
-class Function;
+registerMooseObject("TigerApp", TigerThermalDiffusionKernelT);
 
 template <>
-InputParameters validParams<TigerHeatSourceT>();
-
-class TigerHeatSourceT : public Kernel
+InputParameters
+validParams<TigerThermalDiffusionKernelT>()
 {
-public:
-  TigerHeatSourceT(const InputParameters & parameters);
+  InputParameters params = validParams<Kernel>();
+  return params;
+}
 
-protected:
-  virtual Real computeQpResidual() override;
+TigerThermalDiffusionKernelT::TigerThermalDiffusionKernelT(const InputParameters & parameters)
+  : Kernel(parameters),
+    _scale_factor(getMaterialProperty<Real>("scale_factor")),
+    _lambda_sf(getMaterialProperty<RankTwoTensor>("conductivity_mixture"))
+{
+}
 
-  const MaterialProperty<Real> & _scale_factor;
-  const Real & _scale;
+Real
+TigerThermalDiffusionKernelT::computeQpResidual()
+{
+  return _grad_test[_i][_qp] * ( _scale_factor[_qp] * _lambda_sf[_qp] * _grad_u[_qp]);
+}
 
-  Function & _function;
-  const MaterialProperty<RealVectorValue> & _SUPG_p;
-  const MaterialProperty<bool> & _SUPG_ind;
-};
-
-#endif  //TIGERHEATSOURCET_H
+Real
+TigerThermalDiffusionKernelT::computeQpJacobian()
+{
+  return _grad_test[_i][_qp] * ( _scale_factor[_qp] * _lambda_sf[_qp] * _grad_phi[_j][_qp]);
+}

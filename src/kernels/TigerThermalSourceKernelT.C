@@ -21,74 +21,39 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerAdvectionKernelTH.h"
-#include "MaterialPropertyInterface.h"
+#include "TigerThermalSourceKernelT.h"
+#include "Function.h"
 
+registerMooseObject("TigerApp", TigerThermalSourceKernelT);
 
 template <>
 InputParameters
-validParams<TigerAdvectionKernelTH>()
+validParams<TigerThermalSourceKernelT>()
 {
   InputParameters params = validParams<Kernel>();
-
-  params.addCoupledVar("pressure_varible", 0 ,"The variable representing the pressure.");
-
+  params.addParam<Real>("value", 1.0, "Constant heat source (sink) (W/m^3) (positive is a source, and negative is a sink) or a multiplier for the the provided function");
+  params.addParam<FunctionName>("function", "1", "Heat source (sink) as a function (W/m^3) (positive is a source, and negative is a sink)");
   return params;
 }
 
-TigerAdvectionKernelTH::TigerAdvectionKernelTH(const InputParameters & parameters)
+TigerThermalSourceKernelT::TigerThermalSourceKernelT(const InputParameters & parameters)
   : Kernel(parameters),
-  _scale_factor(getMaterialProperty<Real>("scale_factor")),
-  _rho_cp_f(getMaterialProperty<Real>("fluid_thermal_capacity")),
-  _SUPG_p(getMaterialProperty<RealVectorValue>("petrov_supg_p_function")),
-  _SUPG_ind(getMaterialProperty<bool>("supg_indicator")),
-  _darcy_v(getMaterialProperty<RealVectorValue>("darcy_velocity")),
-  _pressure_var(coupled("pressure_varible"))
+    _scale_factor(getMaterialProperty<Real>("scale_factor")),
+    _scale(getParam<Real>("value")),
+    _function(getFunction("function")),
+    _SUPG_p(getMaterialProperty<RealVectorValue>("petrov_supg_p_function")),
+    _SUPG_ind(getMaterialProperty<bool>("supg_indicator"))
 {
-  if (parameters.isParamSetByUser("pressure_varible"))
-    _k_vis = &getMaterialProperty<RankTwoTensor>("permeability_by_viscosity");
 }
 
 Real
-TigerAdvectionKernelTH::computeQpResidual()
+TigerThermalSourceKernelT::computeQpResidual()
 {
+  Real factor = _scale * _function.value(_t, _q_point[_qp]);
   Real R;
   if (_SUPG_ind[_qp])
-    R = _rho_cp_f[_qp] * ((_test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp]) * ( _darcy_v[_qp] * _grad_u[_qp]));
+    R = (_test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp]) * -factor;
   else
-    R = _rho_cp_f[_qp] * (_test[_i][_qp] * ( _darcy_v[_qp] * _grad_u[_qp]));
-
+    R = _test[_i][_qp] * -factor;
   return _scale_factor[_qp] * R;
-}
-
-Real
-TigerAdvectionKernelTH::computeQpJacobian()
-{
-  Real R;
-  if (_SUPG_ind[_qp])
-    R = _rho_cp_f[_qp] * ((_test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp]) * ( _darcy_v[_qp] * _grad_phi[_j][_qp]));
-  else
-    R = _rho_cp_f[_qp] * (_test[_i][_qp] * ( _darcy_v[_qp] * _grad_phi[_j][_qp]));
-
-  return _scale_factor[_qp] * R;
-}
-
-Real
-TigerAdvectionKernelTH::computeQpOffDiagJacobian(unsigned int jvar)
-{
-  Real R;
-  if (jvar == _pressure_var)
-  {
-    if (_SUPG_ind[_qp])
-      R = _rho_cp_f[_qp] * ((_test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp]) * ( -(*_k_vis)[_qp] * _grad_phi[_j][_qp] * _grad_u[_qp]));
-    else
-      R = _rho_cp_f[_qp] * (_test[_i][_qp] * ( -(*_k_vis)[_qp] * _grad_phi[_j][_qp] * _grad_u[_qp]));
-
-    R *=_scale_factor[_qp];
-  }
-  else
-    R = 0.0;
-
-
-  return R;
 }

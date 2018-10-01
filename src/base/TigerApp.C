@@ -4,19 +4,9 @@
 #include "ModulesApp.h"
 #include "MooseSyntax.h"
 
-//Kernels
-#include "TigerDiffusionKernelT.h"
-#include "TigerAdvectionKernelTH.h"
-#include "TigerPointSourceH.h"
-#include "TigerTimeDerivativeT.h"
-#include "TigerHeatSourceT.h"
-
 //AuxKernels
 #include "TigerDarcyVelocityComponent.h"
-
-//Material
-#include "TigerUncoupledThermalMaterialTH.h"
-#include "TigerCoupledThermalMaterialTH.h"
+#include "TigerPointSourceH.h"
 
 #include "TigerPermeability.h"
 #include "TigerPermeabilityConst.h"
@@ -74,16 +64,8 @@ TigerApp__registerObjects(Factory & factory)
 void
 TigerApp::registerObjects(Factory & factory)
 {
-  registerMaterial(TigerUncoupledThermalMaterialTH);
-  registerMaterial(TigerCoupledThermalMaterialTH);
-
   registerUserObject(TigerPermeabilityConst);
   registerUserObject(TigerPermeabilityCubicLaw);
-
-  registerKernel(TigerDiffusionKernelT);
-  registerKernel(TigerAdvectionKernelTH);
-  registerKernel(TigerTimeDerivativeT);
-  registerKernel(TigerHeatSourceT);
 
   registerAux(TigerDarcyVelocityComponent);
 

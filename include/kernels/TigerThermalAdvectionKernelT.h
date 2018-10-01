@@ -21,31 +21,38 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerDiffusionKernelT.h"
+#ifndef TIGERTHERMALADVECTIONKERNELT_H
+#define TIGERTHERMALADVECTIONKERNELT_H
+
+#include "Kernel.h"
+#include "RankTwoTensor.h"
+
+class TigerThermalAdvectionKernelT;
 
 template <>
-InputParameters
-validParams<TigerDiffusionKernelT>()
-{
-  InputParameters params = validParams<Kernel>();
-  return params;
-}
+InputParameters validParams<TigerThermalAdvectionKernelT>();
 
-TigerDiffusionKernelT::TigerDiffusionKernelT(const InputParameters & parameters)
-  : Kernel(parameters),
-    _scale_factor(getMaterialProperty<Real>("scale_factor")),
-    _lambda_sf(getMaterialProperty<RankTwoTensor>("conductivity_mixture"))
+class TigerThermalAdvectionKernelT : public Kernel
 {
-}
+public:
+  TigerThermalAdvectionKernelT(const InputParameters & parameters);
 
-Real
-TigerDiffusionKernelT::computeQpResidual()
-{
-  return _grad_test[_i][_qp] * ( _scale_factor[_qp] * _lambda_sf[_qp] * _grad_u[_qp]);
-}
+private:
+  bool _has_supg;
 
-Real
-TigerDiffusionKernelT::computeQpJacobian()
-{
-  return _grad_test[_i][_qp] * ( _scale_factor[_qp] * _lambda_sf[_qp] * _grad_phi[_j][_qp]);
-}
+protected:
+  virtual Real computeQpResidual() override;
+  virtual Real computeQpJacobian() override;
+  virtual Real computeQpOffDiagJacobian(unsigned int jvar) override;
+
+  const MaterialProperty<Real> & _scale_factor;
+  const MaterialProperty<Real> & _rho_f;
+  const MaterialProperty<Real> & _cp_f;
+  const MaterialProperty<RealVectorValue> & _SUPG_p;
+  const MaterialProperty<bool> & _SUPG_ind;
+  const MaterialProperty<RealVectorValue> & _darcy_v;
+  unsigned int _pressure_var;
+  const MaterialProperty<RankTwoTensor> * _k_vis;
+};
+
+#endif // TIGERTHERMALADVECTIONKERNELT_H

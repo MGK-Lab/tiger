@@ -46,9 +46,7 @@
     compressibility = 1.0e-10
   [../]
   [./matrix_t]
-    type = TigerCoupledThermalMaterialTH
-    fp_uo = water_uo
-    pressure =  pressure
+    type = TigerThermalMaterialT
     conductivity_type = isotropic
     mean_calculation_type = arithmetic
     lambda = 0.01
@@ -121,17 +119,17 @@
     type = TigerHydraulicKernelH
     variable = pressure
   [../]
+  [./T_diff]
+    type = TigerThermalDiffusionKernelT
+    variable = temperature
+  [../]
   [./T_advect]
-    type = TigerAdvectionKernelTH
+    type = TigerThermalAdvectionKernelT
     variable = temperature
     pressure_varible = pressure
   [../]
-  [./T_diff]
-    type = TigerDiffusionKernelT
-    variable = temperature
-  [../]
   [./T_body]
-    type = TigerHeatSourceT
+    type = TigerThermalSourceKernelT
     variable = temperature
     function = source
   [../]

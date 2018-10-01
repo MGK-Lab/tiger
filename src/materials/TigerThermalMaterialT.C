@@ -21,20 +21,23 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerUncoupledThermalMaterialTH.h"
+#include "TigerThermalMaterialT.h"
 #include "MooseMesh.h"
 #include "libmesh/quadrature.h"
 
-// registerMooseObject("TigerApp", TigerUncoupledThermalMaterialTH);
+registerMooseObject("TigerApp", TigerThermalMaterialT);
 
 template <>
 InputParameters
-validParams<TigerUncoupledThermalMaterialTH>()
+validParams<TigerThermalMaterialT>()
 {
-  InputParameters params = validParams<TigerMaterialGeneral>();
+  InputParameters params = validParams<Material>();
+
   params.addRequiredParam<Real>("specific_heat", "Specific heat of rock matrix (J/(kg K))");
   params.addRequiredParam<Real>("density", "density of rock matrix (kg/m^3)");
   params.addRequiredParam<std::vector<Real>>("lambda", "Initial thermal conductivity of rock matrix (W/(m K))");
+  MooseEnum Advection("pure_diffusion darcy_velocity user_velocity darcy_user_velocities", "darcy_velocity");
+  params.addParam<MooseEnum>("advection_type", Advection, "Type of the velocity to simulate advection");
   MooseEnum CT("isotropic=1 orthotropic=2 anisotropic=3");
   params.addRequiredParam<MooseEnum>("conductivity_type", CT, "Thermal conductivity distribution type [isotropic, orthotropic, anisotropic].");
   MooseEnum Mean("arithmetic=1 geometric=2");
@@ -42,14 +45,18 @@ validParams<TigerUncoupledThermalMaterialTH>()
   params.addParam<bool>("output_Pe_Cr_numbers", false , "calcuate Peclet and Courant numbers");
   params.addParam<bool>("has_supg", false , "Is Streameline Upwinding / Petrov Galerkin (SU/PG) activated?");
   params.addParam<Real>("supg_coeficient_scale", 1.0 , "The user defined factor to scale SU/PG coefficent (tau)");
-  params.addClassDescription("Thermal properties for TH simulation using a provided velocity vector");
   params.addParam<FunctionName>("user_velocity", 0.0, "a vector function to define the velocity field");
+  params.addParam<UserObjectName>("supg_uo", "", "The name of the userobject "
+                                          "for SU/PG");
+  params.addClassDescription("Thermal properties for a fully coupled TH simulation");
+
   return params;
 }
 
-TigerUncoupledThermalMaterialTH::TigerUncoupledThermalMaterialTH(const InputParameters & parameters)
-  : TigerMaterialGeneral(parameters),
+TigerThermalMaterialT::TigerThermalMaterialT(const InputParameters & parameters)
+  : Material(parameters),
     _ct(getParam<MooseEnum>("conductivity_type")),
+    _at(getParam<MooseEnum>("advection_type")),
     _mean(getParam<MooseEnum>("mean_calculation_type")),
     _lambda0(getParam<std::vector<Real>>("lambda")),
     _cp0(getParam<Real>("specific_heat")),
@@ -57,34 +64,53 @@ TigerUncoupledThermalMaterialTH::TigerUncoupledThermalMaterialTH(const InputPara
     _has_PeCr(getParam<bool>("output_Pe_Cr_numbers")),
     _has_supg(getParam<bool>("has_supg")),
     _supg_scale(getParam<Real>("supg_coeficient_scale")),
-    _vel_func(getFunction("user_velocity")),
-    _Pe((_has_PeCr || _has_supg) ? &declareProperty<Real>("peclet_number") : NULL),
-    _Cr((_has_PeCr || _has_supg) ? &declareProperty<Real>("courant_number") : NULL),
     _lambda_sf(declareProperty<RankTwoTensor>("conductivity_mixture")),
     _T_Kernel_dt(declareProperty<Real>("T_Kernel_dt_coefficient")),
-    _rho_cp_f(declareProperty<Real>("fluid_thermal_capacity")),
     _SUPG_ind(declareProperty<bool>("supg_indicator")),
     _dv(declareProperty<RealVectorValue>("darcy_velocity")),
     _SUPG_p(declareProperty<RealVectorValue>("petrov_supg_p_function")),
     _n(getMaterialProperty<Real>("porosity")),
-    _rot_mat(getMaterialProperty<RankTwoTensor>("lowerD_rotation_matrix"))
+    _rot_mat(getMaterialProperty<RankTwoTensor>("lowerD_rotation_matrix")),
+    _rho_f(getMaterialProperty<Real>("fluid_density")),
+    _cp_f(getMaterialProperty<Real>("fluid_specific_heat")),
+    _lambda_f(getMaterialProperty<Real>("fluid_thermal_conductivity"))
 {
+  _Pe = (_has_PeCr || _has_supg) ? &declareProperty<Real>("peclet_number") : NULL;
+  _Cr = (_has_PeCr || _has_supg) ? &declareProperty<Real>("courant_number") : NULL;
+  _d_v = (_at == AT::darcy_velocity || _at == AT::darcy_user_velocities) ?
+          &getMaterialProperty<RealVectorValue>("darcy_velocity_vector") : NULL;
+  _vel_func = (_at == AT::user_velocity || _at == AT::darcy_user_velocities) ?
+          &getFunction("user_velocity") : NULL;
+  _supg_uo = (parameters.isParamSetByUser("supg_uo")) ?
+              &getUserObject<TigerSUPG>("supg_uo") : NULL;
 }
 
 void
-TigerUncoupledThermalMaterialTH::computeQpProperties()
+TigerThermalMaterialT::computeQpProperties()
 {
-  _T_Kernel_dt[_qp] = (1.0-_n[_qp])*_rho0*_cp0 + _fp_uo.rho(_P[_qp], _T[_qp])*_fp_uo.cp(_P[_qp], _T[_qp])*_n[_qp];
+  _T_Kernel_dt[_qp] = (1.0 - _n[_qp]) * _rho0 * _cp0 + _rho_f[_qp] * _cp_f[_qp] * _n[_qp];
 
-  ConductivityTensorCalculator(_n[_qp], _fp_uo.k(_P[_qp], _T[_qp]), _lambda0, _ct, _mean, _current_elem->dim());
+  ConductivityTensorCalculator(_n[_qp], _lambda_f[_qp], _lambda0, _ct, _mean, _current_elem->dim());
   _lambda_sf[_qp] = _lambda_sf_tensor;
 
   if (_current_elem->dim() < _mesh.dimension())
     _lambda_sf[_qp].rotate(_rot_mat[_qp]);
 
-  _rho_cp_f[_qp] = _fp_uo.rho(_P[_qp], _T[_qp])*_fp_uo.cp(_P[_qp], _T[_qp]);
-
-  _dv[_qp] = _vel_func.vectorValue(_t, _q_point[_qp]);
+  switch (_at)
+  {
+    case AT::pure_diffusion:
+      _dv[_qp].zero();
+      break;
+    case AT::darcy_velocity:
+      _dv[_qp] = (*_d_v)[_qp];
+      break;
+    case AT::user_velocity:
+      _dv[_qp] = _vel_func->vectorValue(_t, _q_point[_qp]);
+      break;
+    case AT::darcy_user_velocities:
+      _dv[_qp] = (*_d_v)[_qp] + _vel_func->vectorValue(_t, _q_point[_qp]);
+      break;
+  }
 
   Real lambda = _lambda_sf_real / _T_Kernel_dt[_qp];
 
@@ -102,7 +128,7 @@ TigerUncoupledThermalMaterialTH::computeQpProperties()
 }
 
 void
-TigerUncoupledThermalMaterialTH::ConductivityTensorCalculator(Real const & n, Real const & lambda_f, std::vector<Real> lambda_s, MooseEnum conductivity_type, MooseEnum mean_type, int dim)
+TigerThermalMaterialT::ConductivityTensorCalculator(Real const & n, Real const & lambda_f, std::vector<Real> lambda_s, MooseEnum conductivity_type, MooseEnum mean_type, int dim)
 {
   RealVectorValue lambda_x;
   RealVectorValue lambda_y;

@@ -17,11 +17,15 @@
     type = TigerGeometryMaterial
     porosity = 0
   [../]
-  [./rock_t]
-    type = TigerUncoupledThermalMaterialTH
+  [./rock_f]
+    type = TigerFluidMaterial
     fp_uo = water_uo
+  [../]
+  [./rock_t]
+    type = TigerThermalMaterialT
     conductivity_type = isotropic
-    lambda = 2
+    advection_type = pure_diffusion
+  lambda = 2
     density = 2600
     specific_heat = 840
   [../]
@@ -50,11 +54,11 @@
 
 [Kernels]
   [./T_diff]
-    type = TigerDiffusionKernelT
+    type = TigerThermalDiffusionKernelT
     variable = temperature
   [../]
   [./T_dt]
-    type = TigerTimeDerivativeT
+    type = TigerThermalTimeKernelT
     variable = temperature
   [../]
 []
