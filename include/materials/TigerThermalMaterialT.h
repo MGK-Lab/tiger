@@ -38,46 +38,50 @@ class TigerThermalMaterialT : public Material
 {
 public:
   TigerThermalMaterialT(const InputParameters & parameters);
+  virtual void computeQpProperties() override;
 
 private:
+  // enum to select type of advection velocity
   enum AT {pure_diffusion, darcy_velocity, user_velocity, darcy_user_velocities};
-  // enum for selecting thermal conductivity distribution for solid phase
-  MooseEnum _ct;
-  // enum for selecting thermal conductivity distribution for solid phase
   MooseEnum _at;
-  // enum for selecting calculation method for mixture
+  // enum to select thermal conductivity distribution for solid phase
+  enum CT {isotropic, orthotropic, anisotropic};
+  MooseEnum _ct;
+  // enum to select calculation method for mixture thermal conductivity
+  enum M {arithmetic, geometric};
   MooseEnum _mean;
+
   // initial thermal conductivity for solid phase
   std::vector<Real> _lambda0;
   // initial specific heat for solid phase
   Real _cp0;
   // initial density for solid phase
   Real _rho0;
-
-  RankTwoTensor _lambda_sf_tensor = RankTwoTensor();
-  Real _lambda_sf_real = 0.0;
-
+  // boolean selecting mode for upwinding and critical numbers output
   bool _has_PeCr;
   bool _has_supg;
+  // userdefined factor to manually modify upwinding coefficient
   Real _supg_scale;
-
-  void ConductivityTensorCalculator(Real const & n, Real const & lambda_f, std::vector<Real> lambda_s, MooseEnum conductivity_type, MooseEnum mean_type, int dim);
+  // userdefined velocity vector function for advection
+  Function * _vel_func;
 
 protected:
-  virtual void computeQpProperties() override;
+  RankTwoTensor Ari_Cond_Calc(Real const & n, Real const & lambda_f, const std::vector<Real> & lambda_s, const int & dim);
+  RankTwoTensor Geo_Cond_Calc(Real const & n, Real const & lambda_f, const std::vector<Real> & lambda_s, const int & dim);
 
-  Function * _vel_func;
-  const MaterialProperty<RealVectorValue> * _d_v;
+  // Peclet number upon request
   MaterialProperty<Real> * _Pe;
+  // Courant number upon request
   MaterialProperty<Real> * _Cr;
-
-  // equivalent conductivity for mixture
+  // equivalent conductivity of mixture
   MaterialProperty<RankTwoTensor> & _lambda_sf;
-  // coefficient for time derivative kernel
+  // coefficient for thermal time kernel
   MaterialProperty<Real> & _T_Kernel_dt;
-
+  // indicator to inform kernels for considering upwinding
   MaterialProperty<bool> & _SUPG_ind;
-  MaterialProperty<RealVectorValue> & _dv;
+  // advection velocity
+  MaterialProperty<RealVectorValue> & _av;
+  // upwinding coefficient
   MaterialProperty<RealVectorValue> & _SUPG_p;
 
   // imported props from TigerGeometryMaterial
@@ -88,6 +92,11 @@ protected:
   const MaterialProperty<Real> & _rho_f;
   const MaterialProperty<Real> & _cp_f;
   const MaterialProperty<Real> & _lambda_f;
+
+  // imported darcy velocity from TigerHydraulicMaterial
+  const MaterialProperty<RealVectorValue> * _dv;
+
+  // userobject to calculate upwinding
   const TigerSUPG * _supg_uo;
 };
 

@@ -44,7 +44,7 @@ TigerThermalAdvectionKernelT::TigerThermalAdvectionKernelT(const InputParameters
   _cp_f(getMaterialProperty<Real>("fluid_specific_heat")),
   _SUPG_p(getMaterialProperty<RealVectorValue>("petrov_supg_p_function")),
   _SUPG_ind(getMaterialProperty<bool>("supg_indicator")),
-  _darcy_v(getMaterialProperty<RealVectorValue>("darcy_velocity")),
+  _darcy_v(getMaterialProperty<RealVectorValue>("thermal_advection_velocity")),
   _pressure_var(coupled("pressure_varible"))
 {
   if (parameters.isParamSetByUser("pressure_varible"))

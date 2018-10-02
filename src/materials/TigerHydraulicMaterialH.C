@@ -33,7 +33,7 @@ validParams<TigerHydraulicMaterialH>()
   InputParameters params = validParams<Material>();
 
   params.addRequiredCoupledVar("pressure",
-          "Pore pressure nonlinear variable (Pa)");
+        "Pore pressure nonlinear variable (Pa)");
   params.addParam<bool>("has_gravity", false, "Is the gravity enabled?");
   params.addParam<Real>("gravity_acceleration", 9.81,
         "The magnitude of the gravity acceleration (m/s^2)");
@@ -53,7 +53,7 @@ TigerHydraulicMaterialH::TigerHydraulicMaterialH(const InputParameters & paramet
     _H_Kernel_dt(declareProperty<Real>("H_Kernel_dt_coefficient")),
     _gravity(declareProperty<RealVectorValue>("gravity_vector")),
     _kf_uo(getUserObject<TigerPermeability>("kf_uo")),
-    _dv(declareProperty<RealVectorValue>("darcy_velocity_vector")),
+    _dv(declareProperty<RealVectorValue>("darcy_velocity")),
     _ddv_dT(declareProperty<RealVectorValue>("d_darcy_velocity_dT")),
     _n(getMaterialProperty<Real>("porosity")),
     _rot_mat(getMaterialProperty<RankTwoTensor>("lowerD_rotation_matrix")),

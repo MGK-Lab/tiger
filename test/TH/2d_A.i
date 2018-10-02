@@ -98,13 +98,13 @@
 [AuxKernels]
   [./vx_ker]
     type = MaterialRealVectorValueAux
-    property = 'darcy_velocity'
+    property = 'thermal_advection_velocity'
     variable = vx
     component = 0
   [../]
   [./vy_ker]
     type = MaterialRealVectorValueAux
-    property = 'darcy_velocity'
+    property = 'thermal_advection_velocity'
     variable = vy
     component = 1
   [../]
