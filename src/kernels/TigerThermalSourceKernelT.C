@@ -31,29 +31,36 @@ InputParameters
 validParams<TigerThermalSourceKernelT>()
 {
   InputParameters params = validParams<Kernel>();
-  params.addParam<Real>("value", 1.0, "Constant heat source (sink) (W/m^3) (positive is a source, and negative is a sink) or a multiplier for the the provided function");
-  params.addParam<FunctionName>("function", "1", "Heat source (sink) as a function (W/m^3) (positive is a source, and negative is a sink)");
+
+  params.addParam<Real>("value", 1.0, "Constant heat source (sink) (W/m^3) "
+        "(positive is a source, and negative is a sink) or a multiplier "
+        "for the the provided function");
+  params.addParam<FunctionName>("function", "1.0", "Heat source (sink) as "
+        "a function (W/m^3) (positive is a source, and negative is a sink)");
   return params;
 }
 
 TigerThermalSourceKernelT::TigerThermalSourceKernelT(const InputParameters & parameters)
   : Kernel(parameters),
-    _scale_factor(getMaterialProperty<Real>("scale_factor")),
     _scale(getParam<Real>("value")),
     _function(getFunction("function")),
-    _SUPG_p(getMaterialProperty<RealVectorValue>("petrov_supg_p_function")),
-    _SUPG_ind(getMaterialProperty<bool>("supg_indicator"))
+    _scale_factor(getMaterialProperty<Real>("scale_factor")),
+    _SUPG_p(getMaterialProperty<RealVectorValue>("thermal_petrov_supg_p_function")),
+    _SUPG_ind(getMaterialProperty<bool>("thermal_supg_indicator"))
 {
 }
 
 Real
 TigerThermalSourceKernelT::computeQpResidual()
 {
-  Real factor = _scale * _function.value(_t, _q_point[_qp]);
-  Real R;
+  Real factor = -_scale * _function.value(_t, _q_point[_qp]);
+
+  Real test = 0.0;
+
   if (_SUPG_ind[_qp])
-    R = (_test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp]) * -factor;
+    test = _test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp];
   else
-    R = _test[_i][_qp] * -factor;
-  return _scale_factor[_qp] * R;
+    test = _test[_i][_qp];
+
+  return _scale_factor[_qp] * test * factor;
 }

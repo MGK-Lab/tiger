@@ -37,9 +37,6 @@ class TigerThermalAdvectionKernelT : public Kernel
 public:
   TigerThermalAdvectionKernelT(const InputParameters & parameters);
 
-private:
-  bool _has_supg;
-
 protected:
   virtual Real computeQpResidual() override;
   virtual Real computeQpJacobian() override;
@@ -47,12 +44,17 @@ protected:
 
   const MaterialProperty<Real> & _scale_factor;
   const MaterialProperty<Real> & _rho_f;
+  const MaterialProperty<Real> & _drho_dT_f;
+  const MaterialProperty<Real> & _drho_dp_f;
   const MaterialProperty<Real> & _cp_f;
   const MaterialProperty<RealVectorValue> & _SUPG_p;
   const MaterialProperty<bool> & _SUPG_ind;
-  const MaterialProperty<RealVectorValue> & _darcy_v;
+  const MaterialProperty<bool> & _av_ind;
+  const MaterialProperty<RealVectorValue> & _av;
+  const MaterialProperty<RealVectorValue> * _dav_dT;
+  const MaterialProperty<RealVectorValue> * _dav_dp_phi;
+  const MaterialProperty<RankTwoTensor> * _dav_dp_gradphi;
   unsigned int _pressure_var;
-  const MaterialProperty<RankTwoTensor> * _k_vis;
 };
 
 #endif // TIGERTHERMALADVECTIONKERNELT_H

@@ -56,6 +56,10 @@ protected:
   MaterialProperty<RealVectorValue> & _dv;
   // Derivative of Dracy velocity wrt temperature
   MaterialProperty<RealVectorValue> & _ddv_dT;
+  // Derivative of Dracy velocity wrt pressure to multiply by _phi
+  MaterialProperty<RealVectorValue> & _ddv_dp_phi;
+  // Derivative of Dracy velocity wrt pressure to multiply by _grad_phi
+  MaterialProperty<RankTwoTensor> & _ddv_dp_gradphi;
 
   // Imported props from TigerGeometryMaterial
   const MaterialProperty<Real> & _n;
@@ -66,7 +70,9 @@ protected:
   const MaterialProperty<Real> & _mu_f;
   const MaterialProperty<Real> & _beta_f;
   const MaterialProperty<Real> & _drho_dT_f;
+  const MaterialProperty<Real> & _drho_dp_f;
   const MaterialProperty<Real> & _dmu_dT_f;
+  const MaterialProperty<Real> & _dmu_dp_f;
 
 private:
   // Gravity activation option

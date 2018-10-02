@@ -38,7 +38,6 @@ class TigerThermalMaterialT : public Material
 {
 public:
   TigerThermalMaterialT(const InputParameters & parameters);
-  virtual void computeQpProperties() override;
 
 private:
   // enum to select type of advection velocity
@@ -66,6 +65,7 @@ private:
   Function * _vel_func;
 
 protected:
+  virtual void computeQpProperties() override;
   RankTwoTensor Ari_Cond_Calc(Real const & n, Real const & lambda_f, const std::vector<Real> & lambda_s, const int & dim);
   RankTwoTensor Geo_Cond_Calc(Real const & n, Real const & lambda_f, const std::vector<Real> & lambda_s, const int & dim);
 
@@ -76,9 +76,13 @@ protected:
   // equivalent conductivity of mixture
   MaterialProperty<RankTwoTensor> & _lambda_sf;
   // coefficient for thermal time kernel
-  MaterialProperty<Real> & _T_Kernel_dt;
+  MaterialProperty<Real> & _TimeKernelT;
+  // derivative of thermal time kernel coefficient wrt temperature
+  MaterialProperty<Real> & _dTimeKernelT_dT;
   // indicator to inform kernels for considering upwinding
   MaterialProperty<bool> & _SUPG_ind;
+  // indicator to inform kernels for considering derivative of darcy velocity
+  MaterialProperty<bool> & _av_ind;
   // advection velocity
   MaterialProperty<RealVectorValue> & _av;
   // upwinding coefficient
@@ -92,6 +96,7 @@ protected:
   const MaterialProperty<Real> & _rho_f;
   const MaterialProperty<Real> & _cp_f;
   const MaterialProperty<Real> & _lambda_f;
+  const MaterialProperty<Real> & _drho_dT_f;
 
   // imported darcy velocity from TigerHydraulicMaterial
   const MaterialProperty<RealVectorValue> * _dv;

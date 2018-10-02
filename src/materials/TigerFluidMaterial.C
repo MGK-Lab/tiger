@@ -63,7 +63,7 @@ TigerFluidMaterial::computeQpProperties()
 {
   _fp_uo.rho_dpT(_P[_qp], _T[_qp], _rho_f[_qp], _drho_dp_f[_qp], _drho_dT_f[_qp]);
   _fp_uo.mu_dpT(_P[_qp], _T[_qp], _mu_f[_qp], _dmu_dp_f[_qp], _dmu_dT_f[_qp]);
-  _beta_f[_qp] = 1.0 / (std::pow(_fp_uo.c(_P[_qp], _T[_qp]),2.0) * _rho_f[_qp]);
+  _beta_f[_qp] = _drho_dp_f[_qp] / _rho_f[_qp];
   _cp_f[_qp] = _fp_uo.cp(_P[_qp], _T[_qp]);
   _lambda_f[_qp] = _fp_uo.k(_P[_qp], _T[_qp]);
 }

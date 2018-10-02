@@ -55,13 +55,17 @@ TigerHydraulicMaterialH::TigerHydraulicMaterialH(const InputParameters & paramet
     _kf_uo(getUserObject<TigerPermeability>("kf_uo")),
     _dv(declareProperty<RealVectorValue>("darcy_velocity")),
     _ddv_dT(declareProperty<RealVectorValue>("d_darcy_velocity_dT")),
+    _ddv_dp_phi(declareProperty<RealVectorValue>("d_darcy_velocity_dp_phi")),
+    _ddv_dp_gradphi(declareProperty<RankTwoTensor>("d_darcy_velocity_dp_gradphi")),
     _n(getMaterialProperty<Real>("porosity")),
     _rot_mat(getMaterialProperty<RankTwoTensor>("lowerD_rotation_matrix")),
     _rho_f(getMaterialProperty<Real>("fluid_density")),
     _mu_f(getMaterialProperty<Real>("fluid_viscosity")),
     _beta_f(getMaterialProperty<Real>("fluid_compressibility")),
     _drho_dT_f(getMaterialProperty<Real>("fluid_drho_dT")),
+    _drho_dp_f(getMaterialProperty<Real>("fluid_drho_dp")),
     _dmu_dT_f(getMaterialProperty<Real>("fluid_dmu_dT")),
+    _dmu_dp_f(getMaterialProperty<Real>("fluid_dmu_dp")),
     _has_gravity(getParam<bool>("has_gravity")),
     _beta_s(getParam<Real>("compressibility"))
 {
@@ -90,5 +94,9 @@ TigerHydraulicMaterialH::computeQpProperties()
     _k_vis[_qp].rotate(_rot_mat[_qp]);
 
   _dv[_qp] = - _k_vis[_qp] * (_grad_p[_qp] - _rho_f[_qp] * _gravity[_qp]);
-  _ddv_dT[_qp] = _k_vis[_qp] * _gravity[_qp] * (_drho_dT_f[_qp] - _dmu_dT_f[_qp] * _rho_f[_qp] / _mu_f[_qp]);
+  _ddv_dT[_qp] = _k_vis[_qp] * (_drho_dT_f[_qp] * _gravity[_qp] + _dmu_dT_f[_qp]
+                  / _mu_f[_qp] * (_grad_p[_qp] - _rho_f[_qp] * _gravity[_qp]));
+  _ddv_dp_phi[_qp] = _k_vis[_qp] * (_drho_dp_f[_qp] * _gravity[_qp] + _dmu_dp_f[_qp]
+                  / _mu_f[_qp] * (_grad_p[_qp] - _rho_f[_qp] * _gravity[_qp]));
+  _ddv_dp_gradphi[_qp] = - _k_vis[_qp];
 }

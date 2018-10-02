@@ -121,7 +121,7 @@
   [../]
   [./pe_ker]
     type = MaterialRealAux
-    property = 'peclet_number'
+    property = 'thermal_peclet_number'
     variable = pe
   [../]
 []
@@ -134,7 +134,7 @@
   [./T_advect]
     type = TigerThermalAdvectionKernelT
     variable = temperature
-    pressure_varible = pressure
+    pressure = pressure
   [../]
   [./T_dt]
     type = TigerThermalTimeKernelT

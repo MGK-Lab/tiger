@@ -77,31 +77,37 @@ TigerThermalMaterialT::TigerThermalMaterialT(const InputParameters & parameters)
     _has_PeCr(getParam<bool>("output_Pe_Cr_numbers")),
     _has_supg(getParam<bool>("has_supg")),
     _supg_scale(getParam<Real>("supg_coeficient_scale")),
-    _lambda_sf(declareProperty<RankTwoTensor>("conductivity_mixture")),
-    _T_Kernel_dt(declareProperty<Real>("T_Kernel_dt_coefficient")),
-    _SUPG_ind(declareProperty<bool>("supg_indicator")),
+    _lambda_sf(declareProperty<RankTwoTensor>("thermal_conductivity_mixture")),
+    _TimeKernelT(declareProperty<Real>("TimeKernel_T")),
+    _dTimeKernelT_dT(declareProperty<Real>("dTimeKernelT_dT")),
+    _SUPG_ind(declareProperty<bool>("thermal_supg_indicator")),
+    _av_ind(declareProperty<bool>("thermal_av_dv_indicator")),
     _av(declareProperty<RealVectorValue>("thermal_advection_velocity")),
-    _SUPG_p(declareProperty<RealVectorValue>("petrov_supg_p_function")),
+    _SUPG_p(declareProperty<RealVectorValue>("thermal_petrov_supg_p_function")),
     _n(getMaterialProperty<Real>("porosity")),
     _rot_mat(getMaterialProperty<RankTwoTensor>("lowerD_rotation_matrix")),
     _rho_f(getMaterialProperty<Real>("fluid_density")),
     _cp_f(getMaterialProperty<Real>("fluid_specific_heat")),
-    _lambda_f(getMaterialProperty<Real>("fluid_thermal_conductivity"))
+    _lambda_f(getMaterialProperty<Real>("fluid_thermal_conductivity")),
+    _drho_dT_f(getMaterialProperty<Real>("fluid_drho_dT"))
 {
-  _Pe = (_has_PeCr || _has_supg) ? &declareProperty<Real>("peclet_number") : NULL;
-  _Cr = (_has_PeCr || _has_supg) ? &declareProperty<Real>("courant_number") : NULL;
-  _dv = (_at == AT::darcy_velocity || _at == AT::darcy_user_velocities) ?
-          &getMaterialProperty<RealVectorValue>("darcy_velocity") : NULL;
+  _Pe = (_has_PeCr || _has_supg) ?
+              &declareProperty<Real>("thermal_peclet_number") : NULL;
+  _Cr = (_has_PeCr || _has_supg) ?
+              &declareProperty<Real>("thermal_courant_number") : NULL;
   _vel_func = (_at == AT::user_velocity || _at == AT::darcy_user_velocities) ?
               &getFunction("user_velocity") : NULL;
   _supg_uo = (parameters.isParamSetByUser("supg_uo")) ?
               &getUserObject<TigerSUPG>("supg_uo") : NULL;
+  _dv = (_at == AT::darcy_velocity || _at == AT::darcy_user_velocities) ?
+              &getMaterialProperty<RealVectorValue>("darcy_velocity") : NULL;
 }
 
 void
 TigerThermalMaterialT::computeQpProperties()
 {
-  _T_Kernel_dt[_qp] = (1.0 - _n[_qp]) * _rho0 * _cp0 + _rho_f[_qp] * _cp_f[_qp] * _n[_qp];
+  _TimeKernelT[_qp] = (1.0 - _n[_qp]) * _rho0 * _cp0 + _rho_f[_qp] * _cp_f[_qp] * _n[_qp];
+  _dTimeKernelT_dT[_qp] = _drho_dT_f[_qp] * _cp_f[_qp] * _n[_qp];
 
   switch (_mean)
   {
@@ -120,19 +126,23 @@ TigerThermalMaterialT::computeQpProperties()
   {
     case AT::pure_diffusion:
       _av[_qp].zero();
-      break;
+      _av_ind[_qp] = false;
+    break;
     case AT::darcy_velocity:
       _av[_qp] = (*_dv)[_qp];
+      _av_ind[_qp] = true;
       break;
     case AT::user_velocity:
       _av[_qp] = _vel_func->vectorValue(_t, _q_point[_qp]);
+      _av_ind[_qp] = false;
       break;
     case AT::darcy_user_velocities:
       _av[_qp] = (*_dv)[_qp] + _vel_func->vectorValue(_t, _q_point[_qp]);
+      _av_ind[_qp] = true;
       break;
   }
 
-  Real lambda = _lambda_sf[_qp].trace() / (_current_elem->dim() * _T_Kernel_dt[_qp]);
+  Real lambda = _lambda_sf[_qp].trace() / (_current_elem->dim() * _TimeKernelT[_qp]);
 
   if (_has_PeCr && !_has_supg)
     _supg_uo->PeCrNrsCalculator(lambda, _dt, _current_elem, _av[_qp], (*_Pe)[_qp], (*_Cr)[_qp]);
@@ -142,7 +152,7 @@ TigerThermalMaterialT::computeQpProperties()
     // should be multiplied by the gradient of the test function to build the Petrov Galerkin P function
     _supg_uo->SUPGCalculator(lambda, _dt, _current_elem, _av[_qp], _SUPG_p[_qp], (*_Pe)[_qp], (*_Cr)[_qp]);
     _SUPG_p[_qp] *= _supg_scale;
-    
+
     if (_SUPG_p[_qp].norm() != 0.0)
       _SUPG_ind[_qp] = true;
     else

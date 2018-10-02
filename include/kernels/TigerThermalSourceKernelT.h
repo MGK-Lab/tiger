@@ -40,10 +40,11 @@ public:
 protected:
   virtual Real computeQpResidual() override;
 
-  const MaterialProperty<Real> & _scale_factor;
   const Real & _scale;
-
   Function & _function;
+
+  // imported props from materials
+  const MaterialProperty<Real> & _scale_factor;
   const MaterialProperty<RealVectorValue> & _SUPG_p;
   const MaterialProperty<bool> & _SUPG_ind;
 };

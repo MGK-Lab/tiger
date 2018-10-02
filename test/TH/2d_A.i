@@ -110,12 +110,12 @@
   [../]
   [./pe_ker]
     type = MaterialRealAux
-    property = 'peclet_number'
+    property = 'thermal_peclet_number'
     variable = pe
   [../]
   [./cr_ker]
     type = MaterialRealAux
-    property = 'courant_number'
+    property = 'thermal_courant_number'
     variable = cr
   [../]
 []

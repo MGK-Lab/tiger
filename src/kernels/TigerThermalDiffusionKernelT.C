@@ -36,7 +36,7 @@ validParams<TigerThermalDiffusionKernelT>()
 TigerThermalDiffusionKernelT::TigerThermalDiffusionKernelT(const InputParameters & parameters)
   : Kernel(parameters),
     _scale_factor(getMaterialProperty<Real>("scale_factor")),
-    _lambda_sf(getMaterialProperty<RankTwoTensor>("conductivity_mixture"))
+    _lambda_sf(getMaterialProperty<RankTwoTensor>("thermal_conductivity_mixture"))
 {
 }
 
@@ -51,3 +51,4 @@ TigerThermalDiffusionKernelT::computeQpJacobian()
 {
   return _grad_test[_i][_qp] * ( _scale_factor[_qp] * _lambda_sf[_qp] * _grad_phi[_j][_qp]);
 }
+// assumed _lambda_sf is not function of pressure and temperature so far

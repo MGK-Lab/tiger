@@ -32,7 +32,7 @@ validParams<TigerThermalAdvectionKernelT>()
 {
   InputParameters params = validParams<Kernel>();
 
-  params.addCoupledVar("pressure_varible", 0 ,"The variable representing the pressure.");
+  params.addCoupledVar("pressure", 0 ,"The variable representing the pressure.");
 
   return params;
 }
@@ -41,56 +41,81 @@ TigerThermalAdvectionKernelT::TigerThermalAdvectionKernelT(const InputParameters
   : Kernel(parameters),
   _scale_factor(getMaterialProperty<Real>("scale_factor")),
   _rho_f(getMaterialProperty<Real>("fluid_density")),
+  _drho_dT_f(getMaterialProperty<Real>("fluid_drho_dT")),
+  _drho_dp_f(getMaterialProperty<Real>("fluid_drho_dp")),
   _cp_f(getMaterialProperty<Real>("fluid_specific_heat")),
-  _SUPG_p(getMaterialProperty<RealVectorValue>("petrov_supg_p_function")),
-  _SUPG_ind(getMaterialProperty<bool>("supg_indicator")),
-  _darcy_v(getMaterialProperty<RealVectorValue>("thermal_advection_velocity")),
-  _pressure_var(coupled("pressure_varible"))
+  _SUPG_p(getMaterialProperty<RealVectorValue>("thermal_petrov_supg_p_function")),
+  _SUPG_ind(getMaterialProperty<bool>("thermal_supg_indicator")),
+  _av_ind(getMaterialProperty<bool>("thermal_av_dv_indicator")),
+  _av(getMaterialProperty<RealVectorValue>("thermal_advection_velocity")),
+  _pressure_var(coupled("pressure"))
 {
-  if (parameters.isParamSetByUser("pressure_varible"))
-    _k_vis = &getMaterialProperty<RankTwoTensor>("permeability_by_viscosity");
+  if (parameters.isParamSetByUser("pressure"))
+  {
+    _dav_dT = &getMaterialProperty<RealVectorValue>("d_darcy_velocity_dT");
+    _dav_dp_phi = &getMaterialProperty<RealVectorValue>("d_darcy_velocity_dp_phi");
+    _dav_dp_gradphi = &getMaterialProperty<RankTwoTensor>("d_darcy_velocity_dp_gradphi");
+  }
+  else
+  {
+    _dav_dT = NULL;
+    _dav_dp_phi = NULL;
+    _dav_dp_gradphi = NULL;
+  }
 }
 
 Real
 TigerThermalAdvectionKernelT::computeQpResidual()
 {
-  Real R;
-  if (_SUPG_ind[_qp])
-    R = _rho_f[_qp] * _cp_f[_qp] * ((_test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp]) * ( _darcy_v[_qp] * _grad_u[_qp]));
-  else
-    R = _rho_f[_qp] * _cp_f[_qp] * (_test[_i][_qp] * ( _darcy_v[_qp] * _grad_u[_qp]));
+  Real test = 0.0;
 
-  return _scale_factor[_qp] * R;
+  if (_SUPG_ind[_qp])
+    test = _test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp];
+  else
+    test = _test[_i][_qp];
+
+  return _scale_factor[_qp] * _cp_f[_qp] * test * _rho_f[_qp] * _av[_qp] * _grad_u[_qp];
 }
 
 Real
 TigerThermalAdvectionKernelT::computeQpJacobian()
 {
-  Real R;
-  if (_SUPG_ind[_qp])
-    R = _rho_f[_qp] * _cp_f[_qp] * ((_test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp]) * ( _darcy_v[_qp] * _grad_phi[_j][_qp]));
-  else
-    R = _rho_f[_qp] * _cp_f[_qp] * (_test[_i][_qp] * ( _darcy_v[_qp] * _grad_phi[_j][_qp]));
+  Real test = 0.0 , j = 0.0;
 
-  return _scale_factor[_qp] * R;
+  if (_SUPG_ind[_qp])
+    test = _test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp];
+  else
+    test = _test[_i][_qp];
+
+  if (_av_ind[_qp])
+    j  = (*_dav_dT)[_qp] * _phi[_j][_qp] * _grad_u[_qp];
+
+  j += _av[_qp] * _grad_phi[_j][_qp];
+  j *= _rho_f[_qp];
+  j += _drho_dT_f[_qp] * _phi[_j][_qp] * _av[_qp] * _grad_u[_qp];
+  j *= _scale_factor[_qp] * test * _cp_f[_qp];
+
+  return j;
 }
 
 Real
 TigerThermalAdvectionKernelT::computeQpOffDiagJacobian(unsigned int jvar)
 {
-  Real R;
+  Real test = 0.0 , j = 0.0;
+
   if (jvar == _pressure_var)
   {
     if (_SUPG_ind[_qp])
-      R = _rho_f[_qp] * _cp_f[_qp] * ((_test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp]) * ( -(*_k_vis)[_qp] * _grad_phi[_j][_qp] * _grad_u[_qp]));
+      test = _test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp];
     else
-      R = _rho_f[_qp] * _cp_f[_qp] * (_test[_i][_qp] * ( -(*_k_vis)[_qp] * _grad_phi[_j][_qp] * _grad_u[_qp]));
+      test = _test[_i][_qp];
 
-    R *=_scale_factor[_qp];
+    j  = (*_dav_dp_phi)[_qp] * _phi[_j][_qp] * _grad_u[_qp];
+    j += (*_dav_dp_gradphi)[_qp] * _grad_phi[_j][_qp] * _grad_u[_qp];
+    j *= _rho_f[_qp];
+    j += _drho_dp_f[_qp] * _phi[_j][_qp] * _av[_qp] * _grad_u[_qp];
+    j *= _scale_factor[_qp] * test * _cp_f[_qp];
   }
-  else
-    R = 0.0;
 
-
-  return R;
+  return j;
 }

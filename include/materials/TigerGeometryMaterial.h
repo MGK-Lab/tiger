@@ -36,7 +36,13 @@ class TigerGeometryMaterial : public Material
 {
 public:
   TigerGeometryMaterial(const InputParameters & parameters);
+
+protected:
   virtual void computeQpProperties() override;
+  // Calculates rotation matrix for lower dimensional elements
+  RankTwoTensor lowerDRotationMatrix(int dim);
+  // computes scaling factor for lower dimensional elements
+  Real Scaling();
 
   // Material for rotation matrix for local cordinates
   MaterialProperty<RankTwoTensor> & _rot_mat;
@@ -44,17 +50,10 @@ public:
   MaterialProperty<Real> & _scale_factor;
   // porosity
   MaterialProperty<Real> & _n;
-
-protected:
   // Initial scaling factor
   Real _scale_factor0;
   // Initial porosity
   Real _n0;
-
-  // Calculates rotation matrix for lower dimensional elements
-  RankTwoTensor lowerDRotationMatrix(int dim);
-  // computes scaling factor for lower dimensional elements
-  Real Scaling();
 };
 
 #endif /* TIGERGEOMETRYMATERIAL_H */

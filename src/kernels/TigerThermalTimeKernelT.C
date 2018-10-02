@@ -36,30 +36,40 @@ validParams<TigerThermalTimeKernelT>()
 TigerThermalTimeKernelT::TigerThermalTimeKernelT(const InputParameters & parameters)
   : TimeDerivative(parameters),
     _scale_factor(getMaterialProperty<Real>("scale_factor")),
-    _T_Kernel_dt(getMaterialProperty<Real>("T_Kernel_dt_coefficient")),
-    _SUPG_p(getMaterialProperty<RealVectorValue>("petrov_supg_p_function")),
-    _SUPG_ind(getMaterialProperty<bool>("supg_indicator"))
+    _TimeKernelT(getMaterialProperty<Real>("TimeKernel_T")),
+    _dTimeKernelT_dT(getMaterialProperty<Real>("dTimeKernelT_dT")),
+    _SUPG_p(getMaterialProperty<RealVectorValue>("thermal_petrov_supg_p_function")),
+    _SUPG_ind(getMaterialProperty<bool>("thermal_supg_indicator"))
 {
 }
 
 Real
 TigerThermalTimeKernelT::computeQpResidual()
 {
-  Real test;
+  Real test = 0.0;
+
   if (_SUPG_ind[_qp])
     test = _test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp];
   else
     test = _test[_i][_qp];
-  return _scale_factor[_qp] * _T_Kernel_dt[_qp] * test * _u_dot[_qp];
+
+  return _scale_factor[_qp] * _TimeKernelT[_qp] * test * _u_dot[_qp];
 }
 
 Real
 TigerThermalTimeKernelT::computeQpJacobian()
 {
-  Real test;
+  Real test = 0.0,j = 0.0;
+
   if (_SUPG_ind[_qp])
     test = _test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp];
   else
     test = _test[_i][_qp];
-  return _scale_factor[_qp] * _T_Kernel_dt[_qp] * test * _phi[_j][_qp] * _du_dot_du[_qp];
+
+  j  = _TimeKernelT[_qp]  * _phi[_j][_qp] * _du_dot_du[_qp];
+  j += _dTimeKernelT_dT[_qp] * _phi[_j][_qp] * _u_dot[_qp];
+  j *= _scale_factor[_qp] * test;
+
+  return j;
 }
+// offDia Jac can be add because of _TimeKernelT[_qp]

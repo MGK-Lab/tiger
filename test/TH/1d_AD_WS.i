@@ -126,7 +126,7 @@
   [./T_advect]
     type = TigerThermalAdvectionKernelT
     variable = temperature
-    pressure_varible = pressure
+    pressure = pressure
   [../]
   [./T_body]
     type = TigerThermalSourceKernelT

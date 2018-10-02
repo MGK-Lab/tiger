@@ -36,9 +36,10 @@ class TigerFluidMaterial : public Material
 {
 public:
   TigerFluidMaterial(const InputParameters & parameters);
-  virtual void computeQpProperties() override;
 
 protected:
+  virtual void computeQpProperties() override;
+  
   // Pore pressure nonlinear variable
   const VariableValue & _P;
   // Temperature nonlinear variable

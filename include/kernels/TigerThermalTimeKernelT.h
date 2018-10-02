@@ -40,8 +40,10 @@ protected:
   virtual Real computeQpResidual() override;
   virtual Real computeQpJacobian() override;
 
+  // imported props from materials
   const MaterialProperty<Real> & _scale_factor;
-  const MaterialProperty<Real> & _T_Kernel_dt;
+  const MaterialProperty<Real> & _TimeKernelT;
+  const MaterialProperty<Real> & _dTimeKernelT_dT;
   const MaterialProperty<RealVectorValue> & _SUPG_p;
   const MaterialProperty<bool> & _SUPG_ind;
 };
