@@ -25,14 +25,21 @@
 []
 
 [Materials]
+  [./rock_g]
+    type = TigerGeometryMaterial
+    porosity = 0.4
+  [../]
+  [./rock_f]
+    type = TigerFluidMaterial
+    fp_uo = water_uo
+  [../]
   [./rock_h]
-    type = TigerRockMaterialH
-    fp_UO = water_uo
+    type = TigerHydraulicMaterialH
+    pressure = pressure
     has_gravity = true
     gravity_acceleration = 9.81
-    porosity = 0.4
     compressibility = 1.0e-9
-    kf_UO = rock_uo
+    kf_uo = rock_uo
   [../]
 []
 
@@ -62,20 +69,20 @@
 
 [AuxKernels]
   [./vx_ker]
-    type = TigerDarcyVelocityComponent
-    gradient_variable = pressure
+    type = TigerDarcyVelocityH
+    pressure = pressure
     variable =  vx
     component = x
   [../]
   [./vy_ker]
-    type = TigerDarcyVelocityComponent
-    gradient_variable = pressure
+    type = TigerDarcyVelocityH
+    pressure = pressure
     variable =  vy
     component = y
   [../]
   [./vz_ker]
-    type = TigerDarcyVelocityComponent
-    gradient_variable = pressure
+    type = TigerDarcyVelocityH
+    pressure = pressure
     variable =  vz
     component = z
   [../]
@@ -89,11 +96,11 @@
 
 [Kernels]
   [./diff]
-    type = TigerKernelH
+    type = TigerHydraulicKernelH
     variable = pressure
   [../]
   [./time]
-    type = TigerTimeDerivativeH
+    type = TigerHydraulicTimeKernelH
     variable = pressure
   [../]
 []

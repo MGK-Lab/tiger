@@ -21,30 +21,47 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerPermeabilityConst.h"
-#include "MooseError.h"
+#include "TigerHydraulicKernelH.h"
 
-registerMooseObject("TigerApp", TigerPermeabilityConst);
+registerMooseObject("TigerApp", TigerHydraulicKernelH);
 
 template <>
 InputParameters
-validParams<TigerPermeabilityConst>()
+validParams<TigerHydraulicKernelH>()
 {
-  InputParameters params = validParams<TigerPermeability>();
-  MooseEnum PT("isotropic=1 orthotropic=2 anisotropic=3");
-  params.addRequiredParam<MooseEnum>("permeability_type", PT,
-        "The permeability distribution type [isotropic, orthotropic, anisotropic].");
-  params.addRequiredParam<std::vector<Real>>("k0", "Initial permeability (m^2)");
-
-  params.addClassDescription("Permeability tensor based on provided "
-        "constant permeability value(s)");
+  InputParameters params = validParams<Kernel>();
   return params;
 }
 
-TigerPermeabilityConst::TigerPermeabilityConst(const InputParameters & parameters)
-  : TigerPermeability(parameters)
+TigerHydraulicKernelH::TigerHydraulicKernelH(const InputParameters & parameters)
+  : Kernel(parameters),
+    _scale_factor(getMaterialProperty<Real>("scale_factor")),
+    _k_vis(getMaterialProperty<RankTwoTensor>("permeability_by_viscosity")),
+    _rho_f(getMaterialProperty<Real>("fluid_density")),
+    _drho_dp_f(getMaterialProperty<Real>("fluid_drho_dp")),
+    _mu_f(getMaterialProperty<Real>("fluid_viscosity")),
+    _dmu_dp_f(getMaterialProperty<Real>("fluid_dmu_dp")),
+    _g(getMaterialProperty<RealVectorValue>("gravity_vector"))
 {
-  permeability_type = getParam<MooseEnum>("permeability_type");
-  k0.clear();
-  k0 = getParam<std::vector<Real>>("k0");
+}
+
+Real
+TigerHydraulicKernelH::computeQpResidual()
+{
+  RealVectorValue r;
+  r = _k_vis[_qp] * ( _grad_u[_qp] - _rho_f[_qp] * _g[_qp] );
+
+  return _scale_factor[_qp] * _grad_test[_i][_qp] * r;
+}
+
+Real
+TigerHydraulicKernelH::computeQpJacobian()
+{
+  RealVectorValue j;
+  j  = _k_vis[_qp] * ( _grad_phi[_j][_qp] + _drho_dp_f[_qp]
+        * _phi[_j][_qp] * _g[_qp] );
+  j -= _dmu_dp_f[_qp] / _mu_f[_qp] * _k_vis[_qp] * _phi[_j][_qp]
+        * ( _grad_u[_qp] - _rho_f[_qp] * _g[_qp] );
+
+  return _scale_factor[_qp] * _grad_test[_i][_qp] * j;
 }

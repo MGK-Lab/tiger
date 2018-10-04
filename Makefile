@@ -49,6 +49,7 @@ include $(MOOSE_DIR)/modules/modules.mk
 APPLICATION_DIR    := $(CURDIR)
 APPLICATION_NAME   := tiger
 BUILD_EXEC         := yes
+GEN_REVISION       := no
 DEP_APPS           := $(shell $(FRAMEWORK_DIR)/scripts/find_dep_apps.py $(APPLICATION_NAME))
 include            $(FRAMEWORK_DIR)/app.mk
 

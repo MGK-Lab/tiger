@@ -26,18 +26,22 @@
 []
 
 [Materials]
+  [./rock_g]
+    type = TigerGeometryMaterial
+    porosity = 0
+  [../]
+  [./rock_f]
+    type = TigerFluidMaterial
+    fp_uo = water_uo
+  [../]
   [./rock_h]
-    type = TigerRockMaterialH
-    fp_UO = water_uo
-    porosity = 0.0
+    type = TigerHydraulicMaterialH
+    pressure = pressure
     compressibility = 1.0e-9
-    kf_UO = rock_uo
+    kf_uo = rock_uo
   [../]
   [./rock_t]
-    type = TigerCoupledThermalMaterialTH
-    fp_UO = water_uo
-    pressure = pressure
-    porosity = 0.0
+    type = TigerThermalMaterialT
     conductivity_type = isotropic
     lambda = 2.184
     density = 2600
@@ -101,8 +105,8 @@
 
 [AuxKernels]
   [./vx_ker]
-    type = TigerDarcyVelocityComponent
-    gradient_variable = pressure
+    type = TigerDarcyVelocityH
+    pressure = pressure
     variable =  vx
     component = x
   [../]
@@ -116,16 +120,16 @@
 
 [Kernels]
   [./T_diff]
-    type = TigerDiffusionKernelT
+    type = TigerThermalDiffusionKernelT
     variable = temperature
   [../]
   [./T_advect]
-    type = TigerAdvectionKernelTH
+    type = TigerThermalAdvectionKernelT
     variable = temperature
-    pressure_varible = pressure
+    pressure = pressure
   [../]
   [./H_diff]
-    type = TigerKernelH
+    type = TigerHydraulicKernelH
     variable = pressure
   [../]
 []

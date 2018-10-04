@@ -21,31 +21,34 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerDiffusionKernelT.h"
+#include "TigerDarcyVelocityH.h"
+
+registerMooseObject("TigerApp", TigerDarcyVelocityH);
 
 template <>
 InputParameters
-validParams<TigerDiffusionKernelT>()
+validParams<TigerDarcyVelocityH>()
 {
-  InputParameters params = validParams<Kernel>();
+  InputParameters params = validParams<AuxKernel>();
+  params.addRequiredCoupledVar("pressure", "Pore pressure nonlinear variable");
+  MooseEnum component("x y z", "x");
+  params.addRequiredParam<MooseEnum>("component", component,
+        "The Darcy velocity component to compute");
   return params;
 }
 
-TigerDiffusionKernelT::TigerDiffusionKernelT(const InputParameters & parameters)
-  : Kernel(parameters),
-    _scaling_lowerD(getMaterialProperty<Real>("lowerD_scale_factor_t")),
-    _lambda_sf(getMaterialProperty<RankTwoTensor>("conductivity_mixture"))
+TigerDarcyVelocityH::TigerDarcyVelocityH(const InputParameters & parameters)
+  : AuxKernel(parameters),
+    _grad_p(coupledGradient("pressure")),
+    _k_vis(getMaterialProperty<RankTwoTensor>("permeability_by_viscosity")),
+    _rho_f(getMaterialProperty<Real>("fluid_density")),
+    _g(getMaterialProperty<RealVectorValue>("gravity_vector")),
+    _component(getParam<MooseEnum>("component"))
 {
 }
 
 Real
-TigerDiffusionKernelT::computeQpResidual()
+TigerDarcyVelocityH::computeValue()
 {
-  return _grad_test[_i][_qp] * ( _scaling_lowerD[_qp] * _lambda_sf[_qp] * _grad_u[_qp]);
-}
-
-Real
-TigerDiffusionKernelT::computeQpJacobian()
-{
-  return _grad_test[_i][_qp] * ( _scaling_lowerD[_qp] * _lambda_sf[_qp] * _grad_phi[_j][_qp]);
+  return -(_k_vis[_qp] * (_grad_p[_qp] - _rho_f[_qp] * _g[_qp]))(_component);
 }

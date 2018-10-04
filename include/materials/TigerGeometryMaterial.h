@@ -21,29 +21,39 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERTIMEDERIVATIVET_H
-#define TIGERTIMEDERIVATIVET_H
+#ifndef TIGERGEOMETRYMATERIAL_H
+#define TIGERGEOMETRYMATERIAL_H
 
-#include "TimeDerivative.h"
+#include "Material.h"
+#include "RankTwoTensor.h"
 
-class TigerTimeDerivativeT;
+class TigerGeometryMaterial;
 
 template <>
-InputParameters validParams<TigerTimeDerivativeT>();
+InputParameters validParams<TigerGeometryMaterial>();
 
-class TigerTimeDerivativeT : public TimeDerivative
+class TigerGeometryMaterial : public Material
 {
 public:
-  TigerTimeDerivativeT(const InputParameters & parameters);
+  TigerGeometryMaterial(const InputParameters & parameters);
 
 protected:
-  virtual Real computeQpResidual() override;
-  virtual Real computeQpJacobian() override;
+  virtual void computeQpProperties() override;
+  // Calculates rotation matrix for lower dimensional elements
+  RankTwoTensor lowerDRotationMatrix(int dim);
+  // computes scaling factor for lower dimensional elements
+  Real Scaling();
 
-  const MaterialProperty<Real> & _scaling_lowerD;
-  const MaterialProperty<Real> & _T_Kernel_dt;
-  const MaterialProperty<RealVectorValue> & _SUPG_p;
-  const MaterialProperty<bool> & _SUPG_ind;
+  // Material for rotation matrix for local cordinates
+  MaterialProperty<RankTwoTensor> & _rot_mat;
+  // scaling factor
+  MaterialProperty<Real> & _scale_factor;
+  // porosity
+  MaterialProperty<Real> & _n;
+  // Initial scaling factor
+  Real _scale_factor0;
+  // Initial porosity
+  Real _n0;
 };
 
-#endif // TIGERTIMEDERIVATIVET_H
+#endif /* TIGERGEOMETRYMATERIAL_H */

@@ -9,17 +9,24 @@
 [Modules]
   [./FluidProperties]
     [./water_uo]
-      type = SimpleFluidProperties
+      type = TigerWaterConst
     [../]
   [../]
 []
 
 [Materials]
-  [./matrix_t]
-    type = TigerUncoupledThermalMaterialTH
-    fp_UO = water_uo
+  [./rock_f]
+    type = TigerFluidMaterial
+    fp_uo = water_uo
+  [../]
+  [./matrix_g]
+    type = TigerGeometryMaterial
     porosity = 1.0
+  [../]
+  [./matrix_t]
+    type = TigerThermalMaterialT
     conductivity_type = isotropic
+    advection_type = user_velocity
     lambda = 0
     density = 0
     specific_heat = 0
@@ -62,11 +69,11 @@
 
 [Kernels]
   [./T_advect]
-    type = TigerAdvectionKernelTH
+    type = TigerThermalAdvectionKernelT
     variable = temperature
   [../]
   [./T_time]
-    type =  TigerTimeDerivativeT
+    type =  TigerThermalTimeKernelT
     variable = temperature
   [../]
 []

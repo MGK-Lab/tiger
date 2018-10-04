@@ -21,30 +21,44 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerPermeabilityConst.h"
-#include "MooseError.h"
+#ifndef TIGERSUPG_H
+#define TIGERSUPG_H
 
-registerMooseObject("TigerApp", TigerPermeabilityConst);
+#include "GeneralUserObject.h"
+#include "RankTwoTensor.h"
+
+class TigerSUPG;
 
 template <>
-InputParameters
-validParams<TigerPermeabilityConst>()
-{
-  InputParameters params = validParams<TigerPermeability>();
-  MooseEnum PT("isotropic=1 orthotropic=2 anisotropic=3");
-  params.addRequiredParam<MooseEnum>("permeability_type", PT,
-        "The permeability distribution type [isotropic, orthotropic, anisotropic].");
-  params.addRequiredParam<std::vector<Real>>("k0", "Initial permeability (m^2)");
+InputParameters validParams<TigerSUPG>();
 
-  params.addClassDescription("Permeability tensor based on provided "
-        "constant permeability value(s)");
-  return params;
-}
-
-TigerPermeabilityConst::TigerPermeabilityConst(const InputParameters & parameters)
-  : TigerPermeability(parameters)
+class TigerSUPG : public GeneralUserObject
 {
-  permeability_type = getParam<MooseEnum>("permeability_type");
-  k0.clear();
-  k0 = getParam<std::vector<Real>>("k0");
-}
+public:
+  TigerSUPG(const InputParameters & parameters);
+
+  virtual void execute();
+  virtual void initialize();
+  virtual void finalize();
+
+  void PeCrNrsCalculator(const Real & diff, const Real & dt, const Elem * ele, const RealVectorValue & v, Real & PeNr, Real & CrNr) const;
+  void SUPGCalculator(const Real & diff, const Real & dt, const Elem * ele, const RealVectorValue & v, RealVectorValue & SUPG_coeff, Real & alpha, Real & CrNr) const;
+  Real tau(const Real & alpha, const Real & diff, const Real & dt, const Real & v, const Real & h) const;
+  Real Actualtau(const RealVectorValue & alpha, const Real & diff, const Real & dt, const RealVectorValue & v, const RealVectorValue & h) const;
+
+protected:
+  RealVectorValue EEL(const Elem * ele) const;
+  RealVectorValue ActualEEL(const Elem * ele) const;
+  Real Optimal(const Real & alpha) const;
+  Real Temporal(const Real & v, const Real & h, const Real & diff, const Real & dt) const;
+  Real ActualTemporal(const RealVectorValue & v, const RealVectorValue & h, const Real & diff, const Real & dt) const;
+  Real DoublyAsymptotic(const Real & alpha) const;
+  Real Critical(const Real & alpha) const;
+
+  MooseEnum _eff_len;
+  MooseEnum _method;
+  enum EL {min, max, average, directional_min, directional_max, directional_average};
+  enum M {optimal, doubly_asymptotic, critical, transient_brooks, transient_tezduyar};
+};
+
+#endif /* TIGERSUPG_H */

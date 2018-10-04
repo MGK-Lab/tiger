@@ -21,47 +21,59 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerPointSourceH.h"
+#include "TigerHydraulicPointSourceH.h"
 #include "FEProblemBase.h"
+
+registerMooseObject("TigerApp", TigerHydraulicPointSourceH);
 
 template <>
 InputParameters
-validParams<TigerPointSourceH>()
+validParams<TigerHydraulicPointSourceH>()
 {
   InputParameters params = validParams<DiracKernel>();
-  params.addParam<Real>("mass_flux",0.0,"The constant mass flow rate at this point (well bottom) in kg/s (positive is injection, negative is production)");
-  params.addParam<FunctionName>("mass_flux_function", "The mass flow rate as a function of time at this point (well bottom) in kg/s"
-                                                      "(positive-valued function is injection, negative-valued function is production)");
-  params.addRequiredParam<Point>("point", "The x,y,z coordinates of the injection or production well point");
-  params.addParam<Real>("start_time", 0.0, "The time at which the source will start (the case of the constant flow rate)");
-  params.addParam<Real>("end_time", 1.0e30, "The time at which the source will end (the case of the constant flow rate)");
-  params.addClassDescription("Injection/Production well that adds (removes) fluid at the well point");
+  params.addParam<Real>("mass_flux",0.0,
+        "The constant mass flow rate at this point (well bottom) in kg/s "
+        "(positive is injection, negative is production)");
+  params.addParam<FunctionName>("mass_flux_function", "The mass flow rate as a "
+        "function of time at this point (well bottom) in kg/s (positive-valued "
+        "function is injection, negative-valued function is production)");
+  params.addRequiredParam<Point>("point", "The x,y,z coordinates of the "
+        "injection or production well point");
+  params.addParam<Real>("start_time", 0.0, "The time at which the source will "
+        "start (the case of the constant flow rate)");
+  params.addParam<Real>("end_time", 1.0e30, "The time at which the source will "
+        "end (the case of the constant flow rate)");
+  params.addClassDescription("Injection/Production well that adds (removes) "
+        "fluid at the well point");
   return params;
 }
 
-TigerPointSourceH::TigerPointSourceH(
+TigerHydraulicPointSourceH::TigerHydraulicPointSourceH(
     const InputParameters & parameters)
   : DiracKernel(parameters),
     _mass_flux(getParam<Real>("mass_flux")),
     _p(getParam<Point>("point")),
     _start_time(getParam<Real>("start_time")),
     _end_time(getParam<Real>("end_time")),
-    _rhof(getMaterialProperty<Real>("fluid_density")),
-    _mass_flux_function(isParamValid("mass_flux_function") ? &getFunction("mass_flux_function") : NULL)
+    _rhof(getMaterialProperty<Real>("fluid_density"))
 {
-  /// Sanity check to ensure that the end_time is greater than the start_time
+  _mass_flux_function = isParamValid("mass_flux_function") ?
+                        &getFunction("mass_flux_function") : NULL;
+
+  // Sanity check to ensure that the end_time is greater than the start_time
   if (_end_time <= _start_time)
-    mooseError("Start time for TigerPointSourceH is ",_start_time," but it must be less than end time ",_end_time);
+    mooseError("Start time for TigerHydraulicPointSourceH is ",_start_time,
+                " but it must be less than end time ",_end_time);
 }
 
 void
-TigerPointSourceH::addPoints()
+TigerHydraulicPointSourceH::addPoints()
 {
   addPoint(_p);
 }
 
 Real
-TigerPointSourceH::computeQpResidual()
+TigerHydraulicPointSourceH::computeQpResidual()
 {
   Real factor = 1.0;
 
@@ -71,8 +83,8 @@ TigerPointSourceH::computeQpResidual()
   {
     /**
      * There are six cases for the start and end time in relation to t-dt and t.
-     * If the interval (t-dt,t) is only partly but not fully within the (start,end)
-     * interval, then the  mass_flux is scaled so that the total mass added
+     * If the interval (t-dt,t) is only partly but not fully within the (start,
+     * end) interval, then the  mass_flux is scaled so that the total mass added
      * (or removed) is correct
      */
     if (_t < _start_time || _t - _dt >= _end_time)
@@ -93,6 +105,6 @@ TigerPointSourceH::computeQpResidual()
     }
       factor *=_mass_flux;
   }
-  /// Negative sign to make a positive mass_flux as a source
+  // Negative sign to make a positive mass_flux as a source
   return -_test[_i][_qp] * factor /_rhof[_qp];
 }

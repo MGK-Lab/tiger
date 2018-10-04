@@ -21,31 +21,46 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERHEATSOURCET_H
-#define TIGERHEATSOURCET_H
+#include "TigerThermalSourceKernelT.h"
+#include "Function.h"
 
-#include "Kernel.h"
-
-class TigerHeatSourceT;
-class Function;
+registerMooseObject("TigerApp", TigerThermalSourceKernelT);
 
 template <>
-InputParameters validParams<TigerHeatSourceT>();
-
-class TigerHeatSourceT : public Kernel
+InputParameters
+validParams<TigerThermalSourceKernelT>()
 {
-public:
-  TigerHeatSourceT(const InputParameters & parameters);
+  InputParameters params = validParams<Kernel>();
 
-protected:
-  virtual Real computeQpResidual() override;
+  params.addParam<Real>("value", 1.0, "Constant heat source (sink) (W/m^3) "
+        "(positive is a source, and negative is a sink) or a multiplier "
+        "for the the provided function");
+  params.addParam<FunctionName>("function", "1.0", "Heat source (sink) as "
+        "a function (W/m^3) (positive is a source, and negative is a sink)");
+  return params;
+}
 
-  const MaterialProperty<Real> & _scaling_lowerD;
-  const Real & _scale;
+TigerThermalSourceKernelT::TigerThermalSourceKernelT(const InputParameters & parameters)
+  : Kernel(parameters),
+    _scale(getParam<Real>("value")),
+    _function(getFunction("function")),
+    _scale_factor(getMaterialProperty<Real>("scale_factor")),
+    _SUPG_p(getMaterialProperty<RealVectorValue>("thermal_petrov_supg_p_function")),
+    _SUPG_ind(getMaterialProperty<bool>("thermal_supg_indicator"))
+{
+}
 
-  Function & _function;
-  const MaterialProperty<RealVectorValue> & _SUPG_p;
-  const MaterialProperty<bool> & _SUPG_ind;
-};
+Real
+TigerThermalSourceKernelT::computeQpResidual()
+{
+  Real factor = -_scale * _function.value(_t, _q_point[_qp]);
 
-#endif  //TIGERHEATSOURCET_H
+  Real test = 0.0;
+
+  if (_SUPG_ind[_qp])
+    test = _test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp];
+  else
+    test = _test[_i][_qp];
+
+  return _scale_factor[_qp] * test * factor;
+}

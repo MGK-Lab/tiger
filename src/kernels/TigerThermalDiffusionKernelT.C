@@ -21,43 +21,34 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerTimeDerivativeT.h"
+#include "TigerThermalDiffusionKernelT.h"
+
+registerMooseObject("TigerApp", TigerThermalDiffusionKernelT);
 
 template <>
 InputParameters
-validParams<TigerTimeDerivativeT>()
+validParams<TigerThermalDiffusionKernelT>()
 {
-  InputParameters params = validParams<TimeDerivative>();
+  InputParameters params = validParams<Kernel>();
   return params;
 }
 
-TigerTimeDerivativeT::TigerTimeDerivativeT(const InputParameters & parameters)
-  : TimeDerivative(parameters),
-    _scaling_lowerD(getMaterialProperty<Real>("lowerD_scale_factor_t")),
-    _T_Kernel_dt(getMaterialProperty<Real>("T_Kernel_dt_coefficient")),
-    _SUPG_p(getMaterialProperty<RealVectorValue>("petrov_supg_p_function")),
-    _SUPG_ind(getMaterialProperty<bool>("supg_indicator"))
+TigerThermalDiffusionKernelT::TigerThermalDiffusionKernelT(const InputParameters & parameters)
+  : Kernel(parameters),
+    _scale_factor(getMaterialProperty<Real>("scale_factor")),
+    _lambda_sf(getMaterialProperty<RankTwoTensor>("thermal_conductivity_mixture"))
 {
 }
 
 Real
-TigerTimeDerivativeT::computeQpResidual()
+TigerThermalDiffusionKernelT::computeQpResidual()
 {
-  Real test;
-  if (_SUPG_ind[_qp])
-    test = _test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp];
-  else
-    test = _test[_i][_qp];
-  return _scaling_lowerD[_qp] * _T_Kernel_dt[_qp] * test * _u_dot[_qp];
+  return _grad_test[_i][_qp] * ( _scale_factor[_qp] * _lambda_sf[_qp] * _grad_u[_qp]);
 }
 
 Real
-TigerTimeDerivativeT::computeQpJacobian()
+TigerThermalDiffusionKernelT::computeQpJacobian()
 {
-  Real test;
-  if (_SUPG_ind[_qp])
-    test = _test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp];
-  else
-    test = _test[_i][_qp];
-  return _scaling_lowerD[_qp] * _T_Kernel_dt[_qp] * test * _phi[_j][_qp] * _du_dot_du[_qp];
+  return _grad_test[_i][_qp] * ( _scale_factor[_qp] * _lambda_sf[_qp] * _grad_phi[_j][_qp]);
 }
+// assumed _lambda_sf is not function of pressure and temperature so far

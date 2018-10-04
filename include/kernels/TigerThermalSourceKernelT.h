@@ -21,29 +21,32 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERKERNELH_H
-#define TIGERKERNELH_H
+#ifndef TIGERTHERMALSOURCEKERNELT_H
+#define TIGERTHERMALSOURCEKERNELT_H
 
 #include "Kernel.h"
-#include "RankTwoTensor.h"
 
-class TigerKernelH;
+class TigerThermalSourceKernelT;
+class Function;
 
 template <>
-InputParameters validParams<TigerKernelH>();
+InputParameters validParams<TigerThermalSourceKernelT>();
 
-class TigerKernelH : public Kernel
+class TigerThermalSourceKernelT : public Kernel
 {
 public:
-  TigerKernelH(const InputParameters & parameters);
+  TigerThermalSourceKernelT(const InputParameters & parameters);
 
 protected:
   virtual Real computeQpResidual() override;
-  virtual Real computeQpJacobian() override;
 
-  const MaterialProperty<Real> & _scaling_lowerD;
-  const MaterialProperty<RankTwoTensor> & _k_vis;
-  const MaterialProperty<RealVectorValue> & _rhof_g;
+  const Real & _scale;
+  Function & _function;
+
+  // imported props from materials
+  const MaterialProperty<Real> & _scale_factor;
+  const MaterialProperty<RealVectorValue> & _SUPG_p;
+  const MaterialProperty<bool> & _SUPG_ind;
 };
 
-#endif // TIGERKERNELH_H
+#endif  //TIGERTHERMALSOURCEKERNELT_H

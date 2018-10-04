@@ -21,31 +21,40 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerTimeDerivativeH.h"
+#ifndef TIGERTHERMALADVECTIONKERNELT_H
+#define TIGERTHERMALADVECTIONKERNELT_H
+
+#include "Kernel.h"
+#include "RankTwoTensor.h"
+
+class TigerThermalAdvectionKernelT;
 
 template <>
-InputParameters
-validParams<TigerTimeDerivativeH>()
-{
-  InputParameters params = validParams<TimeDerivative>();
-  return params;
-}
+InputParameters validParams<TigerThermalAdvectionKernelT>();
 
-TigerTimeDerivativeH::TigerTimeDerivativeH(const InputParameters & parameters)
-  : TimeDerivative(parameters),
-    _scaling_lowerD(getMaterialProperty<Real>("lowerD_scale_factor_h")),
-    _H_Kernel_dt(getMaterialProperty<Real>("H_Kernel_dt_coefficient"))
+class TigerThermalAdvectionKernelT : public Kernel
 {
-}
+public:
+  TigerThermalAdvectionKernelT(const InputParameters & parameters);
 
-Real
-TigerTimeDerivativeH::computeQpResidual()
-{
-  return _scaling_lowerD[_qp] * _H_Kernel_dt[_qp] * TimeDerivative::computeQpResidual();
-}
+protected:
+  virtual Real computeQpResidual() override;
+  virtual Real computeQpJacobian() override;
+  virtual Real computeQpOffDiagJacobian(unsigned int jvar) override;
 
-Real
-TigerTimeDerivativeH::computeQpJacobian()
-{
-  return _scaling_lowerD[_qp] * _H_Kernel_dt[_qp] * TimeDerivative::computeQpJacobian();
-}
+  const MaterialProperty<Real> & _scale_factor;
+  const MaterialProperty<Real> & _rho_f;
+  const MaterialProperty<Real> & _drho_dT_f;
+  const MaterialProperty<Real> & _drho_dp_f;
+  const MaterialProperty<Real> & _cp_f;
+  const MaterialProperty<RealVectorValue> & _SUPG_p;
+  const MaterialProperty<bool> & _SUPG_ind;
+  const MaterialProperty<bool> & _av_ind;
+  const MaterialProperty<RealVectorValue> & _av;
+  const MaterialProperty<RealVectorValue> * _dav_dT;
+  const MaterialProperty<RealVectorValue> * _dav_dp_phi;
+  const MaterialProperty<RankTwoTensor> * _dav_dp_gradphi;
+  unsigned int _pressure_var;
+};
+
+#endif // TIGERTHERMALADVECTIONKERNELT_H

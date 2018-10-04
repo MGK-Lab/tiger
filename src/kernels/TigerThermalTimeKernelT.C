@@ -21,37 +21,55 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERADVECTIONKERNELTH_H
-#define TIGERADVECTIONKERNELTH_H
+#include "TigerThermalTimeKernelT.h"
 
-#include "Kernel.h"
-#include "RankTwoTensor.h"
-
-class TigerAdvectionKernelTH;
+registerMooseObject("TigerApp", TigerThermalTimeKernelT);
 
 template <>
-InputParameters validParams<TigerAdvectionKernelTH>();
-
-class TigerAdvectionKernelTH : public Kernel
+InputParameters
+validParams<TigerThermalTimeKernelT>()
 {
-public:
-  TigerAdvectionKernelTH(const InputParameters & parameters);
+  InputParameters params = validParams<TimeDerivative>();
+  return params;
+}
 
-private:
-  bool _has_supg;
+TigerThermalTimeKernelT::TigerThermalTimeKernelT(const InputParameters & parameters)
+  : TimeDerivative(parameters),
+    _scale_factor(getMaterialProperty<Real>("scale_factor")),
+    _TimeKernelT(getMaterialProperty<Real>("TimeKernel_T")),
+    _dTimeKernelT_dT(getMaterialProperty<Real>("dTimeKernelT_dT")),
+    _SUPG_p(getMaterialProperty<RealVectorValue>("thermal_petrov_supg_p_function")),
+    _SUPG_ind(getMaterialProperty<bool>("thermal_supg_indicator"))
+{
+}
 
-protected:
-  virtual Real computeQpResidual() override;
-  virtual Real computeQpJacobian() override;
-  virtual Real computeQpOffDiagJacobian(unsigned int jvar) override;
+Real
+TigerThermalTimeKernelT::computeQpResidual()
+{
+  Real test = 0.0;
 
-  const MaterialProperty<Real> & _scaling_lowerD;
-  const MaterialProperty<Real> & _rho_cp_f;
-  const MaterialProperty<RealVectorValue> & _SUPG_p;
-  const MaterialProperty<bool> & _SUPG_ind;
-  const MaterialProperty<RealVectorValue> & _darcy_v;
-  unsigned int _pressure_var;
-  const MaterialProperty<RankTwoTensor> * _k_vis;
-};
+  if (_SUPG_ind[_qp])
+    test = _test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp];
+  else
+    test = _test[_i][_qp];
 
-#endif // TIGERADVECTIONKERNELTH_H
+  return _scale_factor[_qp] * _TimeKernelT[_qp] * test * _u_dot[_qp];
+}
+
+Real
+TigerThermalTimeKernelT::computeQpJacobian()
+{
+  Real test = 0.0,j = 0.0;
+
+  if (_SUPG_ind[_qp])
+    test = _test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp];
+  else
+    test = _test[_i][_qp];
+
+  j  = _TimeKernelT[_qp]  * _phi[_j][_qp] * _du_dot_du[_qp];
+  j += _dTimeKernelT_dT[_qp] * _phi[_j][_qp] * _u_dot[_qp];
+  j *= _scale_factor[_qp] * test;
+
+  return j;
+}
+// offDia Jac can be add because of _TimeKernelT[_qp]

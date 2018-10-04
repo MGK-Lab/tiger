@@ -18,28 +18,36 @@
     permeability_type = isotropic
     k0 = '1.0e-10'
   [../]
+  [./supg]
+    type = TigerSUPG
+    effective_length = min
+    supg_coeficient = transient_tezduyar
+  [../]
 []
 
 [Materials]
-  [./rock_h]
-    type = TigerRockMaterialH
-    fp_UO = water_uo
+  [./rock_g]
+    type = TigerGeometryMaterial
     porosity = 0.4
+  [../]
+  [./rock_f]
+    type = TigerFluidMaterial
+    fp_uo = water_uo
+  [../]
+  [./rock_h]
+    type = TigerHydraulicMaterialH
+    pressure = pressure
     compressibility = 1.0e-4
-    kf_UO = rock_uo
+    kf_uo = rock_uo
   [../]
   [./rock_t]
-    type = TigerCoupledThermalMaterialTH
-    pressure = pressure
-    fp_UO = water_uo
-    porosity = 0.4
+    type = TigerThermalMaterialT
     conductivity_type = isotropic
     lambda = 2
     density = 2600
     specific_heat = 840
-    output_Pe_Cr_numbers = true
     has_supg = true
-    supg_coeficient = transient_tezduyar
+    supg_uo = supg
   [../]
 []
 
@@ -105,39 +113,39 @@
 
 [AuxKernels]
   [./vx_ker]
-    type = TigerDarcyVelocityComponent
-    gradient_variable = pressure
+    type = TigerDarcyVelocityH
+    pressure = pressure
     variable =  vx
     component = x
     execute_on = timestep_end
   [../]
   [./pe_ker]
     type = MaterialRealAux
-    property = 'peclet_number'
+    property = 'thermal_peclet_number'
     variable = pe
   [../]
 []
 
 [Kernels]
   [./T_diff]
-    type = TigerDiffusionKernelT
+    type = TigerThermalDiffusionKernelT
     variable = temperature
   [../]
   [./T_advect]
-    type = TigerAdvectionKernelTH
+    type = TigerThermalAdvectionKernelT
     variable = temperature
-    pressure_varible = pressure
+    pressure = pressure
   [../]
   [./T_dt]
-    type = TigerTimeDerivativeT
+    type = TigerThermalTimeKernelT
     variable = temperature
   [../]
   [./H_diff]
-    type = TigerKernelH
+    type = TigerHydraulicKernelH
     variable = pressure
   [../]
   [./H_dt]
-    type = TigerTimeDerivativeH
+    type = TigerHydraulicTimeKernelH
     variable = pressure
   [../]
 []

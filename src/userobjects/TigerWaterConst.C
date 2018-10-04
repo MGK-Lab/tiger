@@ -30,26 +30,31 @@ InputParameters
 validParams<TigerWaterConst>()
 {
   InputParameters params = validParams<SinglePhaseFluidPropertiesPT>();
-  params.addParam<Real>("molar_mass", 1.8E-2, "Constant molar mass of the fluid (kg/mol)");
-  params.addParam<Real>(
-      "thermal_expansion", 2.14E-4, "Constant coefficient of thermal expansion (1/K)");
-  params.addParam<Real>(
-      "cv", 4186.0, "Constant specific heat capacity at constant volume (J/kg/K)");
-  params.addParam<Real>(
-      "cp", 4194.0, "Constant specific heat capacity at constant pressure (J/kg/K)");
-  params.addRangeCheckedParam<Real>(
-      "bulk_modulus", 2.0E9, "bulk_modulus>0", "Constant bulk modulus (Pa)");
-  params.addParam<Real>("thermal_conductivity", 0.6, "Constant thermal conductivity (W/m/K)");
-  params.addParam<Real>("specific_entropy", 300.0, "Constant specific entropy (J/kg/K)");
-  params.addParam<Real>("henry_constant", 0.0, "Henry constant for dissolution in water");
-  params.addParam<Real>("porepressure_coefficient",
-                        1.0,
-                        "The enthalpy is internal_energy + P / density * "
-                        "porepressure_coefficient.  Physically this should be 1.0, "
-                        "but analytic solutions are simplified when it is zero");
-  params.addParam<Real>("viscosity", 1.0E-3, "Constant dynamic viscosity (Pa.s)");
+  params.addParam<Real>("molar_mass", 1.8E-2,
+        "Constant molar mass of the fluid (kg/mol)");
+  params.addParam<Real>("thermal_expansion", 2.14E-4,
+        "Constant coefficient of thermal expansion (1/K)");
+  params.addParam<Real>("cv", 4186.0,
+        "Constant specific heat capacity at constant volume (J/kg/K)");
+  params.addParam<Real>("cp", 4194.0,
+        "Constant specific heat capacity at constant pressure (J/kg/K)");
+  params.addRangeCheckedParam<Real>("bulk_modulus", 2.0E9,
+        "bulk_modulus>0", "Constant bulk modulus (Pa)");
+  params.addParam<Real>("thermal_conductivity", 0.6,
+        "Constant thermal conductivity (W/m/K)");
+  params.addParam<Real>("specific_entropy", 300.0,
+        "Constant specific entropy (J/kg/K)");
+  params.addParam<Real>("henry_constant", 0.0,
+        "Henry constant for dissolution in water");
+  params.addParam<Real>("porepressure_coefficient", 1.0,
+        "The enthalpy is internal_energy + P / density * "
+        "porepressure_coefficient.  Physically this should be 1.0, "
+        "but analytic solutions are simplified when it is zero");
+  params.addParam<Real>("viscosity", 1.0E-3,
+        "Constant dynamic viscosity (Pa.s)");
   params.addParam<Real>("density", 1000.0, "Constant density");
-  params.addClassDescription("Fluid properties for water");
+  params.addClassDescription("Fluid properties for a simple fluid with"
+        " a constan density and viscosity");
   return params;
 }
 

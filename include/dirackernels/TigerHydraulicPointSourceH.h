@@ -21,27 +21,46 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERTIMEDERIVATIVEH_H
-#define TIGERTIMEDERIVATIVEH_H
+#ifndef TIGERHYDRAULICPOINTSOURCEH_H
+#define TIGERHYDRAULICPOINTSOURCEH_H
 
-#include "TimeDerivative.h"
+#include "DiracKernel.h"
+#include "Function.h"
 
-class TigerTimeDerivativeH;
+class TigerHydraulicPointSourceH;
 
 template <>
-InputParameters validParams<TigerTimeDerivativeH>();
+InputParameters validParams<TigerHydraulicPointSourceH>();
 
-class TigerTimeDerivativeH : public TimeDerivative
+/*
+ * Point source (or sink) that adds (removes) fluid at a constant mass flux rate
+ * for times between the specified start and end times. If no start and end
+ * times are specified, the source (sink) starts at the start of the simulation
+ * and continues to act indefinitely.
+ */
+class TigerHydraulicPointSourceH : public DiracKernel
 {
 public:
-  TigerTimeDerivativeH(const InputParameters & parameters);
+  TigerHydraulicPointSourceH(const InputParameters & parameters);
+
+  virtual void addPoints() override;
+  virtual Real computeQpResidual() override;
 
 protected:
-  virtual Real computeQpResidual() override;
-  virtual Real computeQpJacobian() override;
+  // userdefined constant mass flux (kg/s)
+  const Real _mass_flux;
+  // The location of the point source (sink)
+  const Point _p;
+  // The time at which the point source (sink) starts operating
+  const Real _start_time;
+  // The time at which the point source (sink) stops operating
+  const Real _end_time;
+  // flow rate is function of time (kg/s)
+  Function * _mass_flux_function;
 
-  const MaterialProperty<Real> & _scaling_lowerD;
-  const MaterialProperty<Real> & _H_Kernel_dt;
+  // imported props from materials
+  const MaterialProperty<Real> & _rhof;
+
 };
 
-#endif // TIGERTIMEDERIVATIVEH_H
+#endif // TIGERHYDRAULICPOINTSOURCEH_H

@@ -21,32 +21,49 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerKernelH.h"
+#include "TigerFluidMaterial.h"
+
+registerMooseObject("TigerApp", TigerFluidMaterial);
 
 template <>
 InputParameters
-validParams<TigerKernelH>()
+validParams<TigerFluidMaterial>()
 {
-  InputParameters params = validParams<Kernel>();
+  InputParameters params = validParams<Material>();
+
+  params.addCoupledVar("pressure", 0.0,
+        "Pore pressure nonlinear variable (Pa)");
+  params.addCoupledVar("temperature", 273.15,
+        "temperature nonlinear variable (K)");
+  params.addRequiredParam<UserObjectName>("fp_uo",
+        "The name of the userobject for fluid properties");
+
   return params;
 }
 
-TigerKernelH::TigerKernelH(const InputParameters & parameters)
-  : Kernel(parameters),
-    _scaling_lowerD(getMaterialProperty<Real>("lowerD_scale_factor_h")),
-    _k_vis(getMaterialProperty<RankTwoTensor>("permeability_by_viscosity")),
-    _rhof_g(getMaterialProperty<RealVectorValue>("rho_times_gravity"))
+TigerFluidMaterial::TigerFluidMaterial(const InputParameters & parameters)
+  : Material(parameters),
+    _P(coupledValue("pressure")),
+    _T(coupledValue("temperature")),
+    _fp_uo(getUserObject<SinglePhaseFluidPropertiesPT>("fp_uo")),
+    _rho_f(declareProperty<Real>("fluid_density")),
+    _drho_dp_f(declareProperty<Real>("fluid_drho_dp")),
+    _drho_dT_f(declareProperty<Real>("fluid_drho_dT")),
+    _mu_f(declareProperty<Real>("fluid_viscosity")),
+    _dmu_dp_f(declareProperty<Real>("fluid_dmu_dp")),
+    _dmu_dT_f(declareProperty<Real>("fluid_dmu_dT")),
+    _beta_f(declareProperty<Real>("fluid_compressibility")),
+    _cp_f(declareProperty<Real>("fluid_specific_heat")),
+    _lambda_f(declareProperty<Real>("fluid_thermal_conductivity"))
 {
 }
 
-Real
-TigerKernelH::computeQpResidual()
+void
+TigerFluidMaterial::computeQpProperties()
 {
-  return _grad_test[_i][_qp] * (_scaling_lowerD[_qp] * _k_vis[_qp] * ( _grad_u[_qp] - _rhof_g[_qp] ) );
-}
-
-Real
-TigerKernelH::computeQpJacobian()
-{
-  return _grad_test[_i][_qp] * (_scaling_lowerD[_qp] *  _k_vis[_qp] * _grad_phi[_j][_qp] );
+  _fp_uo.rho_dpT(_P[_qp], _T[_qp], _rho_f[_qp], _drho_dp_f[_qp], _drho_dT_f[_qp]);
+  _fp_uo.mu_dpT(_P[_qp], _T[_qp], _mu_f[_qp], _dmu_dp_f[_qp], _dmu_dT_f[_qp]);
+  _beta_f[_qp] = _drho_dp_f[_qp] / _rho_f[_qp];
+  _cp_f[_qp] = _fp_uo.cp(_P[_qp], _T[_qp]);
+  _lambda_f[_qp] = _fp_uo.k(_P[_qp], _T[_qp]);
 }

@@ -21,39 +21,51 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerHeatSourceT.h"
+#ifndef TIGERFLUIDMATERIAL_H
+#define TIGERFLUIDMATERIAL_H
 
-// MOOSE
-#include "Function.h"
+#include "Material.h"
+#include "SinglePhaseFluidPropertiesPT.h"
+
+class TigerFluidMaterial;
 
 template <>
-InputParameters
-validParams<TigerHeatSourceT>()
-{
-  InputParameters params = validParams<Kernel>();
-  params.addParam<Real>("value", 1.0, "Constant heat source (sink) (W/m^3) (positive is a source, and negative is a sink) or a multiplier for the the provided function");
-  params.addParam<FunctionName>("function", "1", "Heat source (sink) as a function (W/m^3) (positive is a source, and negative is a sink)");
-  return params;
-}
+InputParameters validParams<TigerFluidMaterial>();
 
-TigerHeatSourceT::TigerHeatSourceT(const InputParameters & parameters)
-  : Kernel(parameters),
-    _scaling_lowerD(getMaterialProperty<Real>("lowerD_scale_factor_t")),
-    _scale(getParam<Real>("value")),
-    _function(getFunction("function")),
-    _SUPG_p(getMaterialProperty<RealVectorValue>("petrov_supg_p_function")),
-    _SUPG_ind(getMaterialProperty<bool>("supg_indicator"))
+class TigerFluidMaterial : public Material
 {
-}
+public:
+  TigerFluidMaterial(const InputParameters & parameters);
 
-Real
-TigerHeatSourceT::computeQpResidual()
-{
-  Real factor = _scale * _function.value(_t, _q_point[_qp]);
-  Real R;
-  if (_SUPG_ind[_qp])
-    R = (_test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp]) * -factor;
-  else
-    R = _test[_i][_qp] * -factor;
-  return _scaling_lowerD[_qp] * R;
-}
+protected:
+  virtual void computeQpProperties() override;
+  
+  // Pore pressure nonlinear variable
+  const VariableValue & _P;
+  // Temperature nonlinear variable
+  const VariableValue & _T;
+  // Userobject from fluid_properties_module for calculating fluid properties
+  const SinglePhaseFluidPropertiesPT & _fp_uo;
+
+  // Density of the fluid
+  MaterialProperty<Real> & _rho_f;
+  // Density derivative wrt pressure for the fluid
+  MaterialProperty<Real> & _drho_dp_f;
+  // Density derivative wrt pressure for the fluid
+  MaterialProperty<Real> & _drho_dT_f;
+  // Viscosity of the fluid
+  MaterialProperty<Real> & _mu_f;
+  // Viscosity derivative wrt pressure for the fluid
+  MaterialProperty<Real> & _dmu_dp_f;
+  // Viscosity derivative wrt temperature for the fluid
+  MaterialProperty<Real> & _dmu_dT_f;
+  // Compressibility of the fluid
+  MaterialProperty<Real> & _beta_f;
+  // Specific heat at constant pressure for the fluid
+  MaterialProperty<Real> & _cp_f;
+  // Thermal conductivity of the fluid
+  MaterialProperty<Real> & _lambda_f;
+
+};
+
+#endif /* TIGERFLUIDMATERIAL_H */

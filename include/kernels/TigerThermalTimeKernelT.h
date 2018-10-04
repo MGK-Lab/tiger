@@ -21,41 +21,31 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERMATERIALGENERAL_H
-#define TIGERMATERIALGENERAL_H
+#ifndef TIGERTHERMALTIMEKERNELT_H
+#define TIGERTHERMALTIMEKERNELT_H
 
-#include "Material.h"
-#include "RankTwoTensor.h"
-#include "MooseMesh.h"
-#include <cfloat>
-#include "SinglePhaseFluidPropertiesPT.h"
+#include "TimeDerivative.h"
 
-class TigerMaterialGeneral;
+class TigerThermalTimeKernelT;
 
 template <>
-InputParameters validParams<TigerMaterialGeneral>();
+InputParameters validParams<TigerThermalTimeKernelT>();
 
-class TigerMaterialGeneral : public Material
+class TigerThermalTimeKernelT : public TimeDerivative
 {
 public:
-  TigerMaterialGeneral(const InputParameters & parameters);
+  TigerThermalTimeKernelT(const InputParameters & parameters);
 
 protected:
-  /// Pressure (Pa)
-  const VariableValue & _P;
-  /// Temperature (K)
-  const VariableValue & _T;
-  /// rotation matrix for local cordinates
-  RankTwoTensor _rot_mat = RankTwoTensor();
-  /// initial scaling factor
-  Real _scaling_factor0;
+  virtual Real computeQpResidual() override;
+  virtual Real computeQpJacobian() override;
 
-  /// compute rotation matrix
-  void computeRotationMatrix(int dim);
-  /// compute scaling factor for lower dimensional elements
-  Real LowerDScaling();
-  /// Tiger Fluid properties UserObject
- const SinglePhaseFluidPropertiesPT & _fp_UO;
+  // imported props from materials
+  const MaterialProperty<Real> & _scale_factor;
+  const MaterialProperty<Real> & _TimeKernelT;
+  const MaterialProperty<Real> & _dTimeKernelT_dT;
+  const MaterialProperty<RealVectorValue> & _SUPG_p;
+  const MaterialProperty<bool> & _SUPG_ind;
 };
 
-#endif /* TIGERMATERIALGENERAL_H */
+#endif // TIGERTHERMALTIMEKERNELT_H

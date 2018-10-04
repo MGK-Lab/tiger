@@ -23,6 +23,8 @@
 
 #include "TigerHeatConductionOutflowT.h"
 
+registerMooseObject("TigerApp", TigerHeatConductionOutflowT);
+
 template <>
 InputParameters
 validParams<TigerHeatConductionOutflowT>()

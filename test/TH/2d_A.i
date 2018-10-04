@@ -17,20 +17,33 @@
   [../]
 []
 
+[UserObjects]
+  [./supg]
+    type = TigerSUPG
+    effective_length = min
+    supg_coeficient = transient_tezduyar
+  [../]
+[]
+
 [Materials]
+  [./rock_f]
+    type = TigerFluidMaterial
+    fp_uo = water_uo
+  [../]
+  [./rock_g]
+    type = TigerGeometryMaterial
+    porosity = 1
+  [../]
   [./advect_th]
-    type = TigerUncoupledThermalMaterialTH
-    fp_UO = water_uo
+    type = TigerThermalMaterialT
+    advection_type = user_velocity
     user_velocity = vel
-    porosity = 1.0
     conductivity_type = isotropic
     lambda = 0
     density = 0
     specific_heat = 0
-    output_Pe_Cr_numbers = true
     has_supg = true
-    supg_eff_length = min
-    supg_coeficient = transient_tezduyar
+    supg_uo = supg
   [../]
 []
 
@@ -85,24 +98,24 @@
 [AuxKernels]
   [./vx_ker]
     type = MaterialRealVectorValueAux
-    property = 'darcy_velocity'
+    property = 'thermal_advection_velocity'
     variable = vx
     component = 0
   [../]
   [./vy_ker]
     type = MaterialRealVectorValueAux
-    property = 'darcy_velocity'
+    property = 'thermal_advection_velocity'
     variable = vy
     component = 1
   [../]
   [./pe_ker]
     type = MaterialRealAux
-    property = 'peclet_number'
+    property = 'thermal_peclet_number'
     variable = pe
   [../]
   [./cr_ker]
     type = MaterialRealAux
-    property = 'courant_number'
+    property = 'thermal_courant_number'
     variable = cr
   [../]
 []
@@ -114,11 +127,11 @@
 
 [Kernels]
   [./T_advect]
-    type = TigerAdvectionKernelTH
+    type = TigerThermalAdvectionKernelT
     variable = temperature
   [../]
-  [./T_diff]
-    type = TigerTimeDerivativeT
+  [./T_dt]
+    type = TigerThermalTimeKernelT
     variable = temperature
   [../]
 []

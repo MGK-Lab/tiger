@@ -21,28 +21,33 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERDIFFUSIONKERNELT_H
-#define TIGERDIFFUSIONKERNELT_H
+#ifndef TIGERDARCYVELOCITYH_H
+#define TIGERDARCYVELOCITYH_H
 
-#include "Kernel.h"
+#include "AuxKernel.h"
 #include "RankTwoTensor.h"
 
-class TigerDiffusionKernelT;
+class TigerDarcyVelocityH;
 
 template <>
-InputParameters validParams<TigerDiffusionKernelT>();
+InputParameters validParams<TigerDarcyVelocityH>();
 
-class TigerDiffusionKernelT : public Kernel
+class TigerDarcyVelocityH : public AuxKernel
 {
 public:
-  TigerDiffusionKernelT(const InputParameters & parameters);
+  TigerDarcyVelocityH(const InputParameters & parameters);
 
 protected:
-  virtual Real computeQpResidual() override;
-  virtual Real computeQpJacobian() override;
+  virtual Real computeValue() override;
 
-  const MaterialProperty<Real> & _scaling_lowerD;
-  const MaterialProperty<RankTwoTensor> & _lambda_sf;
+private:
+  // imported props from TigerHydarulicMaterial
+  const VariableGradient & _grad_p;
+  const MaterialProperty<RankTwoTensor> & _k_vis;
+  const MaterialProperty<Real> & _rho_f;
+  const MaterialProperty<RealVectorValue> & _g;
+  
+  int _component;
 };
 
-#endif // TIGERDIFFUSIONKERNELT_H
+#endif // TIGERDARCYVELOCITYH_H

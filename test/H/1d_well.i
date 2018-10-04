@@ -15,7 +15,7 @@
 []
 
 [UserObjects]
-  [./rock_uo1]
+  [./rock_uo]
     type =  TigerPermeabilityConst
     permeability_type = isotropic
     k0 = '1.0e-10'
@@ -23,12 +23,19 @@
 []
 
 [Materials]
-  [./rock_h1]
-    type = TigerRockMaterialH
-    fp_UO = water_uo
-    porosity = 0.0
+  [./rock_g]
+    type = TigerGeometryMaterial
+    porosity = 0
+  [../]
+  [./rock_f]
+    type = TigerFluidMaterial
+    fp_uo = water_uo
+  [../]
+  [./rock_h]
+    type = TigerHydraulicMaterialH
+    pressure = pressure
     compressibility = 7.5e-8
-    kf_UO = rock_uo1
+    kf_uo = rock_uo
   [../]
 []
 
@@ -61,8 +68,8 @@
 
 [AuxKernels]
   [./vx_ker]
-    type = TigerDarcyVelocityComponent
-    gradient_variable = pressure
+    type = TigerDarcyVelocityH
+    pressure = pressure
     variable =  vx
     component = x
   [../]
@@ -81,7 +88,7 @@
 
 [DiracKernels]
   [./pumpout]
-    type = TigerPointSourceH
+    type = TigerHydraulicPointSourceH
     point = '0.0 0.0 0.0'
     mass_flux = -20.0
     variable = pressure
@@ -91,11 +98,11 @@
 
 [Kernels]
   [./diff]
-    type = TigerKernelH
+    type = TigerHydraulicKernelH
     variable = pressure
   [../]
   [./time]
-    type = TigerTimeDerivativeH
+    type = TigerHydraulicTimeKernelH
     variable = pressure
   [../]
 []

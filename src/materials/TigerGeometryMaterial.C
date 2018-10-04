@@ -21,57 +21,82 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerMaterialGeneral.h"
+#include "TigerGeometryMaterial.h"
+#include "MooseMesh.h"
+#include <cfloat>
 
 #define PI 3.141592653589793238462643383279502884197169399375105820974944592308
 
+registerMooseObject("TigerApp", TigerGeometryMaterial);
+
 template <>
 InputParameters
-validParams<TigerMaterialGeneral>()
+validParams<TigerGeometryMaterial>()
 {
   InputParameters params = validParams<Material>();
-  params.addCoupledVar("pressure", 0.0, "Fluid pressure (Pa)");
-  params.addCoupledVar("temperature", 273.15, "Fluid temperature (K)");
-  params.addRequiredParam<UserObjectName>("fp_UO", "The name of the userobject for fluid properties");
-  params.addParam<Real>("scaling_factor", 1.0, "The scaling factor for lower dimensional elements "
-                        "(if mesh is 3D, fracture apreture for 2D elements and radius for 1D elements "
-                        "should be used; if mesh is 2D, height for 2D elements and apreture*height for "
-                        "1D elements should be used)");
-  params.addClassDescription("General properties");
+
+  params.addRequiredParam<Real>("porosity", "Initial porosity of the feature");
+  params.addParam<Real>("scale_factor", 1.0, "The scale factor for non-3D "
+        "elements ( particularlly lower dimensional elements): if mesh is 3D"
+        ", apreture for 2D elements (fractures) and diameter for 1D elements"
+        " (wells) should be used; if mesh is 2D, height for 2D elements (2D"
+        " matrix) and apreture times height for 1D elements (fractures) "
+        "should be used; and if mesh is 1D, area for 1D elements (pipes or "
+        "wells) should be used)");
+  params.addClassDescription("Material for introducing geometrical properties "
+        "of defined structural features (e.g unit, fracture and well)");
+
   return params;
 }
 
-TigerMaterialGeneral::TigerMaterialGeneral(const InputParameters & parameters)
+TigerGeometryMaterial::TigerGeometryMaterial(const InputParameters & parameters)
   : Material(parameters),
-    _P(coupledValue("pressure")),
-    _T(coupledValue("temperature")),
-    _scaling_factor0(getParam<Real>("scaling_factor")),
-    _fp_UO(getUserObject<SinglePhaseFluidPropertiesPT>("fp_UO"))
+    _rot_mat(declareProperty<RankTwoTensor>("lowerD_rotation_matrix")),
+    _scale_factor(declareProperty<Real>("scale_factor")),
+    _n(declareProperty<Real>("porosity")),
+    _scale_factor0(getParam<Real>("scale_factor")),
+    _n0(getParam<Real>("porosity"))
 {
-}
-
-Real
-TigerMaterialGeneral::LowerDScaling()
-{
-  Real _scaling_factor = 1.0;
-  if (_mesh.dimension()>1)
-    switch (_mesh.dimension())
-    {
-      case 2:
-        _scaling_factor = _scaling_factor0; //aperture * height for fracture & height for unit
-        break;
-      case 3:
-        if (_current_elem->dim() == 2)
-          _scaling_factor = _scaling_factor0; //fracture aperture
-        else if (_current_elem->dim() == 1)
-          _scaling_factor = PI * _scaling_factor0 * _scaling_factor0; //radius of well
-        break;
-    }
-  return _scaling_factor;
 }
 
 void
-TigerMaterialGeneral::computeRotationMatrix(int dim)
+TigerGeometryMaterial::computeQpProperties()
+{
+  _scale_factor[_qp] = Scaling();
+
+  if (_current_elem->dim() < _mesh.dimension())
+    _rot_mat[_qp] = lowerDRotationMatrix(_current_elem->dim());
+  else
+    _rot_mat[_qp] = RankTwoTensor::Identity();
+
+  _n[_qp] = _n0;
+}
+
+Real
+TigerGeometryMaterial::Scaling()
+{
+  Real scale_factor = 1.0;
+
+  switch (_mesh.dimension())
+  {
+    case 1 ... 2:
+      scale_factor = _scale_factor0;
+      break;
+    case 3:
+      if (_current_elem->dim() == 2)
+        // fracture aperture
+        scale_factor = _scale_factor0;
+      else if (_current_elem->dim() == 1)
+       // radius of well
+        scale_factor = PI * _scale_factor0 * _scale_factor0 / 4.0;
+      break;
+  }
+
+  return scale_factor;
+}
+
+RankTwoTensor
+TigerGeometryMaterial::lowerDRotationMatrix(int dim)
 {
   RealVectorValue xp, yp, zp;
   xp = _current_elem->point(1) - _current_elem->point(0);
@@ -111,10 +136,13 @@ TigerMaterialGeneral::computeRotationMatrix(int dim)
       break;
   }
 
+  RankTwoTensor _rm;
   for (unsigned int i = 0; i < 3; ++i)
   {
-    (_rot_mat)(i, 0) = xp(i) / xp.norm();
-    (_rot_mat)(i, 1) = yp(i) / yp.norm();
-    (_rot_mat)(i, 2) = zp(i) / zp.norm();
+    (_rm)(i, 0) = xp(i) / xp.norm();
+    (_rm)(i, 1) = yp(i) / yp.norm();
+    (_rm)(i, 2) = zp(i) / zp.norm();
   }
+
+  return _rm;
 }

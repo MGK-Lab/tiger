@@ -21,49 +21,33 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERROCKMATERIALH_H
-#define TIGERROCKMATERIALH_H
+#include "TigerHydraulicTimeKernelH.h"
 
-#include "TigerMaterialGeneral.h"
-#include "RankTwoTensor.h"
-#include "TigerPermeability.h"
-
-class TigerRockMaterialH;
+registerMooseObject("TigerApp", TigerHydraulicTimeKernelH);
 
 template <>
-InputParameters validParams<TigerRockMaterialH>();
-
-class TigerRockMaterialH : public TigerMaterialGeneral
+InputParameters
+validParams<TigerHydraulicTimeKernelH>()
 {
-public:
-  TigerRockMaterialH(const InputParameters & parameters);
+  InputParameters params = validParams<TimeDerivative>();
+  return params;
+}
 
-protected:
-  virtual void computeProperties() override;
-  virtual void computeQpProperties() override;
+TigerHydraulicTimeKernelH::TigerHydraulicTimeKernelH(const InputParameters & parameters)
+  : TimeDerivative(parameters),
+    _scale_factor(getMaterialProperty<Real>("scale_factor")),
+    _H_Kernel_dt(getMaterialProperty<Real>("H_Kernel_dt_coefficient"))
+{
+}
 
-  /// initial compressibility
-  Real _beta_s;
-  /// gravity vector
-  RealVectorValue _gravity;
-  /// initial porosity
-  Real _n0;
-  /// permeability tensor
-  MaterialProperty<RankTwoTensor> & _k_vis;
-  /// compressibility
-  MaterialProperty<Real> & _H_Kernel_dt;
-  /// density
-  MaterialProperty<Real> & _rhof;
-  /// compressibility
-  MaterialProperty<RealVectorValue> & _rhof_g;
-  /// Tiger permeability calculater UserObject
-  const TigerPermeability & _kf_UO;
-  /// gravity option
-  bool _has_gravity;
-  /// gravity acceleration (m/s^2)
-  Real _g;
-  /// scaling factor for lowerdimensional element
-  MaterialProperty<Real> & _scaling_lowerD;
-};
+Real
+TigerHydraulicTimeKernelH::computeQpResidual()
+{
+  return _scale_factor[_qp] * _H_Kernel_dt[_qp] * TimeDerivative::computeQpResidual();
+}
 
-#endif /* TIGERROCKMATERIALH_H */
+Real
+TigerHydraulicTimeKernelH::computeQpJacobian()
+{
+  return _scale_factor[_qp] * _H_Kernel_dt[_qp] * TimeDerivative::computeQpJacobian();
+}

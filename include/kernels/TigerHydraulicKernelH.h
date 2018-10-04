@@ -21,30 +21,33 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERDARCYVELOCITYCOMPONENT_H
-#define TIGERDARCYVELOCITYCOMPONENT_H
+#ifndef TIGERHYDRAULICKERNELH_H
+#define TIGERHYDRAULICKERNELH_H
 
-#include "AuxKernel.h"
+#include "Kernel.h"
 #include "RankTwoTensor.h"
 
-class TigerDarcyVelocityComponent;
+class TigerHydraulicKernelH;
 
 template <>
-InputParameters validParams<TigerDarcyVelocityComponent>();
+InputParameters validParams<TigerHydraulicKernelH>();
 
-class TigerDarcyVelocityComponent : public AuxKernel
+class TigerHydraulicKernelH : public Kernel
 {
 public:
-  TigerDarcyVelocityComponent(const InputParameters & parameters);
+  TigerHydraulicKernelH(const InputParameters & parameters);
 
 protected:
-  virtual Real computeValue() override;
+  virtual Real computeQpResidual() override;
+  virtual Real computeQpJacobian() override;
 
-private:
-  const VariableGradient & _gradient_pore_pressure;
+  const MaterialProperty<Real> & _scale_factor;
   const MaterialProperty<RankTwoTensor> & _k_vis;
-  const MaterialProperty<RealVectorValue> & _rhof_g;
-  int _component;
+  const MaterialProperty<Real> & _rho_f;
+  const MaterialProperty<Real> & _drho_dp_f;
+  const MaterialProperty<Real> & _mu_f;
+  const MaterialProperty<Real> & _dmu_dp_f;
+  const MaterialProperty<RealVectorValue> & _g;
 };
 
-#endif // TIGERDARCYVELOCITYCOMPONENT_H
+#endif // TIGERHYDRAULICKERNELH_H

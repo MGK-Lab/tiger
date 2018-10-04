@@ -21,30 +21,29 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerDarcyVelocityComponent.h"
+#ifndef TIGERTHERMALDIFFUSIONKERNELT_H
+#define TIGERTHERMALDIFFUSIONKERNELT_H
+
+#include "Kernel.h"
+#include "RankTwoTensor.h"
+
+class TigerThermalDiffusionKernelT;
 
 template <>
-InputParameters
-validParams<TigerDarcyVelocityComponent>()
-{
-  InputParameters params = validParams<AuxKernel>();
-  params.addRequiredCoupledVar("gradient_variable", "Variable name for pressure field");
-  MooseEnum component("x=0 y=1 z=2");
-  params.addRequiredParam<MooseEnum>("component", component, "The Darcy velocity component to compute");
-  return params;
-}
+InputParameters validParams<TigerThermalDiffusionKernelT>();
 
-TigerDarcyVelocityComponent::TigerDarcyVelocityComponent(const InputParameters & parameters)
-  : AuxKernel(parameters),
-    _gradient_pore_pressure(coupledGradient("gradient_variable")),
-    _k_vis(getMaterialProperty<RankTwoTensor>("permeability_by_viscosity")),
-    _rhof_g(getMaterialProperty<RealVectorValue>("rho_times_gravity")),
-    _component(getParam<MooseEnum>("component"))
+class TigerThermalDiffusionKernelT : public Kernel
 {
-}
+public:
+  TigerThermalDiffusionKernelT(const InputParameters & parameters);
 
-Real
-TigerDarcyVelocityComponent::computeValue()
-{
-  return -(_k_vis[_qp] * (_gradient_pore_pressure[_qp] - _rhof_g[_qp]))(_component);
-}
+protected:
+  virtual Real computeQpResidual() override;
+  virtual Real computeQpJacobian() override;
+
+  // imported props from materials
+  const MaterialProperty<Real> & _scale_factor;
+  const MaterialProperty<RankTwoTensor> & _lambda_sf;
+};
+
+#endif // TIGERTHERMALDIFFUSIONKERNELT_H

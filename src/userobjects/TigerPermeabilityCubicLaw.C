@@ -24,6 +24,8 @@
 #include "TigerPermeabilityCubicLaw.h"
 #include "MooseError.h"
 
+registerMooseObject("TigerApp", TigerPermeabilityCubicLaw);
+
 template <>
 InputParameters
 validParams<TigerPermeabilityCubicLaw>()
@@ -32,7 +34,8 @@ validParams<TigerPermeabilityCubicLaw>()
 
   params.addRequiredParam<Real>("apreture", "Apreture of the fracture (m)");
 
-  params.addClassDescription("calculate permeability tensor for fracture based on the Cubic law");
+  params.addClassDescription("Permeability tensor for fractures"
+        " based on the Cubic law");
   return params;
 }
 
