@@ -97,8 +97,8 @@
 
 [AuxKernels]
   [./vx_ker]
-    type = TigerDarcyVelocityComponent
-    gradient_variable = pressure
+    type = TigerDarcyVelocityH
+    pressure = pressure
     variable =  vx
     component = x
   [../]

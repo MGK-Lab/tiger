@@ -4,18 +4,6 @@
 #include "ModulesApp.h"
 #include "MooseSyntax.h"
 
-//AuxKernels
-#include "TigerDarcyVelocityComponent.h"
-#include "TigerPointSourceH.h"
-
-#include "TigerPermeability.h"
-#include "TigerPermeabilityConst.h"
-#include "TigerPermeabilityCubicLaw.h"
-
-//Boundary Condition
-#include "TigerHeatConductionOutflowT.h"
-
-
 template <>
 InputParameters
 validParams<TigerApp>()
@@ -29,11 +17,14 @@ TigerApp::TigerApp(InputParameters parameters) : MooseApp(parameters)
   Moose::registerObjects(_factory);
   ModulesApp::registerObjects(_factory);
   TigerApp::registerObjects(_factory);
-  Registry::registerObjectsTo(_factory, {type()});
 
   Moose::associateSyntax(_syntax, _action_factory);
   ModulesApp::associateSyntax(_syntax, _action_factory);
   TigerApp::associateSyntax(_syntax, _action_factory);
+
+  Moose::registerExecFlags(_factory);
+  ModulesApp::registerExecFlags(_factory);
+  TigerApp::registerExecFlags(_factory);
 }
 
 TigerApp::~TigerApp() {}
@@ -44,6 +35,7 @@ TigerApp__registerApps()
 {
   TigerApp::registerApps();
 }
+
 void
 TigerApp::registerApps()
 {
@@ -61,17 +53,11 @@ TigerApp__registerObjects(Factory & factory)
 {
   TigerApp::registerObjects(factory);
 }
+
 void
 TigerApp::registerObjects(Factory & factory)
 {
-  registerUserObject(TigerPermeabilityConst);
-  registerUserObject(TigerPermeabilityCubicLaw);
-
-  registerAux(TigerDarcyVelocityComponent);
-
-  registerDiracKernel(TigerPointSourceH);
-
-  registerBoundaryCondition(TigerHeatConductionOutflowT);
+    Registry::registerObjectsTo(factory, {"TigerApp"});
 }
 
 void
@@ -79,13 +65,35 @@ TigerApp::associateSyntaxDepends(Syntax & /*syntax*/, ActionFactory & /*action_f
 {
 }
 
-// External entry point for dynamic syntax association
+void
+TigerApp::registerExecFlags(Factory & /*factory*/)
+{
+  /* Uncomment Factory parameter and register your new execution flags here! */
+}
+
+/***************************************************************************************************
+ *********************** Dynamic Library Entry Points - DO NOT MODIFY ******************************
+ **************************************************************************************************/
+
+
+
+
 extern "C" void
 TigerApp__associateSyntax(Syntax & syntax, ActionFactory & action_factory)
 {
   TigerApp::associateSyntax(syntax, action_factory);
 }
+
 void
-TigerApp::associateSyntax(Syntax & /*syntax*/, ActionFactory & /*action_factory*/)
+TigerApp::associateSyntax(Syntax & /*syntax*/, ActionFactory & action_factory)
 {
+  Registry::registerActionsTo(action_factory, {"TigerApp"});
+
+  /* Uncomment Syntax parameter and register your new production objects here! */
+}
+
+extern "C" void
+TigerApp__registerExecFlags(Factory & factory)
+{
+  TigerApp::registerExecFlags(factory);
 }

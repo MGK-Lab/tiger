@@ -24,17 +24,20 @@
 #include "TigerPermeabilityConst.h"
 #include "MooseError.h"
 
+registerMooseObject("TigerApp", TigerPermeabilityConst);
+
 template <>
 InputParameters
 validParams<TigerPermeabilityConst>()
 {
   InputParameters params = validParams<TigerPermeability>();
   MooseEnum PT("isotropic=1 orthotropic=2 anisotropic=3");
-  params.addRequiredParam<MooseEnum>("permeability_type", PT, "The permeability distribution type [isotropic, orthotropic, anisotropic].");
-
+  params.addRequiredParam<MooseEnum>("permeability_type", PT,
+        "The permeability distribution type [isotropic, orthotropic, anisotropic].");
   params.addRequiredParam<std::vector<Real>>("k0", "Initial permeability (m^2)");
 
-  params.addClassDescription("calculate permeability tensor based on provided constant permeability value(s)");
+  params.addClassDescription("Permeability tensor based on provided "
+        "constant permeability value(s)");
   return params;
 }
 

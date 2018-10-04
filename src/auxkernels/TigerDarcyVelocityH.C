@@ -21,22 +21,25 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerDarcyVelocityComponent.h"
+#include "TigerDarcyVelocityH.h"
+
+registerMooseObject("TigerApp", TigerDarcyVelocityH);
 
 template <>
 InputParameters
-validParams<TigerDarcyVelocityComponent>()
+validParams<TigerDarcyVelocityH>()
 {
   InputParameters params = validParams<AuxKernel>();
-  params.addRequiredCoupledVar("gradient_variable", "Variable name for pressure field");
-  MooseEnum component("x=0 y=1 z=2");
-  params.addRequiredParam<MooseEnum>("component", component, "The Darcy velocity component to compute");
+  params.addRequiredCoupledVar("pressure", "Pore pressure nonlinear variable");
+  MooseEnum component("x y z", "x");
+  params.addRequiredParam<MooseEnum>("component", component,
+        "The Darcy velocity component to compute");
   return params;
 }
 
-TigerDarcyVelocityComponent::TigerDarcyVelocityComponent(const InputParameters & parameters)
+TigerDarcyVelocityH::TigerDarcyVelocityH(const InputParameters & parameters)
   : AuxKernel(parameters),
-    _gradient_pore_pressure(coupledGradient("gradient_variable")),
+    _grad_p(coupledGradient("pressure")),
     _k_vis(getMaterialProperty<RankTwoTensor>("permeability_by_viscosity")),
     _rho_f(getMaterialProperty<Real>("fluid_density")),
     _g(getMaterialProperty<RealVectorValue>("gravity_vector")),
@@ -45,7 +48,7 @@ TigerDarcyVelocityComponent::TigerDarcyVelocityComponent(const InputParameters &
 }
 
 Real
-TigerDarcyVelocityComponent::computeValue()
+TigerDarcyVelocityH::computeValue()
 {
-  return -(_k_vis[_qp] * (_gradient_pore_pressure[_qp] - _rho_f[_qp] * _g[_qp]))(_component);
+  return -(_k_vis[_qp] * (_grad_p[_qp] - _rho_f[_qp] * _g[_qp]))(_component);
 }

@@ -32,7 +32,7 @@ validParams<TigerThermalAdvectionKernelT>()
 {
   InputParameters params = validParams<Kernel>();
 
-  params.addCoupledVar("pressure", 0 ,"The variable representing the pressure.");
+  params.addCoupledVar("pressure", 0 ,"Pore pressure nonlinear variable");
 
   return params;
 }

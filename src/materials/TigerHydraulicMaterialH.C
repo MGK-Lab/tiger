@@ -33,7 +33,7 @@ validParams<TigerHydraulicMaterialH>()
   InputParameters params = validParams<Material>();
 
   params.addRequiredCoupledVar("pressure",
-        "Pore pressure nonlinear variable (Pa)");
+        "Pore pressure nonlinear variable");
   params.addParam<bool>("has_gravity", false, "Is the gravity enabled?");
   params.addParam<Real>("gravity_acceleration", 9.81,
         "The magnitude of the gravity acceleration (m/s^2)");

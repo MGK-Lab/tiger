@@ -68,8 +68,8 @@
 
 [AuxKernels]
   [./vx_ker]
-    type = TigerDarcyVelocityComponent
-    gradient_variable = pressure
+    type = TigerDarcyVelocityH
+    pressure = pressure
     variable =  vx
     component = x
   [../]
@@ -88,7 +88,7 @@
 
 [DiracKernels]
   [./pumpout]
-    type = TigerPointSourceH
+    type = TigerHydraulicPointSourceH
     point = '0.0 0.0 0.0'
     mass_flux = -20.0
     variable = pressure

@@ -21,31 +21,46 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERDARCYVELOCITYCOMPONENT_H
-#define TIGERDARCYVELOCITYCOMPONENT_H
+#ifndef TIGERHYDRAULICPOINTSOURCEH_H
+#define TIGERHYDRAULICPOINTSOURCEH_H
 
-#include "AuxKernel.h"
-#include "RankTwoTensor.h"
+#include "DiracKernel.h"
+#include "Function.h"
 
-class TigerDarcyVelocityComponent;
+class TigerHydraulicPointSourceH;
 
 template <>
-InputParameters validParams<TigerDarcyVelocityComponent>();
+InputParameters validParams<TigerHydraulicPointSourceH>();
 
-class TigerDarcyVelocityComponent : public AuxKernel
+/*
+ * Point source (or sink) that adds (removes) fluid at a constant mass flux rate
+ * for times between the specified start and end times. If no start and end
+ * times are specified, the source (sink) starts at the start of the simulation
+ * and continues to act indefinitely.
+ */
+class TigerHydraulicPointSourceH : public DiracKernel
 {
 public:
-  TigerDarcyVelocityComponent(const InputParameters & parameters);
+  TigerHydraulicPointSourceH(const InputParameters & parameters);
+
+  virtual void addPoints() override;
+  virtual Real computeQpResidual() override;
 
 protected:
-  virtual Real computeValue() override;
+  // userdefined constant mass flux (kg/s)
+  const Real _mass_flux;
+  // The location of the point source (sink)
+  const Point _p;
+  // The time at which the point source (sink) starts operating
+  const Real _start_time;
+  // The time at which the point source (sink) stops operating
+  const Real _end_time;
+  // flow rate is function of time (kg/s)
+  Function * _mass_flux_function;
 
-private:
-  const VariableGradient & _gradient_pore_pressure;
-  const MaterialProperty<RankTwoTensor> & _k_vis;
-  const MaterialProperty<Real> & _rho_f;
-  const MaterialProperty<RealVectorValue> & _g;
-  int _component;
+  // imported props from materials
+  const MaterialProperty<Real> & _rhof;
+
 };
 
-#endif // TIGERDARCYVELOCITYCOMPONENT_H
+#endif // TIGERHYDRAULICPOINTSOURCEH_H
