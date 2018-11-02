@@ -76,14 +76,16 @@ TigerSoluteMaterialS::TigerSoluteMaterialS(const InputParameters & parameters)
     _disp_l(getParam<Real>("dispersion_longitudinal")),
     _disp_t(getParam<Real>("dispersion_transverse")),
     _formation_factor(getParam<Real>("formation_factor")),
-  //  _dispersion_tensor(declareProperty<RankTwoTensor>("dispersion_tensor")),
+    _dispersion_tensor(declareProperty<RankTwoTensor>("dispersion_tensor")),
     _diffusion_factor(declareProperty<Real>("diffusion_factor")),
-    _diffdisp(declareProperty<RankTwoTensor>("diffusion_dispersion"))
+    _diffdisp(declareProperty<RankTwoTensor>("diffusion_dispersion")),
+    _Fo(declareProperty<Real>("neumann_number")),
+    _PeDisp(declareProperty<Real>("peclet_number_dispersive"))
 {
   _Pe = (_has_PeCr || _has_supg) ?
-              &declareProperty<Real>("thermal_peclet_number") : NULL;
+              &declareProperty<Real>("solute_peclet_number") : NULL;
   _Cr = (_has_PeCr || _has_supg) ?
-              &declareProperty<Real>("thermal_courant_number") : NULL;
+              &declareProperty<Real>("solute_courant_number") : NULL;
   _vel_func = (_at == AT::user_velocity || _at == AT::darcy_user_velocities) ?
               &getFunction("user_velocity") : NULL;
   _supg_uo = (parameters.isParamSetByUser("supg_uo")) ?
@@ -99,18 +101,14 @@ TigerSoluteMaterialS::computeQpProperties()
     // Chemical kernel for calculating the time derivative, n0 is porosity
     _TimeKernelS[_qp] = _n[_qp];
 
-    _diffusion_factor[_qp] = _diffusion_molecular * _n[_qp] * _formation_factor;
+	 RealVectorValue L;
+	 L(0) = _current_elem->hmin();
+	 Real h_n = L.norm();
+	//Fo and PeDisp
+	_Fo[_qp] = ((_diffusion_molecular * _dt) / (h_n*h_n));
+//	_PeDisp[_qp] = h_n / _disp_l;
 
-    // Push-back the internal tensors to external tensors which are accessable from AuxSystem and Kernel
-//    _dispersion_tensor[_qp] = DispersionTensorCalculator(_av[_qp], _disp_l, _disp_t, _current_elem->dim(), _mesh.dimension(), _diffusion_factor[_qp]);
-
-    _diffdisp[_qp] = DispersionTensorCalculator(_av[_qp], _disp_l, _disp_t, _current_elem->dim(), _mesh.dimension(), _diffusion_factor[_qp]);
-
-    // Rotate for lower dimensional cases
-//    if (_current_elem->dim() < _mesh.dimension())
-//    _dispersion_tensor[_qp].rotate(_rot_mat[_qp]);
-  //  if (_current_elem->dim() < _mesh.dimension())
-  //  _diffdisp[_qp].rotate(_rot_mat[_qp]);
+  _diffusion_factor[_qp] = _diffusion_molecular * _n[_qp] * _formation_factor;
 
     switch (_at)
   {
@@ -132,85 +130,73 @@ TigerSoluteMaterialS::computeQpProperties()
       break;
   }
 
-  Real lambda = _diffdisp[_qp].trace() / (_current_elem->dim() * _TimeKernelS[_qp]);
+  // Push-back the internal tensors to external tensors which are accessable from AuxSystem and Kernel
+//    _dispersion_tensor[_qp] = DispersionTensorCalculator(_av[_qp], _disp_l, _disp_t, _current_elem->dim(), _mesh.dimension(), _diffusion_factor[_qp]);
+
+RankTwoTensor rot_mat_Transpose = RankTwoTensor();
+rot_mat_Transpose = _rot_mat[_qp].transpose();
+RealVectorValue darcyLocal = rot_mat_Transpose * _av[_qp];
+
+ _diffdisp[_qp] = DispersionTensorCalculator(darcyLocal, _disp_l, _disp_t, _current_elem->dim(), _mesh.dimension(), _diffusion_factor[_qp]);
+
+
+  if (_current_elem->dim() < _mesh.dimension())
+  _diffdisp[_qp].rotate(_rot_mat[_qp]);
+
+ Real lambda = _diffdisp[_qp].trace() / (_current_elem->dim() * _TimeKernelS[_qp]);
+
   if (_has_PeCr && !_has_supg)
     _supg_uo->PeCrNrsCalculator(lambda, _dt, _current_elem, _av[_qp], (*_Pe)[_qp], (*_Cr)[_qp]);
 
-    if (_has_supg)
-      {
-        // should be multiplied by the gradient of the test function to build the Petrov Galerkin P function
-        _supg_uo->SUPGCalculator(lambda, _dt, _current_elem, _av[_qp], _SUPG_p[_qp], (*_Pe)[_qp], (*_Cr)[_qp]);
-        _SUPG_p[_qp] *= _supg_scale;
+  if (_has_supg)
+    {
+      // should be multiplied by the gradient of the test function to build the Petrov Galerkin P function
+      _supg_uo->SUPGCalculator(lambda, _dt, _current_elem, _av[_qp], _SUPG_p[_qp], (*_Pe)[_qp], (*_Cr)[_qp]);
+      _SUPG_p[_qp] *= _supg_scale;
 
-        if (_SUPG_p[_qp].norm() != 0.0)
-          _SUPG_ind[_qp] = true;
-        else
-          _SUPG_ind[_qp] = false;
-      }
+      if (_SUPG_p[_qp].norm() != 0.0)
+        _SUPG_ind[_qp] = true;
       else
         _SUPG_ind[_qp] = false;
+    }
+    else
+      _SUPG_ind[_qp] = false;
 
 }
 
 RankTwoTensor
 TigerSoluteMaterialS::DispersionTensorCalculator(const RealVectorValue & darcy_v, Real const & disp_l, Real const & disp_t, int dim, int dimMesh, Real diffusion_factor)
 {
- if (dim == dimMesh)
- {
-  Real vmag = (1/(std::sqrt(darcy_v(0) * darcy_v(0) + darcy_v(1) * darcy_v(1) + darcy_v(2) * darcy_v(2))));
-  if (dim == 1)
+
+  if (darcy_v.norm() != 0)
   {
-    if (darcy_v(0) != 0 )
-    {
-    Real d00 = vmag * (disp_t * (darcy_v(1) * darcy_v(1) + darcy_v(2) * darcy_v(2)) + disp_l * darcy_v(0) * darcy_v(0));
+
+    Real d00 = (1/darcy_v.norm()) * ((disp_t * (darcy_v(1) * darcy_v(1) + darcy_v(2) * darcy_v(2)) + disp_l * darcy_v(0) * darcy_v(0)));
     d00 += diffusion_factor;
 
-    _dispersion_ten = (RankTwoTensor(d00, 0., 0., 0., 0., 0.));
+    Real d01 = (1/darcy_v.norm()) * (((disp_l - disp_t) * darcy_v(0) * darcy_v(1)));
+    Real d02 = (1/darcy_v.norm()) * (((disp_l - disp_t) * darcy_v(0) * darcy_v(2)));
+
+    Real d11 = 0;
+    if (dimMesh >= dim && dim > 1)
+    {
+      d11 += (1/darcy_v.norm()) * ((disp_t * (darcy_v(0) * darcy_v(0) + darcy_v(2) * darcy_v(2)) + disp_l * darcy_v(1) * darcy_v(1)));
+      d11 += diffusion_factor;
     }
-    else
-    _dispersion_ten = (RankTwoTensor(diffusion_factor, 0., 0., 0., 0., 0.));
-  }
 
-  if (dim == 2 )
-  {
-    if (darcy_v(0) != 0 || darcy_v(1) != 0)
+    Real d12 = (1/darcy_v.norm()) * (((disp_l - disp_t) * darcy_v(1) * darcy_v(2)));
+
+    Real d22 = 0;
+    if (dim == dimMesh && dim > 2)
     {
-    Real d00 = vmag * ((disp_t * (darcy_v(1) * darcy_v(1) + darcy_v(2) * darcy_v(2)) + disp_l * darcy_v(0) * darcy_v(0)));
-    d00 += diffusion_factor;
-    Real d01 = vmag * (((disp_l - disp_t) * darcy_v(0) * darcy_v(1)));
-    d01 += diffusion_factor;
-    Real d11 = vmag * ((disp_t * (darcy_v(0) * darcy_v(0) + darcy_v(2) * darcy_v(2)) + disp_l * darcy_v(1) * darcy_v(1)));
-    d11 += diffusion_factor;
-
-    _dispersion_ten = (RankTwoTensor(d00, d11, 0., 0., 0., d01));
+      d22 += (1/darcy_v.norm()) * ((disp_t * (darcy_v(0) * darcy_v(0) + darcy_v(1) * darcy_v(1)) + disp_l * darcy_v(2) * darcy_v(2)));
+      d22 += diffusion_factor;
     }
-    else
-    _dispersion_ten = (RankTwoTensor(diffusion_factor, diffusion_factor, 0., 0., 0., diffusion_factor));
-  }
-
-  if (dim == 3 )
-  {
-    if (darcy_v(0) != 0 || darcy_v(1) != 0 || darcy_v(2) != 0)
-    {
-    Real d00 = vmag * ((disp_t * (darcy_v(1) * darcy_v(1) + darcy_v(2) * darcy_v(2)) + disp_l * darcy_v(0) * darcy_v(0)));
-    d00 += diffusion_factor;
-    Real d01 = vmag * (((disp_l - disp_t) * darcy_v(0) * darcy_v(1)));
-    d01 += diffusion_factor;
-    Real d02 = vmag * (((disp_l - disp_t) * darcy_v(0) * darcy_v(2)));
-    d02 += diffusion_factor;
-    Real d11 = vmag * ((disp_t * (darcy_v(0) * darcy_v(0) + darcy_v(2) * darcy_v(2)) + disp_l * darcy_v(1) * darcy_v(1)));
-    d11 += diffusion_factor;
-    Real d12 = vmag * (((disp_l - disp_t) * darcy_v(1) * darcy_v(2)));
-    d12 += diffusion_factor;
-    Real d22 = vmag * ((disp_t * (darcy_v(0) * darcy_v(0) + darcy_v(1) * darcy_v(1)) + disp_l * darcy_v(2) * darcy_v(2)));
-    d22 += diffusion_factor;
 
     _dispersion_ten = (RankTwoTensor(d00, d11, d22, d12, d02, d01));
-    }
+  }
   else
-  _dispersion_ten = (RankTwoTensor(diffusion_factor, diffusion_factor, diffusion_factor, diffusion_factor, diffusion_factor, diffusion_factor));
-  }
+  _dispersion_ten = (RankTwoTensor(diffusion_factor, diffusion_factor, diffusion_factor, 0., 0., 0.));
 
-  }
   return _dispersion_ten;
 }

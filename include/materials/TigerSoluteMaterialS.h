@@ -94,12 +94,17 @@ protected:
   RankTwoTensor _dispersion_ten = RankTwoTensor();
   RankTwoTensor _diffusion_ten = RankTwoTensor();
   // Tensor for Handover to the Kernels and output as AuxVariables
-//  MaterialProperty<RankTwoTensor> & _dispersion_tensor;
+  MaterialProperty<RankTwoTensor> & _dispersion_tensor;
   // Relativ Diffusion depending on porosity
   MaterialProperty<Real> & _diffusion_factor;
 
   // Tensor for Handover of combined diffusion and dispersion to Kernels
   MaterialProperty<RankTwoTensor> & _diffdisp;
+
+  // Neumann number Fo
+  MaterialProperty<Real> & _Fo;
+  // Peclet number
+  MaterialProperty<Real> & _PeDisp;
 
 };
 

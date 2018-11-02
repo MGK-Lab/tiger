@@ -70,7 +70,7 @@ TigerSUPG::PeCrNrsCalculator(const Real & diff, const Real & dt, const Elem * el
       PeNr = std::numeric_limits<Real>::max();
     else
       PeNr = 0.5 * v_n * h_n / diff;
-
+	
     CrNr = v_n * dt / h_n;
   }
   else

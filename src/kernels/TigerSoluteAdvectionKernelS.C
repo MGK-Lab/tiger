@@ -83,11 +83,7 @@ TigerSoluteAdvectionKernelS::computeQpJacobian()
   else
     test = _test[_i][_qp];
 
-  if (_av_ind[_qp])
-    j  = (*_dav_dT)[_qp] * _phi[_j][_qp] * _grad_u[_qp];
-
   j += _av[_qp] * _grad_phi[_j][_qp];
-  j += _phi[_j][_qp] * _av[_qp] * _grad_u[_qp];
   j *= _scale_factor[_qp] * test;
 
   return j;
@@ -107,7 +103,6 @@ TigerSoluteAdvectionKernelS::computeQpOffDiagJacobian(unsigned int jvar)
 
     j  = (*_dav_dp_phi)[_qp] * _phi[_j][_qp] * _grad_u[_qp];
     j += (*_dav_dp_gradphi)[_qp] * _grad_phi[_j][_qp] * _grad_u[_qp];
-    j += _phi[_j][_qp] * _av[_qp] * _grad_u[_qp];
     j *= _scale_factor[_qp] * test;
   }
 
