@@ -25,7 +25,7 @@
 #define TIGERFLUIDMATERIAL_H
 
 #include "Material.h"
-#include "SinglePhaseFluidPropertiesPT.h"
+#include "SinglePhaseFluidProperties.h"
 
 class TigerFluidMaterial;
 
@@ -39,13 +39,13 @@ public:
 
 protected:
   virtual void computeQpProperties() override;
-  
+
   // Pore pressure nonlinear variable
   const VariableValue & _P;
   // Temperature nonlinear variable
   const VariableValue & _T;
   // Userobject from fluid_properties_module for calculating fluid properties
-  const SinglePhaseFluidPropertiesPT & _fp_uo;
+  const SinglePhaseFluidProperties & _fp_uo;
 
   // Density of the fluid
   MaterialProperty<Real> & _rho_f;

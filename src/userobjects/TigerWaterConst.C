@@ -29,7 +29,7 @@ template <>
 InputParameters
 validParams<TigerWaterConst>()
 {
-  InputParameters params = validParams<SinglePhaseFluidPropertiesPT>();
+  InputParameters params = validParams<SinglePhaseFluidProperties>();
   params.addParam<Real>("molar_mass", 1.8E-2,
         "Constant molar mass of the fluid (kg/mol)");
   params.addParam<Real>("thermal_expansion", 2.14E-4,
@@ -59,7 +59,7 @@ validParams<TigerWaterConst>()
 }
 
 TigerWaterConst::TigerWaterConst(const InputParameters & parameters)
-  : SinglePhaseFluidPropertiesPT(parameters),
+  : SinglePhaseFluidProperties(parameters),
     _molar_mass(getParam<Real>("molar_mass")),
     _thermal_expansion(getParam<Real>("thermal_expansion")),
     _cv(getParam<Real>("cv")),
@@ -93,9 +93,9 @@ Real TigerWaterConst::beta(Real /*pressure*/, Real /*temperature*/) const
   return _thermal_expansion;
 }
 
-Real TigerWaterConst::cp(Real /*pressure*/, Real /*temperature*/) const { return _cp; }
+Real TigerWaterConst::cp_from_p_T(Real /*pressure*/, Real /*temperature*/) const { return _cp; }
 
-Real TigerWaterConst::cv(Real /*pressure*/, Real /*temperature*/) const { return _cv; }
+Real TigerWaterConst::cv_from_p_T(Real /*pressure*/, Real /*temperature*/) const { return _cv; }
 
 Real
 TigerWaterConst::c(Real pressure, Real temperature) const
@@ -103,7 +103,7 @@ TigerWaterConst::c(Real pressure, Real temperature) const
   return std::sqrt(_bulk_modulus / rho(pressure, temperature));
 }
 
-Real TigerWaterConst::k(Real /*pressure*/, Real /*temperature*/) const
+Real TigerWaterConst::k_from_p_T(Real /*pressure*/, Real /*temperature*/) const
 {
   return _thermal_conductivity;
 }
