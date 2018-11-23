@@ -119,7 +119,7 @@
   [../]
   [./pe_ker]
     type = MaterialRealAux
-    property = 'thermal_peclet_number'
+    property = 'solute_peclet_number'
     variable = pe
   [../]
 []
