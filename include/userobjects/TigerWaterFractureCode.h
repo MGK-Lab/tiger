@@ -24,14 +24,14 @@
 #ifndef TIGERWATERFRACTURECODE_H
 #define TIGERWATERFRACTURECODE_H
 
-#include "SinglePhaseFluidPropertiesPT.h"
+#include "SinglePhaseFluidProperties.h"
 
 class TigerWaterFractureCode;
 
 template <>
 InputParameters validParams<TigerWaterFractureCode>();
 
-class TigerWaterFractureCode : public SinglePhaseFluidPropertiesPT
+class TigerWaterFractureCode : public SinglePhaseFluidProperties
 {
 public:
   TigerWaterFractureCode(const InputParameters & parameters);
@@ -47,16 +47,16 @@ public:
   virtual Real beta(Real pressure, Real temperature) const override;
 
   /// Isobaric specific heat capacity (J/kg/K)
-  virtual Real cp(Real pressure, Real temperature) const override;
+  virtual Real cp_from_p_T(Real pressure, Real temperature) const override;
 
   /// Isochoric specific heat capacity (J/kg/K)
-  virtual Real cv(Real pressure, Real temperature) const override;
+  virtual Real cv_from_p_T(Real pressure, Real temperature) const override;
 
   /// Speed of sound (m/s)
   virtual Real c(Real pressure, Real temperature) const override;
 
   /// Thermal conductivity (W/m/K)
-  virtual Real k(Real pressure, Real temperature) const override;
+  virtual Real k_from_p_T(Real pressure, Real temperature) const override;
 
   /// Thermal conductivity and its derivatives wrt pressure and temperature
   virtual void

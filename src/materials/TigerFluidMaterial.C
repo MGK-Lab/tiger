@@ -45,7 +45,7 @@ TigerFluidMaterial::TigerFluidMaterial(const InputParameters & parameters)
   : Material(parameters),
     _P(coupledValue("pressure")),
     _T(coupledValue("temperature")),
-    _fp_uo(getUserObject<SinglePhaseFluidPropertiesPT>("fp_uo")),
+    _fp_uo(getUserObject<SinglePhaseFluidProperties>("fp_uo")),
     _rho_f(declareProperty<Real>("fluid_density")),
     _drho_dp_f(declareProperty<Real>("fluid_drho_dp")),
     _drho_dT_f(declareProperty<Real>("fluid_drho_dT")),
@@ -64,6 +64,6 @@ TigerFluidMaterial::computeQpProperties()
   _fp_uo.rho_dpT(_P[_qp], _T[_qp], _rho_f[_qp], _drho_dp_f[_qp], _drho_dT_f[_qp]);
   _fp_uo.mu_dpT(_P[_qp], _T[_qp], _mu_f[_qp], _dmu_dp_f[_qp], _dmu_dT_f[_qp]);
   _beta_f[_qp] = _drho_dp_f[_qp] / _rho_f[_qp];
-  _cp_f[_qp] = _fp_uo.cp(_P[_qp], _T[_qp]);
-  _lambda_f[_qp] = _fp_uo.k(_P[_qp], _T[_qp]);
+  _cp_f[_qp] = _fp_uo.cp_from_p_T(_P[_qp], _T[_qp]);
+  _lambda_f[_qp] = _fp_uo.k_from_p_T(_P[_qp], _T[_qp]);
 }

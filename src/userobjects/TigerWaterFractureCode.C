@@ -29,7 +29,7 @@ template <>
 InputParameters
 validParams<TigerWaterFractureCode>()
 {
-  InputParameters params = validParams<SinglePhaseFluidPropertiesPT>();
+  InputParameters params = validParams<SinglePhaseFluidProperties>();
   params.addParam<Real>("molar_mass", 1.8E-2,
         "Constant molar mass of the fluid (kg/mol)");
   params.addParam<Real>("thermal_expansion", 2.14E-4,
@@ -56,7 +56,7 @@ validParams<TigerWaterFractureCode>()
 }
 
 TigerWaterFractureCode::TigerWaterFractureCode(const InputParameters & parameters)
-  : SinglePhaseFluidPropertiesPT(parameters),
+  : SinglePhaseFluidProperties(parameters),
     _molar_mass(getParam<Real>("molar_mass")),
     _thermal_expansion(getParam<Real>("thermal_expansion")),
     _cv(getParam<Real>("cv")),
@@ -88,9 +88,9 @@ Real TigerWaterFractureCode::beta(Real /*pressure*/, Real /*temperature*/) const
   return _thermal_expansion;
 }
 
-Real TigerWaterFractureCode::cp(Real /*pressure*/, Real /*temperature*/) const { return _cp; }
+Real TigerWaterFractureCode::cp_from_p_T(Real /*pressure*/, Real /*temperature*/) const { return _cp; }
 
-Real TigerWaterFractureCode::cv(Real /*pressure*/, Real /*temperature*/) const { return _cv; }
+Real TigerWaterFractureCode::cv_from_p_T(Real /*pressure*/, Real /*temperature*/) const { return _cv; }
 
 Real
 TigerWaterFractureCode::c(Real pressure, Real temperature) const
@@ -98,7 +98,7 @@ TigerWaterFractureCode::c(Real pressure, Real temperature) const
   return std::sqrt(_bulk_modulus / rho(pressure, temperature));
 }
 
-Real TigerWaterFractureCode::k(Real /*pressure*/, Real /*temperature*/) const
+Real TigerWaterFractureCode::k_from_p_T(Real /*pressure*/, Real /*temperature*/) const
 {
   return _thermal_conductivity;
 }
