@@ -15,11 +15,7 @@ public:
   virtual ~TigerApp();
 
   static void registerApps();
-  static void registerObjects(Factory & factory);
-  static void registerObjectDepends(Factory & factory);
-  static void associateSyntax(Syntax & syntax, ActionFactory & action_factory);
-  static void associateSyntaxDepends(Syntax & syntax, ActionFactory & action_factory);
-  static void registerExecFlags(Factory & factory);
+  static void registerAll(Factory & f, ActionFactory & af, Syntax & s);
 };
 
 #endif /* TIGERAPP_H */
