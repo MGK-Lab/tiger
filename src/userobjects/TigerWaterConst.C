@@ -29,7 +29,7 @@ template <>
 InputParameters
 validParams<TigerWaterConst>()
 {
-  InputParameters params = validParams<SinglePhaseFluidPropertiesPT>();
+  InputParameters params = validParams<SinglePhaseFluidProperties>();
   params.addParam<Real>("molar_mass", 1.8E-2,
         "Constant molar mass of the fluid (kg/mol)");
   params.addParam<Real>("thermal_expansion", 2.14E-4,
@@ -59,7 +59,7 @@ validParams<TigerWaterConst>()
 }
 
 TigerWaterConst::TigerWaterConst(const InputParameters & parameters)
-  : SinglePhaseFluidPropertiesPT(parameters),
+  : SinglePhaseFluidProperties(parameters),
     _molar_mass(getParam<Real>("molar_mass")),
     _thermal_expansion(getParam<Real>("thermal_expansion")),
     _cv(getParam<Real>("cv")),
@@ -88,28 +88,28 @@ TigerWaterConst::molarMass() const
   return _molar_mass;
 }
 
-Real TigerWaterConst::beta(Real /*pressure*/, Real /*temperature*/) const
+Real TigerWaterConst::beta_from_p_T(Real /*pressure*/, Real /*temperature*/) const
 {
   return _thermal_expansion;
 }
 
-Real TigerWaterConst::cp(Real /*pressure*/, Real /*temperature*/) const { return _cp; }
+Real TigerWaterConst::cp_from_p_T(Real /*pressure*/, Real /*temperature*/) const { return _cp; }
 
-Real TigerWaterConst::cv(Real /*pressure*/, Real /*temperature*/) const { return _cv; }
+Real TigerWaterConst::cv_from_p_T(Real /*pressure*/, Real /*temperature*/) const { return _cv; }
 
 Real
-TigerWaterConst::c(Real pressure, Real temperature) const
+TigerWaterConst::c_from_p_T(Real pressure, Real temperature) const
 {
-  return std::sqrt(_bulk_modulus / rho(pressure, temperature));
+  return std::sqrt(_bulk_modulus / rho_from_p_T(pressure, temperature));
 }
 
-Real TigerWaterConst::k(Real /*pressure*/, Real /*temperature*/) const
+Real TigerWaterConst::k_from_p_T(Real /*pressure*/, Real /*temperature*/) const
 {
   return _thermal_conductivity;
 }
 
 void
-TigerWaterConst::k_dpT(
+TigerWaterConst::k_from_p_T(
     Real /*pressure*/, Real /*temperature*/, Real & k, Real & dk_dp, Real & dk_dT) const
 {
   k = _thermal_conductivity;
@@ -117,37 +117,37 @@ TigerWaterConst::k_dpT(
   dk_dT = 0;
 }
 
-Real TigerWaterConst::s(Real /*pressure*/, Real /*temperature*/) const
+Real TigerWaterConst::s_from_p_T(Real /*pressure*/, Real /*temperature*/) const
 {
   return _specific_entropy;
 }
 
 Real
-TigerWaterConst::rho(Real /*pressure*/, Real /*temperature*/) const
+TigerWaterConst::rho_from_p_T(Real /*pressure*/, Real /*temperature*/) const
 {
   return _density;
 }
 
 void
-TigerWaterConst::rho_dpT(
+TigerWaterConst::rho_from_p_T(
     Real pressure, Real temperature, Real & rho, Real & drho_dp, Real & drho_dT) const
 {
-  rho = this->rho(pressure, temperature);
+  rho = this->rho_from_p_T(pressure, temperature);
   drho_dp = 0.0;
   drho_dT = 0.0;
 }
 
 Real
-TigerWaterConst::e(Real /*pressure*/, Real temperature) const
+TigerWaterConst::e_from_p_T(Real /*pressure*/, Real temperature) const
 {
   return _cv * temperature;
 }
 
 void
-TigerWaterConst::e_dpT(
+TigerWaterConst::e_from_p_T(
     Real pressure, Real temperature, Real & e, Real & de_dp, Real & de_dT) const
 {
-  e = this->e(pressure, temperature);
+  e = this->e_from_p_T(pressure, temperature);
   de_dp = 0.0;
   de_dT = _cv;
 }
@@ -163,28 +163,28 @@ TigerWaterConst::rho_e_dpT(Real pressure,
                                  Real & de_dT) const
 {
   Real density, ddensity_dp, ddensity_dT;
-  rho_dpT(pressure, temperature, density, ddensity_dp, ddensity_dT);
+  rho_from_p_T(pressure, temperature, density, ddensity_dp, ddensity_dT);
   rho = density;
   drho_dp = ddensity_dp;
   drho_dT = ddensity_dT;
 
   Real energy, denergy_dp, denergy_dT;
-  e_dpT(pressure, temperature, energy, denergy_dp, denergy_dT);
+  e_from_p_T(pressure, temperature, energy, denergy_dp, denergy_dT);
   e = energy;
   de_dp = denergy_dp;
   de_dT = denergy_dT;
 }
 
-Real TigerWaterConst::mu(Real /*pressure*/, Real temperature) const
+Real TigerWaterConst::mu_from_p_T(Real /*pressure*/, Real temperature) const
 {
   return _viscosity;
 }
 
 void
-TigerWaterConst::mu_dpT(
+TigerWaterConst::mu_from_p_T(
     Real pressure, Real temperature, Real & mu, Real & dmu_dp, Real & dmu_dT) const
 {
-  mu = this->mu(pressure, temperature);
+  mu = this->mu_from_p_T(pressure, temperature);
   dmu_dp = 0.0;
   dmu_dT = 0.0;
 }
@@ -192,8 +192,8 @@ TigerWaterConst::mu_dpT(
 void
 TigerWaterConst::rho_mu(Real pressure, Real temperature, Real & rho, Real & mu) const
 {
-  rho = this->rho(pressure, temperature);
-  mu = this->mu(pressure, temperature);
+  rho = this->rho_from_p_T(pressure, temperature);
+  mu = this->mu_from_p_T(pressure, temperature);
 }
 
 void
@@ -206,24 +206,24 @@ TigerWaterConst::rho_mu_dpT(Real pressure,
                                   Real & dmu_dp,
                                   Real & dmu_dT) const
 {
-  this->rho_dpT(pressure, temperature, rho, drho_dp, drho_dT);
-  this->mu_dpT(pressure, temperature, mu, dmu_dp, dmu_dT);
+  this->rho_from_p_T(pressure, temperature, rho, drho_dp, drho_dT);
+  this->mu_from_p_T(pressure, temperature, mu, dmu_dp, dmu_dT);
 }
 
 Real
-TigerWaterConst::h(Real pressure, Real temperature) const
+TigerWaterConst::h_from_p_T(Real pressure, Real temperature) const
 {
-  return e(pressure, temperature) + _pp_coeff * pressure / rho(pressure, temperature);
+  return e_from_p_T(pressure, temperature) + _pp_coeff * pressure / rho_from_p_T(pressure, temperature);
 }
 
 void
-TigerWaterConst::h_dpT(
+TigerWaterConst::h_from_p_T(
     Real pressure, Real temperature, Real & h, Real & dh_dp, Real & dh_dT) const
 {
-  h = this->h(pressure, temperature);
+  h = this->h_from_p_T(pressure, temperature);
 
   Real density, ddensity_dp, ddensity_dT;
-  rho_dpT(pressure, temperature, density, ddensity_dp, ddensity_dT);
+  rho_from_p_T(pressure, temperature, density, ddensity_dp, ddensity_dT);
 
   dh_dp = _pp_coeff / density - _pp_coeff * pressure * ddensity_dp / density / density;
   dh_dT = _cv - _pp_coeff * pressure * ddensity_dT / density / density;
