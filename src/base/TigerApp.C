@@ -14,26 +14,19 @@ validParams<TigerApp>()
 
 TigerApp::TigerApp(InputParameters parameters) : MooseApp(parameters)
 {
-  Moose::registerObjects(_factory);
-  ModulesApp::registerObjects(_factory);
-  TigerApp::registerObjects(_factory);
-
-  Moose::associateSyntax(_syntax, _action_factory);
-  ModulesApp::associateSyntax(_syntax, _action_factory);
-  TigerApp::associateSyntax(_syntax, _action_factory);
-
-  Moose::registerExecFlags(_factory);
-  ModulesApp::registerExecFlags(_factory);
-  TigerApp::registerExecFlags(_factory);
+  TigerApp::registerAll(_factory, _action_factory, _syntax);
 }
 
 TigerApp::~TigerApp() {}
 
-// External entry point for dynamic application loading
-extern "C" void
-TigerApp__registerApps()
+void
+TigerApp::registerAll(Factory & f, ActionFactory & af, Syntax & s)
 {
-  TigerApp::registerApps();
+  ModulesApp::registerAll(f, af, s);
+  Registry::registerObjectsTo(f, {"TigerApp"});
+  Registry::registerActionsTo(af, {"TigerApp"});
+
+  /* register custom execute flags, action syntax, etc. here */
 }
 
 void
@@ -42,58 +35,16 @@ TigerApp::registerApps()
   registerApp(TigerApp);
 }
 
-void
-TigerApp::registerObjectDepends(Factory & /*factory*/)
-{
-}
-
-// External entry point for dynamic object registration
-extern "C" void
-TigerApp__registerObjects(Factory & factory)
-{
-  TigerApp::registerObjects(factory);
-}
-
-void
-TigerApp::registerObjects(Factory & factory)
-{
-    Registry::registerObjectsTo(factory, {"TigerApp"});
-}
-
-void
-TigerApp::associateSyntaxDepends(Syntax & /*syntax*/, ActionFactory & /*action_factory*/)
-{
-}
-
-void
-TigerApp::registerExecFlags(Factory & /*factory*/)
-{
-  /* Uncomment Factory parameter and register your new execution flags here! */
-}
-
 /***************************************************************************************************
  *********************** Dynamic Library Entry Points - DO NOT MODIFY ******************************
  **************************************************************************************************/
-
-
-
-
 extern "C" void
-TigerApp__associateSyntax(Syntax & syntax, ActionFactory & action_factory)
+TigerApp__registerAll(Factory & f, ActionFactory & af, Syntax & s)
 {
-  TigerApp::associateSyntax(syntax, action_factory);
+  TigerApp::registerAll(f, af, s);
 }
-
-void
-TigerApp::associateSyntax(Syntax & /*syntax*/, ActionFactory & action_factory)
-{
-  Registry::registerActionsTo(action_factory, {"TigerApp"});
-
-  /* Uncomment Syntax parameter and register your new production objects here! */
-}
-
 extern "C" void
-TigerApp__registerExecFlags(Factory & factory)
+TigerApp__registerApps()
 {
-  TigerApp::registerExecFlags(factory);
+  TigerApp::registerApps();
 }
