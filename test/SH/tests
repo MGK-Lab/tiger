@@ -19,4 +19,9 @@
     input = '2d_A_S.i'
     exodiff = '2d_A_S_out.e'
   [../]
+  [./2D1D_Advection_Dispersion_Diffusion_Transient]
+    type = 'Exodiff'
+    input = '2D1D_AD.i'
+    exodiff = '2D1D_AD.e'
+  [../]
 []

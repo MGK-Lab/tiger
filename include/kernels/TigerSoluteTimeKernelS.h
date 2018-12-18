@@ -43,7 +43,6 @@ protected:
   // imported props from materials
   const MaterialProperty<Real> & _scale_factor;
   const MaterialProperty<Real> & _TimeKernelS;
-//  const MaterialProperty<Real> & _dTimeKernelS_dPhi;
   const MaterialProperty<RealVectorValue> & _SUPG_p;
   const MaterialProperty<bool> & _SUPG_ind;
 };

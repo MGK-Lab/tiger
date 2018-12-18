@@ -65,7 +65,6 @@ TigerSoluteMaterialS::TigerSoluteMaterialS(const InputParameters & parameters)
     _has_supg(getParam<bool>("has_supg")),
     _supg_scale(getParam<Real>("supg_coeficient_scale")),
     _TimeKernelS(declareProperty<Real>("TimeKernel_S")),
-//    _dTimeKernelS_dPhi(declareProperty<Real>("dTimeKernelS_dPhi")), Needed if porosity is changing
     _SUPG_ind(declareProperty<bool>("solute_supg_indicator")),
     _av_ind(declareProperty<bool>("solute_av_dv_indicator")),
     _av(declareProperty<RealVectorValue>("solute_advection_velocity")),
@@ -104,9 +103,8 @@ TigerSoluteMaterialS::computeQpProperties()
 	 RealVectorValue L;
 	 L(0) = _current_elem->hmin();
 	 Real h_n = L.norm();
-	//Fo and PeDisp
+
 	_Fo[_qp] = ((_diffusion_molecular * _dt) / (h_n*h_n));
-//	_PeDisp[_qp] = h_n / _disp_l;
 
   _diffusion_factor[_qp] = _diffusion_molecular * _n[_qp] * _formation_factor;
 
@@ -129,9 +127,6 @@ TigerSoluteMaterialS::computeQpProperties()
       _av_ind[_qp] = true;
       break;
   }
-
-  // Push-back the internal tensors to external tensors which are accessable from AuxSystem and Kernel
-//    _dispersion_tensor[_qp] = DispersionTensorCalculator(_av[_qp], _disp_l, _disp_t, _current_elem->dim(), _mesh.dimension(), _diffusion_factor[_qp]);
 
 RankTwoTensor rot_mat_Transpose = RankTwoTensor();
 rot_mat_Transpose = _rot_mat[_qp].transpose();

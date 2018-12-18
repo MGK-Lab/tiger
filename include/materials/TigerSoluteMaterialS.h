@@ -60,10 +60,8 @@ protected:
   MaterialProperty<Real> * _Pe;
   // Courant number upon request
   MaterialProperty<Real> * _Cr;
-  // coefficient for thermal time kernel
+  // coefficient for solute time kernel
   MaterialProperty<Real> & _TimeKernelS;
-  // derivative of thermal time kernel coefficient wrt temperature
-//  MaterialProperty<Real> & _dTimeKernelS_dPhi; Maybe needed if porosity is changing
   // indicator to inform kernels for considering upwinding
   MaterialProperty<bool> & _SUPG_ind;
   // indicator to inform kernels for considering derivative of darcy velocity

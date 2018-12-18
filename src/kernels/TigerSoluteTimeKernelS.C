@@ -37,7 +37,6 @@ TigerSoluteTimeKernelS::TigerSoluteTimeKernelS(const InputParameters & parameter
   : TimeDerivative(parameters),
     _scale_factor(getMaterialProperty<Real>("scale_factor")),
     _TimeKernelS(getMaterialProperty<Real>("TimeKernel_S")),
-//    _dTimeKernelS_dPhi(getMaterialProperty<Real>("dTimeKernelS_dPhi")),
     _SUPG_p(getMaterialProperty<RealVectorValue>("solute_petrov_supg_p_function")),
     _SUPG_ind(getMaterialProperty<bool>("solute_supg_indicator"))
 {
@@ -67,9 +66,7 @@ TigerSoluteTimeKernelS::computeQpJacobian()
     test = _test[_i][_qp];
 
   j  = _TimeKernelS[_qp]  * _phi[_j][_qp] * _du_dot_du[_qp];
-//  j += _dTimeKernelS_dT[_qp] * _phi[_j][_qp] * _u_dot[_qp];
   j *= _scale_factor[_qp] * test;
 
   return j;
 }
-// offDia Jac can be add because of _TimeKernelS[_qp]
