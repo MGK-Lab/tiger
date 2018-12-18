@@ -21,21 +21,21 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERWATERFRACTURECODE_H
-#define TIGERWATERFRACTURECODE_H
+#ifndef TIGERIDEALWATER_H
+#define TIGERIDEALWATER_H
 
 #include "SinglePhaseFluidProperties.h"
 
-class TigerWaterFractureCode;
+class TigerIdealWater;
 
 template <>
-InputParameters validParams<TigerWaterFractureCode>();
+InputParameters validParams<TigerIdealWater>();
 
-class TigerWaterFractureCode : public SinglePhaseFluidProperties
+class TigerIdealWater : public SinglePhaseFluidProperties
 {
 public:
-  TigerWaterFractureCode(const InputParameters & parameters);
-  virtual ~TigerWaterFractureCode();
+  TigerIdealWater(const InputParameters & parameters);
+  virtual ~TigerIdealWater();
 
   /// Fluid name
   virtual std::string fluidName() const override;
@@ -145,6 +145,16 @@ protected:
 
   /// Porepressure coefficient: enthalpy = internal_energy + porepressure / density * _pp_coeff
   const Real _pp_coeff;
+
+  /// viscosity
+  const Real _viscosity;
+
+  // density at reference pressure and temperature
+  Real _density_ref = 0;
+  // reference temperature
+  Real _T_ref = 0;
+  // reference pressure
+  Real _P_ref = 0;
 };
 
-#endif /* TIGERWATERFRACTURECODE_H */
+#endif /* TIGERIDEALWATER_H */

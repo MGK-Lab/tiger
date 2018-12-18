@@ -35,7 +35,7 @@ validParams<TigerHeatConductionOutflowT>()
 
 TigerHeatConductionOutflowT::TigerHeatConductionOutflowT(const InputParameters & parameters)
   : IntegratedBC(parameters),
-  _lambda_sf(getMaterialProperty<RankTwoTensor>("conductivity_mixture"))
+  _lambda_sf(getMaterialProperty<RankTwoTensor>("thermal_conductivity_mixture"))
 {
 }
 
