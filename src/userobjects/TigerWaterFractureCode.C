@@ -120,6 +120,8 @@ Real TigerWaterFractureCode::s_from_p_T(Real /*pressure*/, Real /*temperature*/)
 Real
 TigerWaterFractureCode::rho_from_p_T(Real pressure, Real temperature) const
 {
+  if (pressure <0.0 || temperature <273.15)
+    mooseError("The pressure field has a negative value so the EOS is unable to calculate density.\n");
   Real _a = -9.9559 + 7.0845*std::exp(-1.638e-4*(temperature-273.15))+3.909*std::exp(2.551e-10*pressure);
   return (-3.033405 + 10.128163*_a - 8.750567*_a*_a + 2.663107*_a*_a*_a)*1.0e3;
 }
