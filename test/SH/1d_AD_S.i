@@ -2,7 +2,6 @@
   type = GeneratedMesh
   dim = 1
   nx = 20
-  xmax = 1
 []
 
 [Modules]
@@ -41,14 +40,13 @@
     compressibility = 1.0e-4
     kf_uo = rock_uo
   [../]
-  [./rock_t]
-    type = TigerThermalMaterialT
-    conductivity_type = isotropic
-    lambda = 2
-    density = 1
-    specific_heat = 1
+  [./rock_s]
+    type = TigerSoluteMaterialS
     has_supg = true
     supg_uo = supg
+    diffusion = 1e-6
+    dispersion_longitudinal = 0
+    dispersion_transverse = 0
   [../]
 []
 
@@ -65,24 +63,24 @@
     boundary = right
     value = 1000
   [../]
-  #[./front_t]
-  #  type =  DirichletBC
-  #  variable = temperature
-  #  boundary = left
-  #  value = 0
-  #[../]
-  [./back_t]
+  [./front_s]
     type =  DirichletBC
-    variable = temperature
+    variable = solute
+    boundary = left
+    value = 0
+  [../]
+  [./back_s]
+    type =  DirichletBC
+    variable = solute
     boundary = right
     value = 100
   [../]
 []
 
 [ICs]
-  [./temp]
+  [./solute]
     type = BoundingBoxIC
-    variable = temperature
+    variable = solute
     inside = 0
     outside = 100
     boundary = right
@@ -94,8 +92,7 @@
 []
 
 [Variables]
-  [./temperature]
-    scaling = 5e-7
+  [./solute]
   [../]
   [./pressure]
   [../]
@@ -122,24 +119,24 @@
   [../]
   [./pe_ker]
     type = MaterialRealAux
-    property = 'thermal_peclet_number'
+    property = 'solute_peclet_number'
     variable = pe
   [../]
 []
 
 [Kernels]
-  [./T_diff]
-    type = TigerThermalDiffusionKernelT
-    variable = temperature
+  [./S_diff]
+    type = TigerSoluteDiffusionKernelS
+    variable = solute
   [../]
-  [./T_advect]
-    type = TigerThermalAdvectionKernelT
-    variable = temperature
+  [./S_advect]
+    type = TigerSoluteAdvectionKernelS
+    variable = solute
     pressure = pressure
   [../]
-  [./T_dt]
-    type = TigerThermalTimeKernelT
-    variable = temperature
+  [./S_dt]
+    type = TigerSoluteTimeKernelS
+    variable = solute
   [../]
   [./H_diff]
     type = TigerHydraulicKernelH
@@ -153,16 +150,15 @@
 
 [Executioner]
   type = Transient
-  dt = 1000
-  end_time = 15000 # 2.5e5
+  end_time = 2.5e5
   nl_abs_tol = 1e-14
   petsc_options_iname = '-pc_type -pc_hypre_type'
   petsc_options_value = 'hypre boomeramg'
-  #[./TimeStepper]
-  #  type = SolutionTimeAdaptiveDT
-  #  dt = 20
-  #  percent_change = 0.5
-  #[../]
+  [./TimeStepper]
+    type = SolutionTimeAdaptiveDT
+    dt = 20
+    percent_change = 0.5
+  [../]
 []
 
 [Outputs]
