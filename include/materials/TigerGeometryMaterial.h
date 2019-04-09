@@ -51,7 +51,7 @@ protected:
   // porosity
   MaterialProperty<Real> & _n;
   // Initial scaling factor
-  Real _scale_factor0;
+  Function & _scale_factor0;
   // Initial porosity
   Real _n0;
 };

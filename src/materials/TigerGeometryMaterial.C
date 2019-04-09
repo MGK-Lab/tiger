@@ -24,6 +24,7 @@
 #include "TigerGeometryMaterial.h"
 #include "MooseMesh.h"
 #include <cfloat>
+#include "Function.h"
 
 #define PI 3.141592653589793238462643383279502884197169399375105820974944592308
 
@@ -36,13 +37,13 @@ validParams<TigerGeometryMaterial>()
   InputParameters params = validParams<Material>();
 
   params.addRequiredParam<Real>("porosity", "Initial porosity of the feature");
-  params.addParam<Real>("scale_factor", 1.0, "The scale factor for non-3D "
+  params.addParam<FunctionName>("scale_factor", 1.0, "The scale factor for non-3D "
         "elements ( particularlly lower dimensional elements): if mesh is 3D"
         ", apreture for 2D elements (fractures) and diameter for 1D elements"
         " (wells) should be used; if mesh is 2D, height for 2D elements (2D"
         " matrix) and apreture times height for 1D elements (fractures) "
         "should be used; and if mesh is 1D, area for 1D elements (pipes or "
-        "wells) should be used)");
+        "wells) should be used); ParsedFunctions can be used as well.");
   params.addClassDescription("Material for introducing geometrical properties "
         "of defined structural features (e.g unit, fracture and well)");
 
@@ -54,7 +55,7 @@ TigerGeometryMaterial::TigerGeometryMaterial(const InputParameters & parameters)
     _rot_mat(declareProperty<RankTwoTensor>("lowerD_rotation_matrix")),
     _scale_factor(declareProperty<Real>("scale_factor")),
     _n(declareProperty<Real>("porosity")),
-    _scale_factor0(getParam<Real>("scale_factor")),
+    _scale_factor0(getFunction("scale_factor")),
     _n0(getParam<Real>("porosity"))
 {
 }
@@ -80,15 +81,15 @@ TigerGeometryMaterial::Scaling()
   switch (_mesh.dimension())
   {
     case 1 ... 2:
-      scale_factor = _scale_factor0;
+      scale_factor = _scale_factor0.value(_t, _q_point[_qp]);
       break;
     case 3:
       if (_current_elem->dim() == 2)
         // fracture aperture
-        scale_factor = _scale_factor0;
+        scale_factor = _scale_factor0.value(_t, _q_point[_qp]);
       else if (_current_elem->dim() == 1)
        // radius of well
-        scale_factor = PI * _scale_factor0 * _scale_factor0 / 4.0;
+        scale_factor = PI * _scale_factor0.value(_t, _q_point[_qp]) * _scale_factor0.value(_t, _q_point[_qp]) / 4.0;
       break;
   }
 
