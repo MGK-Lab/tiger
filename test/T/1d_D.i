@@ -25,7 +25,7 @@
     type = TigerThermalMaterialT
     conductivity_type = isotropic
     advection_type = pure_diffusion
-  lambda = 2
+    lambda = 2
     density = 2600
     specific_heat = 840
   [../]
