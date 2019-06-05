@@ -41,7 +41,7 @@ protected:
   virtual Real computeQpResidual() override;
 
   const Real & _scale;
-  Function & _function;
+  const Function & _function;
 
   // imported props from materials
   const MaterialProperty<Real> & _scale_factor;

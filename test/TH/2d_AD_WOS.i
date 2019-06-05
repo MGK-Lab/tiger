@@ -139,7 +139,6 @@
 
 [Executioner]
   type = Steady
-  nl_rel_tol = 1e-09
   solve_type = NEWTON
   petsc_options_iname = '-pc_type -sub_pc_type -ksp_rtol -ksp_atol -ksp_max_it -snes_rtol -snes_atol -sub_pc_factor_shift_type'
   petsc_options_value = 'asm lu 1e-12 1e-10 20 1e-8 1e-10 NONZERO'

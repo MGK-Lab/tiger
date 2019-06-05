@@ -56,7 +56,7 @@ protected:
   // The time at which the point source (sink) stops operating
   const Real _end_time;
   // flow rate is function of time (kg/s)
-  Function * _mass_flux_function;
+  const Function * _mass_flux_function;
 
   // imported props from materials
   const MaterialProperty<Real> & _rhof;
