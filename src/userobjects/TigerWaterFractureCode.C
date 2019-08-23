@@ -32,6 +32,8 @@ validParams<TigerWaterFractureCode>()
   InputParameters params = validParams<SinglePhaseFluidProperties>();
   params.addParam<Real>("molar_mass", 1.8E-2,
         "Constant molar mass of the fluid (kg/mol)");
+  params.addParam<Real>("NaCl_concentration", 0.25,
+        "Concentration of NaCl (0.25<molal<5)");
   params.addParam<Real>("thermal_expansion", 2.14E-4,
         "Constant coefficient of thermal expansion (1/K)");
   params.addParam<Real>("cv", 4186.0,
@@ -65,7 +67,8 @@ TigerWaterFractureCode::TigerWaterFractureCode(const InputParameters & parameter
     _thermal_conductivity(getParam<Real>("thermal_conductivity")),
     _specific_entropy(getParam<Real>("specific_entropy")),
     _henry_constant(getParam<Real>("henry_constant")),
-    _pp_coeff(getParam<Real>("porepressure_coefficient"))
+    _pp_coeff(getParam<Real>("porepressure_coefficient")),
+    _m(getParam<Real>("NaCl_concentration"))
 {
 }
 
@@ -120,9 +123,9 @@ Real TigerWaterFractureCode::s_from_p_T(Real /*pressure*/, Real /*temperature*/)
 Real
 TigerWaterFractureCode::rho_from_p_T(Real pressure, Real temperature) const
 {
-  if (pressure <0.0 || temperature <273.15)
+  if (pressure <0.0 || pressure > 5e7 || temperature <273.15)
     mooseError("The pressure field has a negative value so the EOS is unable to calculate density.\n");
-  Real _a = -9.9559 + 7.0845*std::exp(-1.638e-4*(temperature-273.15))+3.909*std::exp(2.551e-10*pressure);
+  Real _a = -9.9559*std::exp(-4.539e-3*_m) + 7.0845*std::exp(-1.638e-4*(temperature-273.15))+3.909*std::exp(2.551e-10*pressure);
   return (-3.033405 + 10.128163*_a - 8.750567*_a*_a + 2.663107*_a*_a*_a)*1.0e3;
 }
 
@@ -131,7 +134,7 @@ TigerWaterFractureCode::rho_from_p_T(
     Real pressure, Real temperature, Real & rho, Real & drho_dp, Real & drho_dT) const
 {
   rho = this->rho_from_p_T(pressure, temperature);
-  Real _a = -9.9559 + 7.0845*std::exp(-1.638e-4*(temperature-273.15))+3.909*std::exp(2.551e-10*pressure);
+  Real _a = -9.9559*std::exp(-4.539e-3*_m) + 7.0845*std::exp(-1.638e-4*(temperature-273.15))+3.909*std::exp(2.551e-10*pressure);
   drho_dp = (10.128163 - 17.501134*_a + 7.989321*_a*_a)*9.971859e-7*std::exp(2.551e-10*pressure);
   drho_dT = -(10.128163 - 17.501134*_a + 7.989321*_a*_a)*1.1604411*std::exp(-1.638e-4*(temperature-273.15));
 }

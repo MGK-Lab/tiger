@@ -145,6 +145,9 @@ protected:
 
   /// Porepressure coefficient: enthalpy = internal_energy + porepressure / density * _pp_coeff
   const Real _pp_coeff;
+
+  /// molal concentration of NaCl
+  const Real _m;
 };
 
 #endif /* TIGERWATERFRACTURECODE_H */
