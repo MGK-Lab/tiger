@@ -90,7 +90,7 @@
   [./pumpout]
     type = TigerHydraulicPointSourceH
     point = '0.0 0.0 0.0'
-    mass_flux = -20.0
+    mass_flux = 20.0
     variable = pressure
   [../]
 []

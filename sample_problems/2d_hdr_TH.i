@@ -131,13 +131,13 @@
   [./pump_in]
     type = TigerHydraulicPointSourceH
     point = '175.0 250.0 0.0'
-    mass_flux = 1.0
+    mass_flux = -1.0
     variable = pressure
   [../]
   [./pump_out]
     type = TigerHydraulicPointSourceH
     point = '325.0 250.0 0.0'
-    mass_flux = -1.0
+    mass_flux = 1.0
     variable = pressure
   [../]
 []
