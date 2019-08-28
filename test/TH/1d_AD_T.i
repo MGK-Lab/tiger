@@ -22,7 +22,7 @@
   [./supg]
     type = TigerSUPG
     effective_length = min
-    supg_coeficient = transient_tezduyar
+    supg_coeficient = optimal
   [../]
 []
 
@@ -65,12 +65,12 @@
     boundary = right
     value = 1000
   [../]
-  #[./front_t]
-  #  type =  DirichletBC
-  #  variable = temperature
-  #  boundary = left
-  #  value = 0
-  #[../]
+  [./front_t]
+   type =  DirichletBC
+   variable = temperature
+   boundary = left
+   value = 0
+  [../]
   [./back_t]
     type =  DirichletBC
     variable = temperature
@@ -153,8 +153,8 @@
 
 [Executioner]
   type = Transient
-  dt = 1000
-  end_time = 15000 # 2.5e5
+  dt = 10000
+  end_time = 50000
   nl_abs_tol = 1e-14
   petsc_options_iname = '-pc_type -pc_hypre_type'
   petsc_options_value = 'hypre boomeramg'

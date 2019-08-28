@@ -79,31 +79,10 @@ public:
   virtual void
   e_from_p_T(Real pressure, Real temperature, Real & e, Real & de_dp, Real & de_dT) const override;
 
-  /// Density and internal energy from pressure and temperature and derivatives wrt pressure and temperature
-  virtual void rho_e_dpT(Real pressure,
-                         Real temperature,
-                         Real & rho,
-                         Real & drho_dp,
-                         Real & drho_dT,
-                         Real & e,
-                         Real & de_dp,
-                         Real & de_dT) const override;
-
   virtual Real mu_from_p_T(Real pressure, Real temperature) const override;
 
   virtual void
   mu_from_p_T(Real pressure, Real temperature, Real & mu, Real & dmu_dp, Real & dmu_dT) const override;
-
-  virtual void rho_mu(Real pressure, Real temperature, Real & rho, Real & mu) const override;
-
-  virtual void rho_mu_dpT(Real pressure,
-                          Real temperature,
-                          Real & rho,
-                          Real & drho_dp,
-                          Real & drho_dT,
-                          Real & mu,
-                          Real & dmu_dp,
-                          Real & dmu_dT) const override;
 
   /// Specific enthalpy (J/kg)
   virtual Real h_from_p_T(Real p, Real T) const override;
@@ -111,12 +90,6 @@ public:
   /// Specific enthalpy and its derivatives
   virtual void
   h_from_p_T(Real pressure, Real temperature, Real & h, Real & dh_dp, Real & dh_dT) const override;
-
-  /// Henry's law constant for dissolution in water
-  virtual Real henryConstant(Real temperature) const override;
-
-  /// Henry's law constant for dissolution in water and derivative wrt temperature
-  virtual void henryConstant_dT(Real temperature, Real & Kh, Real & dKh_dT) const override;
 
 protected:
   /// molar mass

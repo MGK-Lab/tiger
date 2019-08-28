@@ -21,32 +21,32 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERTHERMALSOURCEKERNELT_H
-#define TIGERTHERMALSOURCEKERNELT_H
+#include "TigerHydraulicOutflowH.h"
 
-#include "Kernel.h"
-
-class TigerThermalSourceKernelT;
-class Function;
+registerMooseObject("TigerApp", TigerHydraulicOutflowH);
 
 template <>
-InputParameters validParams<TigerThermalSourceKernelT>();
-
-class TigerThermalSourceKernelT : public Kernel
+InputParameters
+validParams<TigerHydraulicOutflowH>()
 {
-public:
-  TigerThermalSourceKernelT(const InputParameters & parameters);
+  InputParameters params = validParams<IntegratedBC>();
+  return params;
+}
 
-protected:
-  virtual Real computeQpResidual() override;
+TigerHydraulicOutflowH::TigerHydraulicOutflowH(const InputParameters & parameters)
+  : IntegratedBC(parameters),
+  _k_vis(getMaterialProperty<RankTwoTensor>("permeability_by_viscosity"))
+{
+}
 
-  const Real & _scale;
-  const Function & _function;
+Real
+TigerHydraulicOutflowH::computeQpResidual()
+{
+  return -_test[_i][_qp] * _k_vis[_qp] * _grad_u[_qp] * _normals[_qp];
+}
 
-  // imported props from materials
-  const MaterialProperty<Real> & _scale_factor;
-  const MaterialProperty<RealVectorValue> & _SUPG_p;
-  const MaterialProperty<bool> & _SUPG_ind;
-};
-
-#endif  //TIGERTHERMALSOURCEKERNELT_H
+Real
+TigerHydraulicOutflowH::computeQpJacobian()
+{
+  return -_test[_i][_qp] * _k_vis[_qp] * _grad_phi[_j][_qp] * _normals[_qp];
+}

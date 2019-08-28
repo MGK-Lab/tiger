@@ -50,7 +50,7 @@ private:
   // userdefined factor to manually modify upwinding coefficient
   Real _supg_scale;
   // userdefined velocity vector function for advection
-  Function * _vel_func;
+  const Function * _vel_func;
 
 protected:
   virtual void computeQpProperties() override;

@@ -21,32 +21,34 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERTHERMALSOURCEKERNELT_H
-#define TIGERTHERMALSOURCEKERNELT_H
+#ifndef TIGERHYDRAULICOUTFLOW_H
+#define TIGERHYDRAULICOUTFLOW_H
 
-#include "Kernel.h"
+#include "IntegratedBC.h"
+#include "RankTwoTensor.h"
 
-class TigerThermalSourceKernelT;
-class Function;
+class TigerHydraulicOutflowH;
 
 template <>
-InputParameters validParams<TigerThermalSourceKernelT>();
+InputParameters validParams<TigerHydraulicOutflowH>();
 
-class TigerThermalSourceKernelT : public Kernel
+/* The residual is simply -test*k*grad_u*normal which is the term
+ * you get from integration by parts.
+ *
+ * See also: Griffiths, David F. "The 'no boundary condition' outflow
+ * boundary condition.", International Journal for Numerical Methods
+ * in Fluids, vol. 24, no. 4, 1997, pp. 393-411.
+ */
+class TigerHydraulicOutflowH : public IntegratedBC
 {
 public:
-  TigerThermalSourceKernelT(const InputParameters & parameters);
+  TigerHydraulicOutflowH(const InputParameters & parameters);
 
 protected:
   virtual Real computeQpResidual() override;
+  virtual Real computeQpJacobian() override;
 
-  const Real & _scale;
-  const Function & _function;
-
-  // imported props from materials
-  const MaterialProperty<Real> & _scale_factor;
-  const MaterialProperty<RealVectorValue> & _SUPG_p;
-  const MaterialProperty<bool> & _SUPG_ind;
+  const MaterialProperty<RankTwoTensor> & _k_vis;
 };
 
-#endif  //TIGERTHERMALSOURCEKERNELT_H
+#endif // TIGERHYDRAULICOUTFLOW_H

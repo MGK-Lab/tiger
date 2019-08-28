@@ -21,21 +21,33 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERWATERFRACTURECODE_H
-#define TIGERWATERFRACTURECODE_H
+#pragma once
 
 #include "SinglePhaseFluidProperties.h"
 
-class TigerWaterFractureCode;
+class TigerBrine;
 
 template <>
-InputParameters validParams<TigerWaterFractureCode>();
+InputParameters validParams<TigerBrine>();
 
-class TigerWaterFractureCode : public SinglePhaseFluidProperties
+/**
+ * Brine fluid properties as a function of pressure (Pa),
+ * temperature (K) and NaCl molality
+ *
+ * Density from:
+ * Smith and Chapman, (1981), On the thermal effects of groundwater flow: 1.
+ * Regional scale systems, Journal of Geophysical Research
+ *
+ * Viscosity from:
+ * Phillips et al, A technical databook for geothermal energy utilization,
+ * LbL-12810 (1981)
+ */
+
+class TigerBrine : public SinglePhaseFluidProperties
 {
 public:
-  TigerWaterFractureCode(const InputParameters & parameters);
-  virtual ~TigerWaterFractureCode();
+  TigerBrine(const InputParameters & parameters);
+  virtual ~TigerBrine();
 
   /// Fluid name
   virtual std::string fluidName() const override;
@@ -79,31 +91,10 @@ public:
   virtual void
   e_from_p_T(Real pressure, Real temperature, Real & e, Real & de_dp, Real & de_dT) const override;
 
-  /// Density and internal energy from pressure and temperature and derivatives wrt pressure and temperature
-  virtual void rho_e_dpT(Real pressure,
-                         Real temperature,
-                         Real & rho,
-                         Real & drho_dp,
-                         Real & drho_dT,
-                         Real & e,
-                         Real & de_dp,
-                         Real & de_dT) const override;
-
   virtual Real mu_from_p_T(Real pressure, Real temperature) const override;
 
   virtual void
   mu_from_p_T(Real pressure, Real temperature, Real & mu, Real & dmu_dp, Real & dmu_dT) const override;
-
-  virtual void rho_mu(Real pressure, Real temperature, Real & rho, Real & mu) const override;
-
-  virtual void rho_mu_dpT(Real pressure,
-                          Real temperature,
-                          Real & rho,
-                          Real & drho_dp,
-                          Real & drho_dT,
-                          Real & mu,
-                          Real & dmu_dp,
-                          Real & dmu_dT) const override;
 
   /// Specific enthalpy (J/kg)
   virtual Real h_from_p_T(Real p, Real T) const override;
@@ -111,12 +102,6 @@ public:
   /// Specific enthalpy and its derivatives
   virtual void
   h_from_p_T(Real pressure, Real temperature, Real & h, Real & dh_dp, Real & dh_dT) const override;
-
-  /// Henry's law constant for dissolution in water
-  virtual Real henryConstant(Real temperature) const override;
-
-  /// Henry's law constant for dissolution in water and derivative wrt temperature
-  virtual void henryConstant_dT(Real temperature, Real & Kh, Real & dKh_dT) const override;
 
 protected:
   /// molar mass
@@ -140,11 +125,9 @@ protected:
   /// specific entropy
   const Real _specific_entropy;
 
-  /// Henry constant
-  const Real _henry_constant;
-
   /// Porepressure coefficient: enthalpy = internal_energy + porepressure / density * _pp_coeff
   const Real _pp_coeff;
-};
 
-#endif /* TIGERWATERFRACTURECODE_H */
+  /// molal concentration of NaCl
+  const Real _m;
+};
