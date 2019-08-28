@@ -3,16 +3,11 @@
   file = ex_hdr.msh
 []
 
-[GlobalParams]
-  fp_UO = water_uo
-  output_Pe_Cr_numbers = true
-[]
-
 [Modules]
   [./FluidProperties]
     [./water_uo]
-      type = SimpleFluidProperties
-      density0 = 1000
+      type = TigerWaterConst
+      density = 1000
       viscosity = 0.0002
       cp = 4200
       thermal_conductivity = 0.65
@@ -32,49 +27,71 @@
     permeability_type = isotropic
     k0 = '8.333333e-10'
   [../]
+  [./supg] # for outputing Pe_Cr_numbers needed
+    type = TigerSUPG
+    effective_length = min
+    supg_coeficient = optimal
+  [../]
+[]
+
+[GlobalParams]
+  pressure = pressure
+  conductivity_type = isotropic
+  mean_calculation_type = geometric
+  output_Pe_Cr_numbers = true
+  supg_uo = supg # for outputing Pe_Cr_numbers needed
 []
 
 [Materials]
-  [./matrix_h]
-    type = TigerRockMaterialH
-    kf_UO = matrix_uo1
-    scaling_factor = 300
+  [./fluid]
+    type = TigerFluidMaterial
+    fp_uo = water_uo
+    temperature = temperature
+  [../]
+  [./matrix_g]
+    type = TigerGeometryMaterial
     porosity = 0.01
+    scale_factor = 300
+    block = 'matrix'
+  [../]
+  [./matrix_h]
+    type = TigerHydraulicMaterialH
+    kf_uo = matrix_uo1
     compressibility = 1.0e-10
+    output_properties = 'darcy_velocity'
+    outputs = exodus
     block = 'matrix'
   [../]
   [./matrix_t]
-    type = TigerCoupledThermalMaterialTH
-    porosity = 0.01
-    scaling_factor = 1.0
-    conductivity_type = isotropic
-    mean_calculation_type = geometric
+    type = TigerThermalMaterialT
     lambda = 3
     density = 2600
     specific_heat = 950
-    pressure = pressure
-    has_supg = false
+    output_properties = 'thermal_peclet_number thermal_courant_number'
+    outputs = exodus
     block = 'matrix'
   [../]
+  [./fracture_g]
+    type = TigerGeometryMaterial
+    porosity = 1
+    scale_factor = 0.03
+    block = 'frac'
+  [../]
   [./fracure_h]
-    type = TigerRockMaterialH
-    kf_UO = fracture_uo1
-    porosity = 1.0
+    type = TigerHydraulicMaterialH
+    kf_uo = fracture_uo1
     compressibility = 4.0e-10
-    scaling_factor = 0.03
+    output_properties = 'darcy_velocity'
+    outputs = exodus
     block = 'frac'
   [../]
   [./fracture_t]
-    type = TigerCoupledThermalMaterialTH
-    porosity = 1.0
-    conductivity_type = isotropic
-    mean_calculation_type = geometric
+    type = TigerThermalMaterialT
     lambda = 3
-    scaling_factor = 0.0001
     density = 2600
     specific_heat = 950
-    has_supg = false
-    pressure = pressure
+    output_properties = 'thermal_peclet_number thermal_courant_number'
+    outputs = exodus
     block = 'frac'
   [../]
 []
@@ -90,106 +107,60 @@
     type =  DirichletBC
     variable = temperature
     boundary = circum
-    value = 200
+    value = 473.15
   [../]
   [./well_t]
     type =  DirichletBC
     variable = temperature
     boundary = inject
-    value = 70
-  [../]
-[]
-
-[AuxVariables]
-  [./vx]
-    family = MONOMIAL
-    order = CONSTANT
-  [../]
-  [./vy]
-    family = MONOMIAL
-    order = CONSTANT
-  [../]
-  [./pe]
-    family = MONOMIAL
-    order = CONSTANT
-  [../]
-  [./cr]
-    family = MONOMIAL
-    order = CONSTANT
-  [../]
-[]
-
-[AuxKernels]
-  [./vx_ker]
-    type = TigerDarcyVelocityComponent
-    gradient_variable = pressure
-    variable =  vx
-    component = x
-  [../]
-  [./vy_ker]
-    type = TigerDarcyVelocityComponent
-    gradient_variable = pressure
-    variable =  vy
-    component = y
-  [../]
-  [./pe_ker]
-    type = MaterialRealAux
-    property = 'peclet_number'
-    variable = pe
-  [../]
-  [./cr_ker]
-    type = MaterialRealAux
-    property = 'courant_number'
-    variable = cr
+    value = 343.15
   [../]
 []
 
 [Variables]
   [./pressure]
     initial_condition = 1e7
-    scaling = 1e9
+    scaling = 1e8
   [../]
   [./temperature]
-    initial_condition = 200
-    #scaling = 1e2
+    initial_condition = 473.15
   [../]
 []
 
 [DiracKernels]
   [./pump_in]
-    type = TigerPointSourceH
+    type = TigerHydraulicPointSourceH
     point = '175.0 250.0 0.0'
-    mass_flux = 1.0
+    mass_flux = -1.0
     variable = pressure
   [../]
   [./pump_out]
-    type = TigerPointSourceH
+    type = TigerHydraulicPointSourceH
     point = '325.0 250.0 0.0'
-    mass_flux = -1.0
+    mass_flux = 1.0
     variable = pressure
   [../]
 []
 
 [Kernels]
   [./H_diff]
-    type = TigerKernelH
+    type = TigerHydraulicKernelH
     variable = pressure
   [../]
   [./H_time]
-    type = TigerTimeDerivativeH
+    type = TigerHydraulicTimeKernelH
     variable = pressure
   [../]
   [./T_advect]
-    type = TigerAdvectionKernelTH
+    type = TigerThermalAdvectionKernelT
     variable = temperature
-    pressure_varible = pressure
   [../]
   [./T_diff]
-    type = TigerDiffusionKernelT
+    type = TigerThermalDiffusionKernelT
     variable = temperature
   [../]
   [./T_time]
-    type = TigerTimeDerivativeT
+    type = TigerThermalTimeKernelT
     variable = temperature
   [../]
 []
@@ -218,7 +189,12 @@
 
 [Executioner]
   type = Transient
-  num_steps = 300
+  [./TimeStepper]
+    type = IterationAdaptiveDT
+    dt = 3600
+    growth_factor = 2
+  [../]
+  dtmax = 31536000
   end_time = 946080000
   solve_type = NEWTON
 []

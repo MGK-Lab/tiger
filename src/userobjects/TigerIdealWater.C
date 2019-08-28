@@ -159,29 +159,6 @@ TigerIdealWater::e_from_p_T(
   de_dT = _cv;
 }
 
-void
-TigerIdealWater::rho_e_dpT(Real pressure,
-                                 Real temperature,
-                                 Real & rho,
-                                 Real & drho_dp,
-                                 Real & drho_dT,
-                                 Real & e,
-                                 Real & de_dp,
-                                 Real & de_dT) const
-{
-  Real density, ddensity_dp, ddensity_dT;
-  rho_from_p_T(pressure, temperature, density, ddensity_dp, ddensity_dT);
-  rho = density;
-  drho_dp = ddensity_dp;
-  drho_dT = ddensity_dT;
-
-  Real energy, denergy_dp, denergy_dT;
-  e_from_p_T(pressure, temperature, energy, denergy_dp, denergy_dT);
-  e = energy;
-  de_dp = denergy_dp;
-  de_dT = denergy_dT;
-}
-
 Real TigerIdealWater::mu_from_p_T(Real /*pressure*/, Real temperature) const
 {
   return _viscosity;
@@ -194,27 +171,6 @@ TigerIdealWater::mu_from_p_T(
   mu = this->mu_from_p_T(pressure, temperature);
   dmu_dp = 0.0;
   dmu_dT = 0.0;
-}
-
-void
-TigerIdealWater::rho_mu(Real pressure, Real temperature, Real & rho, Real & mu) const
-{
-  rho = this->rho_from_p_T(pressure, temperature);
-  mu = this->mu_from_p_T(pressure, temperature);
-}
-
-void
-TigerIdealWater::rho_mu_dpT(Real pressure,
-                                  Real temperature,
-                                  Real & rho,
-                                  Real & drho_dp,
-                                  Real & drho_dT,
-                                  Real & mu,
-                                  Real & dmu_dp,
-                                  Real & dmu_dT) const
-{
-  this->rho_from_p_T(pressure, temperature, rho, drho_dp, drho_dT);
-  this->mu_from_p_T(pressure, temperature, mu, dmu_dp, dmu_dT);
 }
 
 Real
@@ -234,13 +190,4 @@ TigerIdealWater::h_from_p_T(
 
   dh_dp = _pp_coeff / density - _pp_coeff * pressure * ddensity_dp / density / density;
   dh_dT = _cv - _pp_coeff * pressure * ddensity_dT / density / density;
-}
-
-Real TigerIdealWater::henryConstant(Real /*temperature*/) const { return _henry_constant; }
-
-void
-TigerIdealWater::henryConstant_dT(Real /*temperature*/, Real & Kh, Real & dKh_dT) const
-{
-  Kh = _henry_constant;
-  dKh_dT = 0.0;
 }

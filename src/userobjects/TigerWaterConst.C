@@ -44,8 +44,6 @@ validParams<TigerWaterConst>()
         "Constant thermal conductivity (W/m/K)");
   params.addParam<Real>("specific_entropy", 300.0,
         "Constant specific entropy (J/kg/K)");
-  params.addParam<Real>("henry_constant", 0.0,
-        "Henry constant for dissolution in water");
   params.addParam<Real>("porepressure_coefficient", 1.0,
         "The enthalpy is internal_energy + P / density * "
         "porepressure_coefficient.  Physically this should be 1.0, "
@@ -67,7 +65,6 @@ TigerWaterConst::TigerWaterConst(const InputParameters & parameters)
     _bulk_modulus(getParam<Real>("bulk_modulus")),
     _thermal_conductivity(getParam<Real>("thermal_conductivity")),
     _specific_entropy(getParam<Real>("specific_entropy")),
-    _henry_constant(getParam<Real>("henry_constant")),
     _pp_coeff(getParam<Real>("porepressure_coefficient")),
     _viscosity(getParam<Real>("viscosity")),
     _density(getParam<Real>("density"))
@@ -152,29 +149,6 @@ TigerWaterConst::e_from_p_T(
   de_dT = _cv;
 }
 
-void
-TigerWaterConst::rho_e_dpT(Real pressure,
-                                 Real temperature,
-                                 Real & rho,
-                                 Real & drho_dp,
-                                 Real & drho_dT,
-                                 Real & e,
-                                 Real & de_dp,
-                                 Real & de_dT) const
-{
-  Real density, ddensity_dp, ddensity_dT;
-  rho_from_p_T(pressure, temperature, density, ddensity_dp, ddensity_dT);
-  rho = density;
-  drho_dp = ddensity_dp;
-  drho_dT = ddensity_dT;
-
-  Real energy, denergy_dp, denergy_dT;
-  e_from_p_T(pressure, temperature, energy, denergy_dp, denergy_dT);
-  e = energy;
-  de_dp = denergy_dp;
-  de_dT = denergy_dT;
-}
-
 Real TigerWaterConst::mu_from_p_T(Real /*pressure*/, Real temperature) const
 {
   return _viscosity;
@@ -187,27 +161,6 @@ TigerWaterConst::mu_from_p_T(
   mu = this->mu_from_p_T(pressure, temperature);
   dmu_dp = 0.0;
   dmu_dT = 0.0;
-}
-
-void
-TigerWaterConst::rho_mu(Real pressure, Real temperature, Real & rho, Real & mu) const
-{
-  rho = this->rho_from_p_T(pressure, temperature);
-  mu = this->mu_from_p_T(pressure, temperature);
-}
-
-void
-TigerWaterConst::rho_mu_dpT(Real pressure,
-                                  Real temperature,
-                                  Real & rho,
-                                  Real & drho_dp,
-                                  Real & drho_dT,
-                                  Real & mu,
-                                  Real & dmu_dp,
-                                  Real & dmu_dT) const
-{
-  this->rho_from_p_T(pressure, temperature, rho, drho_dp, drho_dT);
-  this->mu_from_p_T(pressure, temperature, mu, dmu_dp, dmu_dT);
 }
 
 Real
@@ -227,13 +180,4 @@ TigerWaterConst::h_from_p_T(
 
   dh_dp = _pp_coeff / density - _pp_coeff * pressure * ddensity_dp / density / density;
   dh_dT = _cv - _pp_coeff * pressure * ddensity_dT / density / density;
-}
-
-Real TigerWaterConst::henryConstant(Real /*temperature*/) const { return _henry_constant; }
-
-void
-TigerWaterConst::henryConstant_dT(Real /*temperature*/, Real & Kh, Real & dKh_dT) const
-{
-  Kh = _henry_constant;
-  dKh_dT = 0.0;
 }

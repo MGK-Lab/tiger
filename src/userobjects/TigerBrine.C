@@ -21,13 +21,13 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerWaterFractureCode.h"
+#include "TigerBrine.h"
 
-registerMooseObject("FluidPropertiesApp", TigerWaterFractureCode);
+registerMooseObject("FluidPropertiesApp", TigerBrine);
 
 template <>
 InputParameters
-validParams<TigerWaterFractureCode>()
+validParams<TigerBrine>()
 {
   InputParameters params = validParams<SinglePhaseFluidProperties>();
   params.addParam<Real>("molar_mass", 1.8E-2,
@@ -46,8 +46,6 @@ validParams<TigerWaterFractureCode>()
         "Constant thermal conductivity (W/m/K)");
   params.addParam<Real>("specific_entropy", 300.0,
         "Constant specific entropy (J/kg/K)");
-  params.addParam<Real>("henry_constant", 0.0,
-        "Henry constant for dissolution in water");
   params.addParam<Real>("porepressure_coefficient", 1.0,
         "The enthalpy is internal_energy + P / density * "
         "porepressure_coefficient.  Physically this should be 1.0, "
@@ -57,7 +55,7 @@ validParams<TigerWaterFractureCode>()
   return params;
 }
 
-TigerWaterFractureCode::TigerWaterFractureCode(const InputParameters & parameters)
+TigerBrine::TigerBrine(const InputParameters & parameters)
   : SinglePhaseFluidProperties(parameters),
     _molar_mass(getParam<Real>("molar_mass")),
     _thermal_expansion(getParam<Real>("thermal_expansion")),
@@ -66,48 +64,47 @@ TigerWaterFractureCode::TigerWaterFractureCode(const InputParameters & parameter
     _bulk_modulus(getParam<Real>("bulk_modulus")),
     _thermal_conductivity(getParam<Real>("thermal_conductivity")),
     _specific_entropy(getParam<Real>("specific_entropy")),
-    _henry_constant(getParam<Real>("henry_constant")),
     _pp_coeff(getParam<Real>("porepressure_coefficient")),
     _m(getParam<Real>("NaCl_concentration"))
 {
 }
 
-TigerWaterFractureCode::~TigerWaterFractureCode() {}
+TigerBrine::~TigerBrine() {}
 
 std::string
-TigerWaterFractureCode::fluidName() const
+TigerBrine::fluidName() const
 {
   return "Water properties based on FRACture code";
 }
 
 Real
-TigerWaterFractureCode::molarMass() const
+TigerBrine::molarMass() const
 {
   return _molar_mass;
 }
 
-Real TigerWaterFractureCode::beta_from_p_T(Real /*pressure*/, Real /*temperature*/) const
+Real TigerBrine::beta_from_p_T(Real /*pressure*/, Real /*temperature*/) const
 {
   return _thermal_expansion;
 }
 
-Real TigerWaterFractureCode::cp_from_p_T(Real /*pressure*/, Real /*temperature*/) const { return _cp; }
+Real TigerBrine::cp_from_p_T(Real /*pressure*/, Real /*temperature*/) const { return _cp; }
 
-Real TigerWaterFractureCode::cv_from_p_T(Real /*pressure*/, Real /*temperature*/) const { return _cv; }
+Real TigerBrine::cv_from_p_T(Real /*pressure*/, Real /*temperature*/) const { return _cv; }
 
 Real
-TigerWaterFractureCode::c_from_p_T(Real pressure, Real temperature) const
+TigerBrine::c_from_p_T(Real pressure, Real temperature) const
 {
   return std::sqrt(_bulk_modulus / rho_from_p_T(pressure, temperature));
 }
 
-Real TigerWaterFractureCode::k_from_p_T(Real /*pressure*/, Real /*temperature*/) const
+Real TigerBrine::k_from_p_T(Real /*pressure*/, Real /*temperature*/) const
 {
   return _thermal_conductivity;
 }
 
 void
-TigerWaterFractureCode::k_from_p_T(
+TigerBrine::k_from_p_T(
     Real /*pressure*/, Real /*temperature*/, Real & k, Real & dk_dp, Real & dk_dT) const
 {
   k = _thermal_conductivity;
@@ -115,13 +112,13 @@ TigerWaterFractureCode::k_from_p_T(
   dk_dT = 0;
 }
 
-Real TigerWaterFractureCode::s_from_p_T(Real /*pressure*/, Real /*temperature*/) const
+Real TigerBrine::s_from_p_T(Real /*pressure*/, Real /*temperature*/) const
 {
   return _specific_entropy;
 }
 
 Real
-TigerWaterFractureCode::rho_from_p_T(Real pressure, Real temperature) const
+TigerBrine::rho_from_p_T(Real pressure, Real temperature) const
 {
   if (pressure <0.0 || pressure > 5e7 || temperature <273.15)
     mooseError("The pressure field has a negative value so the EOS is unable to calculate density.\n");
@@ -130,7 +127,7 @@ TigerWaterFractureCode::rho_from_p_T(Real pressure, Real temperature) const
 }
 
 void
-TigerWaterFractureCode::rho_from_p_T(
+TigerBrine::rho_from_p_T(
     Real pressure, Real temperature, Real & rho, Real & drho_dp, Real & drho_dT) const
 {
   rho = this->rho_from_p_T(pressure, temperature);
@@ -140,13 +137,13 @@ TigerWaterFractureCode::rho_from_p_T(
 }
 
 Real
-TigerWaterFractureCode::e_from_p_T(Real /*pressure*/, Real temperature) const
+TigerBrine::e_from_p_T(Real /*pressure*/, Real temperature) const
 {
   return _cv * temperature;
 }
 
 void
-TigerWaterFractureCode::e_from_p_T(
+TigerBrine::e_from_p_T(
     Real pressure, Real temperature, Real & e, Real & de_dp, Real & de_dT) const
 {
   e = this->e_from_p_T(pressure, temperature);
@@ -154,36 +151,13 @@ TigerWaterFractureCode::e_from_p_T(
   de_dT = _cv;
 }
 
-void
-TigerWaterFractureCode::rho_e_dpT(Real pressure,
-                                 Real temperature,
-                                 Real & rho,
-                                 Real & drho_dp,
-                                 Real & drho_dT,
-                                 Real & e,
-                                 Real & de_dp,
-                                 Real & de_dT) const
-{
-  Real density, ddensity_dp, ddensity_dT;
-  rho_from_p_T(pressure, temperature, density, ddensity_dp, ddensity_dT);
-  rho = density;
-  drho_dp = ddensity_dp;
-  drho_dT = ddensity_dT;
-
-  Real energy, denergy_dp, denergy_dT;
-  e_from_p_T(pressure, temperature, energy, denergy_dp, denergy_dT);
-  e = energy;
-  de_dp = denergy_dp;
-  de_dT = denergy_dT;
-}
-
-Real TigerWaterFractureCode::mu_from_p_T(Real /*pressure*/, Real temperature) const
+Real TigerBrine::mu_from_p_T(Real /*pressure*/, Real temperature) const
 {
   return 2.4e-5*std::pow(10.0, 248.37/(temperature-140));
 }
 
 void
-TigerWaterFractureCode::mu_from_p_T(
+TigerBrine::mu_from_p_T(
     Real pressure, Real temperature, Real & mu, Real & dmu_dp, Real & dmu_dT) const
 {
   mu = this->mu_from_p_T(pressure, temperature);
@@ -191,35 +165,14 @@ TigerWaterFractureCode::mu_from_p_T(
   dmu_dT = mu*-571.893/std::pow((temperature-140),2.0);
 }
 
-void
-TigerWaterFractureCode::rho_mu(Real pressure, Real temperature, Real & rho, Real & mu) const
-{
-  rho = this->rho_from_p_T(pressure, temperature);
-  mu = this->mu_from_p_T(pressure, temperature);
-}
-
-void
-TigerWaterFractureCode::rho_mu_dpT(Real pressure,
-                                  Real temperature,
-                                  Real & rho,
-                                  Real & drho_dp,
-                                  Real & drho_dT,
-                                  Real & mu,
-                                  Real & dmu_dp,
-                                  Real & dmu_dT) const
-{
-  this->rho_from_p_T(pressure, temperature, rho, drho_dp, drho_dT);
-  this->mu_from_p_T(pressure, temperature, mu, dmu_dp, dmu_dT);
-}
-
 Real
-TigerWaterFractureCode::h_from_p_T(Real pressure, Real temperature) const
+TigerBrine::h_from_p_T(Real pressure, Real temperature) const
 {
   return e_from_p_T(pressure, temperature) + _pp_coeff * pressure / rho_from_p_T(pressure, temperature);
 }
 
 void
-TigerWaterFractureCode::h_from_p_T(
+TigerBrine::h_from_p_T(
     Real pressure, Real temperature, Real & h, Real & dh_dp, Real & dh_dT) const
 {
   h = this->h_from_p_T(pressure, temperature);
@@ -229,13 +182,4 @@ TigerWaterFractureCode::h_from_p_T(
 
   dh_dp = _pp_coeff / density - _pp_coeff * pressure * ddensity_dp / density / density;
   dh_dT = _cv - _pp_coeff * pressure * ddensity_dT / density / density;
-}
-
-Real TigerWaterFractureCode::henryConstant(Real /*temperature*/) const { return _henry_constant; }
-
-void
-TigerWaterFractureCode::henryConstant_dT(Real /*temperature*/, Real & Kh, Real & dKh_dT) const
-{
-  Kh = _henry_constant;
-  dKh_dT = 0.0;
 }
