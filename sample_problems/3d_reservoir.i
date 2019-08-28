@@ -16,27 +16,6 @@
   [../]
 []
 
-# [Adaptivity]
-#  max_h_level = 2
-#  initial_marker = error_frac
-#  marker = error_frac
-#  cycles_per_step = 2
-#  [./Markers]
-#    [./error_frac]
-#      indicator = ind
-#      type = ErrorFractionMarker
-#      refine = 0.7
-#      coarsen = 0.1
-#    [../]
-#  [../]
-#  [./Indicators]
-#    [./ind]
-#      type = GradientJumpIndicator
-#      variable = temperature
-#    [../]
-#  [../]
-# []
-
 [Modules]
   [./FluidProperties]
     [./water_uo]
@@ -45,7 +24,6 @@
     [../]
   [../]
 []
-
 
 [UserObjects]
   [./ut_uo]
@@ -73,109 +51,135 @@
     permeability_type = isotropic
     k0 = '1.0e-5'
   [../]
+  [./supg_w]
+    type = TigerSUPG
+    effective_length = min
+    supg_coeficient = transient_tezduyar
+  [../]
+  [./supg_f]
+    type = TigerSUPG
+    effective_length = average
+    supg_coeficient = transient_tezduyar
+  [../]
+  [./supg_m]
+    type = TigerSUPG
+    effective_length = directional_average
+    supg_coeficient = transient_tezduyar
+  [../]
 []
 
 [GlobalParams]
-  fp_UO = water_uo
+  pressure = pressure
+  conductivity_type = isotropic
+  mean_calculation_type = geometric
+  has_supg = true
   has_gravity = true
-  output_Pe_Cr_numbers = true
 []
 
 [Materials]
-  [./ut_h]
-    type = TigerRockMaterialH
-    kf_UO = ut_uo
+  [./fluid]
+    type = TigerFluidMaterial
+    fp_uo = water_uo
+    temperature = temperature
+  [../]
+  [./ut_g]
+    type = TigerGeometryMaterial
     porosity = 0.1
+    block = unit_top
+  [../]
+  [./ub_g]
+    type = TigerGeometryMaterial
+    porosity = 0.05
+    block = unit_bottom
+  [../]
+  [./fv_g]
+    type = TigerGeometryMaterial
+    scale_factor = 0.01
+    porosity = 1
+    block = frac_vertical
+  [../]
+  [./fi_g]
+    type = TigerGeometryMaterial
+    scale_factor = 0.01
+    porosity = 1
+    block = frac_inclined
+  [../]
+  [./w_g]
+    type = TigerGeometryMaterial
+    scale_factor = 0.108
+    porosity = 1
+    block = 'well_vertical well_inclined'
+  [../]
+  [./ut_h]
+    type = TigerHydraulicMaterialH
+    kf_uo = ut_uo
     compressibility = 1.0e-10
+    output_properties = 'darcy_velocity'
+    outputs = exodus
     block = unit_top
   [../]
   [./ub_h]
-    type = TigerRockMaterialH
-    kf_UO = ub_uo
-    porosity = 0.05
+    type = TigerHydraulicMaterialH
+    kf_uo = ub_uo
     compressibility = 1.0e-10
+    output_properties = 'darcy_velocity'
+    outputs = exodus
     block = unit_bottom
   [../]
   [./fv_h]
-    type = TigerRockMaterialH
-    scaling_factor = 0.01
-    kf_UO = fv_uo
-    porosity = 1
+    type = TigerHydraulicMaterialH
+    kf_uo = fv_uo
     compressibility = 4.0e-10
+    output_properties = 'darcy_velocity'
+    outputs = exodus
     block = frac_vertical
   [../]
   [./fi_h]
-    type = TigerRockMaterialH
-    scaling_factor = 0.01
-    kf_UO = fi_uo
-    porosity = 1
+    type = TigerHydraulicMaterialH
+    kf_uo = fi_uo
     compressibility = 4.0e-10
+    output_properties = 'darcy_velocity'
+    outputs = exodus
     block = frac_inclined
   [../]
   [./w_h]
-    type = TigerRockMaterialH
-    scaling_factor = 0.108
-    kf_UO = w_uo
-    porosity = 1
+    type = TigerHydraulicMaterialH
+    kf_uo = w_uo
     compressibility = 4.0e-10
+    output_properties = 'darcy_velocity'
+    outputs = exodus
     block = 'well_vertical well_inclined'
   [../]
   [./ut_t]
-    type = TigerCoupledThermalMaterialTH
-    porosity = 0.1
-    conductivity_type = isotropic
-    mean_calculation_type = geometric
+    type = TigerThermalMaterialT
     lambda = 2
     density = 2600
     specific_heat = 950
-    pressure = pressure
-    has_supg = true
-    supg_eff_length = directional_average
-    supg_coeficient = transient_tezduyar
+    supg_uo = supg_m
     block = unit_top
   [../]
   [./ub_t]
-    type = TigerCoupledThermalMaterialTH
-    porosity = 0.05
-    conductivity_type = isotropic
-    mean_calculation_type = geometric
+    type = TigerThermalMaterialT
     lambda = 3
     density = 2600
     specific_heat = 950
-    pressure = pressure
-    has_supg = true
-    supg_eff_length = directional_average
-    supg_coeficient = transient_tezduyar
+    supg_uo = supg_m
     block = unit_bottom
   [../]
   [./f_t]
-    type = TigerCoupledThermalMaterialTH
-    porosity = 1.0
-    conductivity_type = isotropic
-    mean_calculation_type = geometric
+    type = TigerThermalMaterialT
     lambda = 3
-    scaling_factor = 0.01
     density = 2600
     specific_heat = 950
-    pressure = pressure
-    has_supg = true
-    supg_eff_length = average
-    supg_coeficient = transient_tezduyar
+    supg_uo = supg_f
     block = 'frac_vertical frac_inclined'
   [../]
   [./w_t]
-    type = TigerCoupledThermalMaterialTH
-    porosity = 1.0
-    conductivity_type = isotropic
-    mean_calculation_type = geometric
+    type = TigerThermalMaterialT
     lambda = 3
-    scaling_factor = 0.108
     density = 2600
     specific_heat = 950
-    pressure = pressure
-    has_supg = true
-    supg_eff_length = min
-    supg_coeficient = transient_tezduyar
+    supg_uo = supg_w
     block = 'well_vertical well_inclined'
   [../]
 []
@@ -191,60 +195,16 @@
     type =  DirichletBC
     variable = temperature
     boundary = 'back front left right bottom top'
-    value = 200
+    value = 473.15
   [../]
   [./well_t]
     type =  DirichletBC
     variable = temperature
     boundary = inject
-    value = 70
+    value = 343.15
   [../]
 []
 
-[AuxVariables]
-  [./vx]
-    family = MONOMIAL
-    order = CONSTANT
-  [../]
-  [./vy]
-    family = MONOMIAL
-    order = CONSTANT
-  [../]
-  [./vz]
-    family = MONOMIAL
-    order = CONSTANT
-  [../]
-  [./pe]
-    family = MONOMIAL
-    order = CONSTANT
-  [../]
-[]
-
-[AuxKernels]
-  [./vx_ker]
-    type = TigerDarcyVelocityComponent
-    gradient_variable = pressure
-    variable =  vx
-    component = x
-  [../]
-  [./vy_ker]
-    type = TigerDarcyVelocityComponent
-    gradient_variable = pressure
-    variable =  vy
-    component = y
-  [../]
-  [./vz_ker]
-    type = TigerDarcyVelocityComponent
-    gradient_variable = pressure
-    variable =  vz
-    component = z
-  [../]
-  [./pe_ker]
-    type = MaterialRealAux
-    property = 'peclet_number'
-    variable = pe
-  [../]
-[]
 
 [Functions]
   [./hydrostatic]
@@ -253,7 +213,7 @@
   [../]
   [./temp]
     type = ParsedFunction
-    value = 'if(x<-299.9 & x>-300.1 & y<100.1 & y>99.9 & z<-1899.9 & z>-1900.1, 70, 200)'
+    value = 'if(x<-299.9 & x>-300.1 & y<100.1 & y>99.9 & z<-1899.9 & z>-1900.1, 343.15, 473.15)'
   [../]
 []
 
@@ -272,22 +232,22 @@
 
 [Variables]
   [./pressure]
-    scaling = 1e7
+    scaling = 1e5
   [../]
   [./temperature]
-    #initial_condition = 200
+    scaling = 1e-3
   [../]
 []
 
 [DiracKernels]
   [./pump_in]
-    type = TigerPointSourceH
+    type = TigerHydraulicPointSourceH
     point = '-300.0 100.0 -1900.0'
     mass_flux = 50.0
     variable = pressure
   [../]
   [./pump_out]
-    type = TigerPointSourceH
+    type = TigerHydraulicPointSourceH
     point = '300.0 200.0 -1900.0'
     mass_flux = -50.0
     variable = pressure
@@ -296,30 +256,29 @@
 
 [Kernels]
   [./H_diff]
-    type = TigerKernelH
+    type = TigerHydraulicKernelH
     variable = pressure
   [../]
   [./H_time]
-    type = TigerTimeDerivativeH
+    type = TigerHydraulicTimeKernelH
     variable = pressure
   [../]
-  [./TH_advect]
-    type = TigerAdvectionKernelTH
+  [./T_advect]
+    type = TigerThermalAdvectionKernelT
     variable = temperature
-    pressure_varible = pressure
   [../]
   [./T_diff]
-    type = TigerDiffusionKernelT
+    type = TigerThermalDiffusionKernelT
     variable = temperature
   [../]
   [./T_time]
-    type = TigerTimeDerivativeT
+    type = TigerThermalTimeKernelT
     variable = temperature
   [../]
 []
 
 [Preconditioning]
-  active = 'p4'
+  active = 'p1'
   [./p1]
     type = SMP
     full = true
@@ -366,28 +325,22 @@
 
 [Executioner]
   type = Transient
-  end_time = 946080000
-  dtmax = 31449600
-  #dt = 2.59e5
-  solve_type = NEWTON
-  l_tol = 1e-10
-  l_max_its = 50
-  nl_rel_tol = 1e-7
-  #nl_abs_tol = 1
-  nl_max_its = 50
-  #scheme = crank-nicolson
+  l_tol = 1e-08
+  nl_rel_tol = 1e-8
+  nl_abs_tol = 1e-10
+  l_max_its = 20
+  nl_max_its = 20
   [./TimeStepper]
-    type = SolutionTimeAdaptiveDT
-    dt = 600
-    percent_change = 0.5
+    type = IterationAdaptiveDT
+    dt = 3600
+    growth_factor = 10
   [../]
+  dtmax = 31536000
+  end_time = 946080000
+  solve_type = NEWTON
 []
 
 [Outputs]
-  [./maz]
-    type = Exodus
-    file_base = 3d_egs/3d_egs
-  [../]
-  print_linear_residuals = true
-
+  exodus = true
+  print_linear_residuals = false
 []
