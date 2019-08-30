@@ -132,8 +132,8 @@ TigerBrine::rho_from_p_T(
 {
   rho = this->rho_from_p_T(pressure, temperature);
   Real _a = -9.9559*std::exp(-4.539e-3*_m) + 7.0845*std::exp(-1.638e-4*(temperature-273.15))+3.909*std::exp(2.551e-10*pressure);
-  drho_dp = (10.128163 - 17.501134*_a + 7.989321*_a*_a)*9.971859e-7*std::exp(2.551e-10*pressure);
-  drho_dT = -(10.128163 - 17.501134*_a + 7.989321*_a*_a)*1.1604411*std::exp(-1.638e-4*(temperature-273.15));
+  drho_dp = (10.128163 - 17.501134*_a + 7.989321*_a*_a)*9.971859e-10*std::exp(2.551e-10*pressure);
+  drho_dT = (10.128163 - 17.501134*_a + 7.989321*_a*_a)*-1.1604411e-3*std::exp(-1.638e-4*(temperature-273.15));
 }
 
 Real
