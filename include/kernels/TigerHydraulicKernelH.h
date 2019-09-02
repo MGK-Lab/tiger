@@ -40,14 +40,18 @@ public:
 protected:
   virtual Real computeQpResidual() override;
   virtual Real computeQpJacobian() override;
+  virtual Real computeQpOffDiagJacobian(unsigned int jvar) override;
 
   const MaterialProperty<Real> & _scale_factor;
   const MaterialProperty<RankTwoTensor> & _k_vis;
   const MaterialProperty<Real> & _rho_f;
   const MaterialProperty<Real> & _drho_dp_f;
+  const MaterialProperty<Real> & _drho_dT_f;
   const MaterialProperty<Real> & _mu_f;
   const MaterialProperty<Real> & _dmu_dp_f;
+  const MaterialProperty<Real> & _dmu_dT_f;
   const MaterialProperty<RealVectorValue> & _g;
+  unsigned int _temperature_var;
 };
 
 #endif // TIGERHYDRAULICKERNELH_H
