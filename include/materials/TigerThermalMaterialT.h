@@ -79,6 +79,8 @@ protected:
   MaterialProperty<Real> & _TimeKernelT;
   // derivative of thermal time kernel coefficient wrt temperature
   MaterialProperty<Real> & _dTimeKernelT_dT;
+  // derivative of thermal time kernel coefficient wrt pressure
+  MaterialProperty<Real> & _dTimeKernelT_dp;
   // indicator to inform kernels for considering upwinding
   MaterialProperty<bool> & _SUPG_ind;
   // indicator to inform kernels for considering derivative of darcy velocity
@@ -97,6 +99,7 @@ protected:
   const MaterialProperty<Real> & _cp_f;
   const MaterialProperty<Real> & _lambda_f;
   const MaterialProperty<Real> & _drho_dT_f;
+  const MaterialProperty<Real> & _drho_dp_f;
 
   // imported darcy velocity from TigerHydraulicMaterial
   const MaterialProperty<RealVectorValue> * _dv;

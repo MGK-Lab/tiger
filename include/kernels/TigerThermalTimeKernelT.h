@@ -39,13 +39,16 @@ public:
 protected:
   virtual Real computeQpResidual() override;
   virtual Real computeQpJacobian() override;
+  virtual Real computeQpOffDiagJacobian(unsigned int jvar) override;
 
   // imported props from materials
   const MaterialProperty<Real> & _scale_factor;
   const MaterialProperty<Real> & _TimeKernelT;
   const MaterialProperty<Real> & _dTimeKernelT_dT;
+  const MaterialProperty<Real> & _dTimeKernelT_dp;
   const MaterialProperty<RealVectorValue> & _SUPG_p;
   const MaterialProperty<bool> & _SUPG_ind;
+  unsigned int _pressure_var;
 };
 
 #endif // TIGERTHERMALTIMEKERNELT_H
