@@ -80,6 +80,7 @@ TigerThermalMaterialT::TigerThermalMaterialT(const InputParameters & parameters)
     _lambda_sf(declareProperty<RankTwoTensor>("thermal_conductivity_mixture")),
     _TimeKernelT(declareProperty<Real>("TimeKernel_T")),
     _dTimeKernelT_dT(declareProperty<Real>("dTimeKernelT_dT")),
+    _dTimeKernelT_dp(declareProperty<Real>("dTimeKernelT_dp")),
     _SUPG_ind(declareProperty<bool>("thermal_supg_indicator")),
     _av_ind(declareProperty<bool>("thermal_av_dv_indicator")),
     _av(declareProperty<RealVectorValue>("thermal_advection_velocity")),
@@ -89,7 +90,8 @@ TigerThermalMaterialT::TigerThermalMaterialT(const InputParameters & parameters)
     _rho_f(getMaterialProperty<Real>("fluid_density")),
     _cp_f(getMaterialProperty<Real>("fluid_specific_heat")),
     _lambda_f(getMaterialProperty<Real>("fluid_thermal_conductivity")),
-    _drho_dT_f(getMaterialProperty<Real>("fluid_drho_dT"))
+    _drho_dT_f(getMaterialProperty<Real>("fluid_drho_dT")),
+    _drho_dp_f(getMaterialProperty<Real>("fluid_drho_dp"))
 {
   _Pe = (_has_PeCr || _has_supg) ?
               &declareProperty<Real>("thermal_peclet_number") : NULL;
@@ -106,8 +108,22 @@ TigerThermalMaterialT::TigerThermalMaterialT(const InputParameters & parameters)
 void
 TigerThermalMaterialT::computeQpProperties()
 {
-  _TimeKernelT[_qp] = (1.0 - _n[_qp]) * _rho0 * _cp0 + _rho_f[_qp] * _cp_f[_qp] * _n[_qp];
-  _dTimeKernelT_dT[_qp] = _drho_dT_f[_qp] * _cp_f[_qp] * _n[_qp];
+  Real rho_m = _n[_qp] * _rho_f[_qp] + (1.0 - _n[_qp]) * _rho0;
+  Real mass_frac;
+  if (_n[_qp] ==0.0 || _n[_qp] == 1.0)
+    mass_frac =  _n[_qp];
+  else
+  {
+    if ((_rho0 - _rho_f[_qp]) == 0.0 || rho_m == 0.0)
+      mooseError("Rock density and fluid density are either equal or zero in Thermal Material");
+    else
+      mass_frac = (_rho0 - rho_m) * _rho_f[_qp] / rho_m / (_rho0 - _rho_f[_qp]);
+  }
+  Real c_p_m = mass_frac * _cp_f[_qp] + (1.0 - mass_frac) * _cp0;
+
+  _TimeKernelT[_qp] = rho_m * c_p_m;
+  _dTimeKernelT_dT[_qp] = _n[_qp] * _drho_dT_f[_qp] * c_p_m;
+  _dTimeKernelT_dp[_qp] = _n[_qp] * _drho_dp_f[_qp] * c_p_m;
 
   switch (_mean)
   {

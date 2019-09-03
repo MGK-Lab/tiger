@@ -30,16 +30,21 @@ InputParameters
 validParams<TigerThermalTimeKernelT>()
 {
   InputParameters params = validParams<TimeDerivative>();
+
+  params.addCoupledVar("pressure", 0 ,"Pore pressure nonlinear variable");
+
   return params;
 }
 
 TigerThermalTimeKernelT::TigerThermalTimeKernelT(const InputParameters & parameters)
   : TimeDerivative(parameters),
-    _scale_factor(getMaterialProperty<Real>("scale_factor")),
-    _TimeKernelT(getMaterialProperty<Real>("TimeKernel_T")),
-    _dTimeKernelT_dT(getMaterialProperty<Real>("dTimeKernelT_dT")),
-    _SUPG_p(getMaterialProperty<RealVectorValue>("thermal_petrov_supg_p_function")),
-    _SUPG_ind(getMaterialProperty<bool>("thermal_supg_indicator"))
+  _scale_factor(getMaterialProperty<Real>("scale_factor")),
+  _TimeKernelT(getMaterialProperty<Real>("TimeKernel_T")),
+  _dTimeKernelT_dT(getMaterialProperty<Real>("dTimeKernelT_dT")),
+  _dTimeKernelT_dp(getMaterialProperty<Real>("dTimeKernelT_dp")),
+  _SUPG_p(getMaterialProperty<RealVectorValue>("thermal_petrov_supg_p_function")),
+  _SUPG_ind(getMaterialProperty<bool>("thermal_supg_indicator")),
+  _pressure_var(coupled("pressure"))
 {
 }
 
@@ -72,4 +77,22 @@ TigerThermalTimeKernelT::computeQpJacobian()
 
   return j;
 }
-// offDia Jac can be add because of _TimeKernelT[_qp]
+
+Real
+TigerThermalTimeKernelT::computeQpOffDiagJacobian(unsigned int jvar)
+{
+  Real test = 0.0 , j = 0.0;
+
+  if (jvar == _pressure_var)
+  {
+    if (_SUPG_ind[_qp])
+      test = _test[_i][_qp] + _SUPG_p[_qp] * _grad_test[_i][_qp];
+    else
+      test = _test[_i][_qp];
+
+      j  = _dTimeKernelT_dp[_qp] * _phi[_j][_qp] * _u_dot[_qp];
+      j *= _scale_factor[_qp] * test;
+  }
+
+  return j;
+}

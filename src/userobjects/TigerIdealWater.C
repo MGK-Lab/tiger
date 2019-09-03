@@ -50,8 +50,6 @@ validParams<TigerIdealWater>()
         "The enthalpy is internal_energy + P / density * "
         "porepressure_coefficient.  Physically this should be 1.0, "
         "but analytic solutions are simplified when it is zero");
-  params.addParam<Real>("viscosity", 1.0E-3,
-        "Constant dynamic viscosity (Pa.s)");
   params.addParam<Real>("reference_density", 998.29,
         "Density at the reference pressure and temperature (kg/m^3)");
   params.addParam<Real>("reference_temperature", 293.15,
@@ -59,7 +57,7 @@ validParams<TigerIdealWater>()
   params.addParam<Real>("reference_pressure", 101325,
         "Reference pressure (Pa)");
   params.addClassDescription("Water properties with an exponential EOS and"
-        " a constant viscosity");
+        " a Vogel viscosity");
   return params;
 }
 
@@ -74,7 +72,6 @@ TigerIdealWater::TigerIdealWater(const InputParameters & parameters)
     _specific_entropy(getParam<Real>("specific_entropy")),
     _henry_constant(getParam<Real>("henry_constant")),
     _pp_coeff(getParam<Real>("porepressure_coefficient")),
-    _viscosity(getParam<Real>("viscosity")),
     _density_ref(getParam<Real>("reference_density")),
     _T_ref(getParam<Real>("reference_temperature")),
     _P_ref(getParam<Real>("reference_pressure"))
@@ -159,9 +156,11 @@ TigerIdealWater::e_from_p_T(
   de_dT = _cv;
 }
 
-Real TigerIdealWater::mu_from_p_T(Real /*pressure*/, Real temperature) const
+Real
+TigerIdealWater::mu_from_p_T(Real /*pressure*/, Real temperature) const
 {
-  return _viscosity;
+  //Vogel equation for water
+  return 1e-3*exp(-3.7188+578.919/(-137.546+temperature));
 }
 
 void
@@ -170,7 +169,7 @@ TigerIdealWater::mu_from_p_T(
 {
   mu = this->mu_from_p_T(pressure, temperature);
   dmu_dp = 0.0;
-  dmu_dT = 0.0;
+  dmu_dT = mu*-578.919/std::pow(-137.546+temperature,2.0);
 }
 
 Real

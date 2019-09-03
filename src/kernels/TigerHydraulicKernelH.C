@@ -30,6 +30,9 @@ InputParameters
 validParams<TigerHydraulicKernelH>()
 {
   InputParameters params = validParams<Kernel>();
+
+  params.addCoupledVar("temperature", 0 ,"temperature nonlinear variable");
+
   return params;
 }
 
@@ -39,9 +42,12 @@ TigerHydraulicKernelH::TigerHydraulicKernelH(const InputParameters & parameters)
     _k_vis(getMaterialProperty<RankTwoTensor>("permeability_by_viscosity")),
     _rho_f(getMaterialProperty<Real>("fluid_density")),
     _drho_dp_f(getMaterialProperty<Real>("fluid_drho_dp")),
+    _drho_dT_f(getMaterialProperty<Real>("fluid_drho_dT")),
     _mu_f(getMaterialProperty<Real>("fluid_viscosity")),
     _dmu_dp_f(getMaterialProperty<Real>("fluid_dmu_dp")),
-    _g(getMaterialProperty<RealVectorValue>("gravity_vector"))
+    _dmu_dT_f(getMaterialProperty<Real>("fluid_dmu_dT")),
+    _g(getMaterialProperty<RealVectorValue>("gravity_vector")),
+    _temperature_var(coupled("temperature"))
 {
 }
 
@@ -49,19 +55,34 @@ Real
 TigerHydraulicKernelH::computeQpResidual()
 {
   RealVectorValue r;
-  r = _k_vis[_qp] * ( _grad_u[_qp] - _rho_f[_qp] * _g[_qp] );
+  r  = _k_vis[_qp] * ( _grad_u[_qp] - _rho_f[_qp] * _g[_qp] );
 
-  return _scale_factor[_qp] * _grad_test[_i][_qp] * r;
+  return  r * _scale_factor[_qp] * _grad_test[_i][_qp];
 }
 
 Real
 TigerHydraulicKernelH::computeQpJacobian()
 {
   RealVectorValue j;
-  j  = _k_vis[_qp] * ( _grad_phi[_j][_qp] + _drho_dp_f[_qp]
-        * _phi[_j][_qp] * _g[_qp] );
-  j -= _dmu_dp_f[_qp] / _mu_f[_qp] * _k_vis[_qp] * _phi[_j][_qp]
-        * ( _grad_u[_qp] - _rho_f[_qp] * _g[_qp] );
+  j  = (-_dmu_dp_f[_qp] / _mu_f[_qp] * _k_vis[_qp] * _phi[_j][_qp])
+        * (_grad_u[_qp] - _rho_f[_qp] * _g[_qp]);
+  j += _k_vis[_qp] * (_grad_phi[_j][_qp] - _drho_dp_f[_qp] * _phi[_j][_qp] * _g[_qp]);
+
+  return _scale_factor[_qp] * _grad_test[_i][_qp] * j;
+}
+
+Real
+TigerHydraulicKernelH::computeQpOffDiagJacobian(unsigned int jvar)
+{
+  RealVectorValue j = 0.0;
+
+  if (jvar == _temperature_var)
+  {
+    j  = (-_dmu_dT_f[_qp] / _mu_f[_qp] * _k_vis[_qp] * _phi[_j][_qp])
+          * (_grad_u[_qp] - _rho_f[_qp] * _g[_qp]);
+
+    j -= _k_vis[_qp] * _drho_dT_f[_qp] * _phi[_j][_qp] * _g[_qp];
+  }
 
   return _scale_factor[_qp] * _grad_test[_i][_qp] * j;
 }

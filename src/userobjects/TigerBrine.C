@@ -50,8 +50,9 @@ validParams<TigerBrine>()
         "The enthalpy is internal_energy + P / density * "
         "porepressure_coefficient.  Physically this should be 1.0, "
         "but analytic solutions are simplified when it is zero");
-  params.addClassDescription("Fluid properties for a simple fluid with "
-        " with variable density and viscosity based on FRACture code");
+  params.addClassDescription("Brine density based on Phillips et al (1981)"
+        ", viscosity based on Smith and Chapman (1981) and other properties"
+        " are constants given by user");
   return params;
 }
 
@@ -121,7 +122,7 @@ Real
 TigerBrine::rho_from_p_T(Real pressure, Real temperature) const
 {
   if (pressure <0.0 || pressure > 5e7 || temperature <273.15)
-    mooseError("The pressure field has a negative value so the EOS is unable to calculate density.\n");
+    mooseError("The pressure or temperature is out of the range.");
   Real _a = -9.9559*std::exp(-4.539e-3*_m) + 7.0845*std::exp(-1.638e-4*(temperature-273.15))+3.909*std::exp(2.551e-10*pressure);
   return (-3.033405 + 10.128163*_a - 8.750567*_a*_a + 2.663107*_a*_a*_a)*1.0e3;
 }

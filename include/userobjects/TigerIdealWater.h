@@ -119,9 +119,6 @@ protected:
   /// Porepressure coefficient: enthalpy = internal_energy + porepressure / density * _pp_coeff
   const Real _pp_coeff;
 
-  /// viscosity
-  const Real _viscosity;
-
   // density at reference pressure and temperature
   Real _density_ref = 0;
   // reference temperature
