@@ -21,42 +21,46 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerPermeabilityConst.h"
+#include "TigerPermeabilityCubicLaw.h"
 #include "MooseError.h"
 
-registerMooseObject("TigerApp", TigerPermeabilityConst);
+registerMooseObject("TigerApp", TigerPermeabilityCubicLaw);
 
 template <>
 InputParameters
-validParams<TigerPermeabilityConst>()
+validParams<TigerPermeabilityCubicLaw>()
 {
   InputParameters params = validParams<TigerPermeability>();
-  params.addRequiredParam<std::vector<Real>>("k0", "Initial permeability (m^2)");
-  MooseEnum PT("isotropic=1 orthotropic=2 anisotropic=3");
-  params.addRequiredParam<MooseEnum>("permeability_type", PT,
-        "The permeability distribution type [isotropic, orthotropic, anisotropic].");
+  params.addParam<Real>("aperture", 0, "Aperture of the fracture (m), just necessary if different from the scaling factor");
 
-  params.addClassDescription("Permeability tensor based on provided "
-        "constant permeability value(s)");
+  params.addClassDescription("Permeability tensor for fractures"
+        " based on the Cubic law");
   return params;
 }
 
-TigerPermeabilityConst::TigerPermeabilityConst(const InputParameters & parameters)
+TigerPermeabilityCubicLaw::TigerPermeabilityCubicLaw(const InputParameters & parameters)
   : TigerPermeability(parameters),
-    _kinit(getParam<std::vector<Real>>("k0"))
+  _aperture(getParam<Real>("aperture"))
 {
-    _permeability_type = getParam<MooseEnum>("permeability_type");
+  _permeability_type = (TigerPermeability::Permeability_Type() = "isotropic");
 }
 
 RankTwoTensor
-TigerPermeabilityConst::Permeability(int dim, Real porosity, Real scale_factor) const
+TigerPermeabilityCubicLaw::Permeability(int dim, Real porosity, Real scale_factor) const
 {
-  std::vector<Real> k0 = PermeabilityVectorCalculator(porosity, scale_factor);
-  return  PermeabilityTensorCalculator(dim, _kinit);
+  Real effAperture = 0;
+  if(_aperture == 0)
+    effAperture = scale_factor;
+  else
+    effAperture = _aperture;
+  std::vector<Real> k0 = PermeabilityVectorCalculator(porosity, effAperture);
+  RankTwoTensor test = PermeabilityTensorCalculator(dim, k0);
+  std::cout << test << std::endl;
+  return test;
 }
 
 RankTwoTensor
-TigerPermeabilityConst::PermeabilityTensorCalculator(int dim, std::vector<Real> k0) const
+TigerPermeabilityCubicLaw::PermeabilityTensorCalculator(int dim, std::vector<Real> k0) const
 {
 
       RealVectorValue kx;
@@ -141,8 +145,8 @@ TigerPermeabilityConst::PermeabilityTensorCalculator(int dim, std::vector<Real> 
 }
 
 std::vector<Real>
-TigerPermeabilityConst::PermeabilityVectorCalculator(Real porosity, Real scale_factor) const
+TigerPermeabilityCubicLaw::PermeabilityVectorCalculator(Real porosity, Real effAperture) const
 {
-  std::vector<Real> empty(0, 0.0);
-  return empty;
+  std::vector<Real> k0(1,(std::pow(effAperture,2.0) / 8.0));
+  return k0;
 }

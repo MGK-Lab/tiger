@@ -21,31 +21,30 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERPERMEABILITYCONST_H
-#define TIGERPERMEABILITYCONST_H
+#ifndef TIGERPERMEABILITYCUBICLAW_H
+#define TIGERPERMEABILITYCUBICLAW_H
 
 #include "TigerPermeability.h"
 #include "MooseEnum.h"
 
-class TigerPermeabilityConst;
+class TigerPermeabilityCubicLaw;
 
 template <>
-InputParameters validParams<TigerPermeabilityConst>();
+InputParameters validParams<TigerPermeabilityCubicLaw>();
 
-class TigerPermeabilityConst : public TigerPermeability
+class TigerPermeabilityCubicLaw : public TigerPermeability
 {
 public:
-  TigerPermeabilityConst(const InputParameters & parameters);
+  TigerPermeabilityCubicLaw(const InputParameters & parameters);
   /// permeability matrix (m^2); called from Material
   RankTwoTensor Permeability(int dim, Real porosity, Real scale_factor) const;
   // Creates the permeability tensor as function of input and dimension
   RankTwoTensor PermeabilityTensorCalculator(int dim, std::vector<Real> k0) const;
   // Unused here, because k0 is constant
   std::vector<Real> PermeabilityVectorCalculator(Real porosity, Real scale_factor) const;
+private:
+  Real _aperture;
 
-protected:
-  // Permeability from user input
-    std::vector<Real> _kinit;
 };
 
-#endif /* TIGERPERMEABILITYCONST_H */
+#endif /* TIGERPERMEABILITYCUBICLAW_H */

@@ -51,7 +51,7 @@ public:
 
 protected:
   /// permeability vector (m^2)
-  MooseEnum permeability_type;
+  MooseEnum _permeability_type;
 };
 
 #endif /* TIGERPERMEABILITY_H */
