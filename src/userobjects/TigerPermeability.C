@@ -33,8 +33,7 @@ validParams<TigerPermeability>()
 
 TigerPermeability::TigerPermeability(const InputParameters & parameters)
   : GeneralUserObject(parameters),
-    permeability_type(TigerPermeability::Permeability_Type() = "isotropic"),
-    k0(0.0)
+    permeability_type(TigerPermeability::Permeability_Type() = "isotropic")
 {
 }
 
@@ -60,86 +59,88 @@ TigerPermeability::Permeability_Type()
 }
 
 
-RankTwoTensor
-TigerPermeability::PermeabilityTensorCalculator(int dim) const
-{
-  RealVectorValue kx;
-  RealVectorValue ky;
-  RealVectorValue kz;
+// RankTwoTensor
+// TigerPermeability::Permeability(int dim, std::vector<Real> k1, Real porosity, Real scale_factor) const
+// {
+//   RealVectorValue kx;
+//   RealVectorValue ky;
+//   RealVectorValue kz;
 
-  if (dim == 1)
-  {
-    switch (permeability_type)
-    {
-      case 1:
-        if (k0.size() != 1)
-          mooseError("One input value is needed for isotropic distribution of permeability! You provided ", k0.size(), " values.\n");
-        kx = RealVectorValue(k0[0], 0.0, 0.0);
-        ky = RealVectorValue(0.0  , 0.0, 0.0);
-        kz = RealVectorValue(0.0  , 0.0, 0.0);
-        break;
-      case 2:
-      case 3:
-        mooseError("One dimensional elements cannot have non-isotropic permeability values.\n");
-        break;
-    }
-  }
-  else if (dim == 2)
-  {
-    switch (permeability_type)
-    {
-      case 1:
-        if (k0.size() != 1)
-          mooseError("One input value is needed for isotropic distribution of permeability! You provided ", k0.size(), " values.\n");
-        kx = RealVectorValue(k0[0], 0.0  , 0.0);
-        ky = RealVectorValue(0.0  , k0[0], 0.0);
-        kz = RealVectorValue(0.0  , 0.0  , 0.0);
-        break;
-      case 2:
-        if (k0.size() != 2)
-          mooseError("Two input values are needed for orthotropic distribution of permeability in two dimensional elements! You provided ", k0.size(), " values.\n");
-        kx = RealVectorValue(k0[0], 0.0  , 0.0);
-        ky = RealVectorValue(0.0  , k0[1], 0.0);
-        kz = RealVectorValue(0.0  , 0.0  , 0.0);
-        break;
-      case 3:
-        if (k0.size() != 4)
-          mooseError("Four input values are needed for anisotropic distribution of permeability in two dimensional elements! You provided ", k0.size(), " values.\n");
-        kx = RealVectorValue(k0[0], k0[1], 0.0);
-        ky = RealVectorValue(k0[2], k0[3], 0.0);
-        kz = RealVectorValue(0.0  , 0.0  , 0.0);
-        break;
-    }
-  }
-  else if (dim == 3)
-  {
-    switch (permeability_type)
-    {
-      case 1:
-        if (k0.size() != 1)
-          mooseError("One input value is needed for isotropic distribution of permeability! You provided ", k0.size(), " values.\n");
-        kx = RealVectorValue(k0[0], 0.0, 0.0);
-        ky = RealVectorValue(0.0, k0[0], 0.0);
-        kz = RealVectorValue(0.0, 0.0, k0[0]);
-        break;
-
-      case 2:
-        if (k0.size() != 3)
-          mooseError("Three input values are needed for orthotropic distribution of permeability! You provided ", k0.size(), " values.\n");
-        kx = RealVectorValue(k0[0], 0.0, 0.0);
-        ky = RealVectorValue(0.0, k0[1], 0.0);
-        kz = RealVectorValue(0.0, 0.0, k0[2]);
-        break;
-
-      case 3:
-        if (k0.size() != 9)
-          mooseError("Nine input values are needed for anisotropic distribution of permeability! You provided ", k0.size(), " values.\n");
-        kx = RealVectorValue(k0[0], k0[1], k0[2]);
-        ky = RealVectorValue(k0[3], k0[4], k0[5]);
-        kz = RealVectorValue(k0[6], k0[7], k0[8]);
-        break;
-    }
-  }
-
-  return RankTwoTensor(kx, ky, kz);
-}
+//   if (dim == 1)
+//   {
+//     switch (permeability_type)
+//     {
+//       case 1:
+//         if (k0.size() != 1)
+//           mooseError("One input value is needed for isotropic distribution of permeability! You provided ", k0.size(), " values.\n");
+//     //    k0.clear();
+//         kx = RealVectorValue(k0[0], 0.0, 0.0);
+//         ky = RealVectorValue(0.0  , 0.0, 0.0);
+//         kz = RealVectorValue(0.0  , 0.0, 0.0);
+//         break;
+//       case 2:
+//       case 3:
+//         mooseError("One dimensional elements cannot have non-isotropic permeability values.\n");
+//         break;
+//     }
+//   }
+//   else if (dim == 2)
+//   {
+//     switch (permeability_type)
+//     {
+//       case 1:
+//         if (k0.size() != 1)
+//           mooseError("One input value is needed for isotropic distribution of permeability! You provided ", k0.size(), " values.\n");
+//         kx = RealVectorValue(k0[0], 0.0  , 0.0);
+//         ky = RealVectorValue(0.0  , k0[0], 0.0);
+//         kz = RealVectorValue(0.0  , 0.0  , 0.0);
+//         break;
+//       case 2:
+//         if (k0.size() != 2)
+//           mooseError("Two input values are needed for orthotropic distribution of permeability in two dimensional elements! You provided ", k0.size(), " values.\n");
+//         kx = RealVectorValue(k0[0], 0.0  , 0.0);
+//         ky = RealVectorValue(0.0  , k0[1], 0.0);
+//         kz = RealVectorValue(0.0  , 0.0  , 0.0);
+//         break;
+//       case 3:
+//         if (k0.size() != 4)
+//           mooseError("Four input values are needed for anisotropic distribution of permeability in two dimensional elements! You provided ", k0.size(), " values.\n");
+//         kx = RealVectorValue(k0[0], k0[1], 0.0);
+//         ky = RealVectorValue(k0[2], k0[3], 0.0);
+//         kz = RealVectorValue(0.0  , 0.0  , 0.0);
+//         break;
+//     }
+//   }
+//   else if (dim == 3)
+//   {
+//     switch (permeability_type)
+//     {
+//       case 1:
+//         if (k0.size() != 1)
+//           mooseError("One input value is needed for isotropic distribution of permeability! You provided ", k0.size(), " values.\n");
+//         kx = RealVectorValue(k0[0], 0.0, 0.0);
+//         ky = RealVectorValue(0.0, k0[0], 0.0);
+//         kz = RealVectorValue(0.0, 0.0, k0[0]);
+//         break;
+//
+//       case 2:
+//         if (k0.size() != 3)
+//           mooseError("Three input values are needed for orthotropic distribution of permeability! You provided ", k0.size(), " values.\n");
+//         kx = RealVectorValue(k0[0], 0.0, 0.0);
+//         ky = RealVectorValue(0.0, k0[1], 0.0);
+//         kz = RealVectorValue(0.0, 0.0, k0[2]);
+//         break;
+//
+//       case 3:
+//         if (k0.size() != 9)
+//           mooseError("Nine input values are needed for anisotropic distribution of permeability! You provided ", k0.size(), " values.\n");
+//         kx = RealVectorValue(k0[0], k0[1], k0[2]);
+//         ky = RealVectorValue(k0[3], k0[4], k0[5]);
+//         kz = RealVectorValue(k0[6], k0[7], k0[8]);
+//         break;
+//     }
+//   }
+//   std::cout << "Output after in IF cases of kx " << kx << std::endl;
+//
+//   return RankTwoTensor(kx, ky, kz);
+// }

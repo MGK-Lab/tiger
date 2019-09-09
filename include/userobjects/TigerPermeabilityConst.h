@@ -36,6 +36,16 @@ class TigerPermeabilityConst : public TigerPermeability
 {
 public:
   TigerPermeabilityConst(const InputParameters & parameters);
+  /// permeability matrix (m^2); called from Material
+  RankTwoTensor Permeability(int dim, Real porosity, Real scale_factor) const;
+  // Creates the permeability tensor as function of input and dimension
+  RankTwoTensor PermeabilityTensorCalculator(int dim, std::vector<Real> k0) const;
+  // Unused here, because k0 is constant
+  std::vector<Real> PermeabilityVectorCalculator(Real porosity, Real scale_factor) const;
+
+protected:
+  // Permeability from user input
+    std::vector<Real> kinit;
 };
 
 #endif /* TIGERPERMEABILITYCONST_H */

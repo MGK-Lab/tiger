@@ -63,6 +63,7 @@ protected:
 
   // Imported props from TigerGeometryMaterial
   const MaterialProperty<Real> & _n;
+  const MaterialProperty<Real> & _scale_factor;
   const MaterialProperty<RankTwoTensor> & _rot_mat;
 
   // imported props from TigerFluidMaterial

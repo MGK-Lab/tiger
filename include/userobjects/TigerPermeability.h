@@ -42,14 +42,16 @@ public:
   virtual void initialize();
   virtual void finalize();
 
-  /// permeability matrix (m^2)
-  virtual RankTwoTensor PermeabilityTensorCalculator(int dim) const;
+  /// permeability matrix (m^2); called from Material
+  virtual RankTwoTensor Permeability(int dim, Real porosity, Real scale_factor) const = 0;
+
+  virtual RankTwoTensor PermeabilityTensorCalculator(int dim, std::vector<Real> k0) const = 0;
+  virtual std::vector<Real> PermeabilityVectorCalculator(Real porosity, Real scale_factor) const = 0;
   static MooseEnum Permeability_Type();
 
 protected:
   /// permeability vector (m^2)
   MooseEnum permeability_type;
-  std::vector<Real> k0;
 };
 
 #endif /* TIGERPERMEABILITY_H */
