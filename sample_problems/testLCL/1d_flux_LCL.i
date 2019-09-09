@@ -19,6 +19,7 @@
     type =  TigerPermeabilityConst
     permeability_type = isotropic
     k0 = '5e-10'
+    aperture = 1e-3
   [../]
 []
 
@@ -36,7 +37,6 @@
     pressure = pressure
     compressibility = 7.5e-8
     kf_uo = rock_uo
-#    permeability_init = '2e-10'
   [../]
 []
 
