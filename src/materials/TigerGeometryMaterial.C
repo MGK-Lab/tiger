@@ -39,9 +39,9 @@ validParams<TigerGeometryMaterial>()
   params.addRequiredParam<Real>("porosity", "Initial porosity of the feature");
   params.addParam<FunctionName>("scale_factor", 1.0, "The scale factor for non-3D "
         "elements ( particularlly lower dimensional elements): if mesh is 3D"
-        ", apreture for 2D elements (fractures) and diameter for 1D elements"
+        ", aperture for 2D elements (fractures) and diameter for 1D elements"
         " (wells) should be used; if mesh is 2D, height for 2D elements (2D"
-        " matrix) and apreture times height for 1D elements (fractures) "
+        " matrix) and aperture times height for 1D elements (fractures) "
         "should be used; and if mesh is 1D, area for 1D elements (pipes or "
         "wells) should be used); ParsedFunctions can be used as well.");
   params.addClassDescription("Material for introducing geometrical properties "

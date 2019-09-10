@@ -54,9 +54,8 @@ TigerPermeabilityCubicLaw::Permeability(int dim, Real porosity, Real scale_facto
   else
     effAperture = _aperture;
   std::vector<Real> k0 = PermeabilityVectorCalculator(porosity, effAperture);
-  RankTwoTensor test = PermeabilityTensorCalculator(dim, k0);
-  std::cout << test << std::endl;
-  return test;
+  return PermeabilityTensorCalculator(dim, k0);
+
 }
 
 RankTwoTensor

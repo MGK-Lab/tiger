@@ -1,16 +1,19 @@
 [Mesh]
   type = GeneratedMesh
-  dim = 1
+  dim = 2
   xmin = 0
-  xmax = 10
-  nx = 10
+  xmax = 0.2
+  ymin = 0
+  ymax = 0.2
+  nx = 3
+  ny = 3
 []
 
 [Modules]
   [./FluidProperties]
     [./water_uo]
       type = TigerWaterConst
-      viscosity = 0.001
+      viscosity = 0.0013
     [../]
   [../]
 []
@@ -18,9 +21,6 @@
 [UserObjects]
   [./rock_uo]
     type =  TigerPermeabilityCubicLaw
-    permeability_type = isotropic
-    k0 = '5e-10'
-#    aperture = 5e-3
   [../]
 []
 
@@ -28,7 +28,7 @@
   [./rock_g]
     type = TigerGeometryMaterial
     porosity = 0
-#    scale_factor = 2e-3
+    scale_factor = 3e-3
   [../]
   [./rock_f]
     type = TigerFluidMaterial
@@ -44,10 +44,10 @@
 
 [BCs]
   [./left]
-    type = NeumannBC
+    type = DirichletBC
     variable = pressure
     boundary = left
-    value = -0.02
+    value = 0.5
   [../]
   [./right]
     type = DirichletBC
@@ -60,7 +60,7 @@
 [Functions]
   [./analytical_function]
     type = ParsedFunction
-    value = '2e5*x-2e6'
+    value = '(((3e-3)^2)/(12*(1.3e-3)))*(0.5/0.2)'
   [../]
 []
 
@@ -100,17 +100,11 @@
     type = TigerHydraulicKernelH
     variable = pressure
   [../]
-  [./time]
-    type = TigerHydraulicTimeKernelH
-    variable = pressure
-  [../]
 []
 
 [Executioner]
-  type = Transient
-  num_steps = 1 # 50
-  end_time = 1000.0
-  l_tol = 1e-10 #difference between first and last linear step
+  type = Steady
+  l_tol = 1e-15 #difference between first and last linear step
   nl_rel_step_tol = 1e-7 #machine percision
   solve_type = 'PJFNK'
   petsc_options_iname = '-pc_type -pc_hypre_type'
@@ -119,8 +113,8 @@
 
 [Postprocessors]
   [./error]
-    type = NodalL2Error
-    variable = pressure
+    type = ElementL2Error
+    variable = vx
     function = analytical_function
   [../]
 []
