@@ -16,7 +16,7 @@
 
 [UserObjects]
   [./rock_uo]
-    type =  TigerPermeabilityConst
+    type =  TigerPermeabilityCubicLaw
     permeability_type = isotropic
     k0 = '5e-10'
     aperture = 1e-3
