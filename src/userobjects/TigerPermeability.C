@@ -29,7 +29,6 @@ validParams<TigerPermeability>()
 {
   InputParameters params = validParams<GeneralUserObject>();
 
-  params.set<ExecFlagEnum>("execute_on", true) = EXEC_INITIAL;
   return params;
 }
 

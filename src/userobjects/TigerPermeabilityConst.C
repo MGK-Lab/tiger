@@ -35,6 +35,8 @@ validParams<TigerPermeabilityConst>()
   MooseEnum PT("isotropic=1 orthotropic=2 anisotropic=3");
   params.addRequiredParam<MooseEnum>("permeability_type", PT,
         "The permeability distribution type [isotropic, orthotropic, anisotropic].");
+  params.set<ExecFlagEnum>("execute_on", true) = EXEC_INITIAL;
+
 
   params.addClassDescription("Permeability tensor based on provided "
         "constant permeability value(s)");

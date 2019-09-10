@@ -32,6 +32,8 @@ validParams<TigerPermeabilityCubicLaw>()
 {
   InputParameters params = validParams<TigerPermeability>();
   params.addParam<Real>("aperture", 0, "Aperture of the fracture (m), just necessary if different from the scaling factor");
+  params.set<ExecFlagEnum>("execute_on", true) = EXEC_TIMESTEP_BEGIN;
+
 
   params.addClassDescription("Permeability tensor for fractures"
         " based on the Cubic law");
