@@ -76,8 +76,6 @@ protected:
   const MaterialProperty<Real> & _dmu_dp_f;
 
 private:
-  // Gravity activation option
-  bool _has_gravity;
   // Gravity vector
   RealVectorValue _g;
   // Compressibility of the solid phase

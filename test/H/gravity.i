@@ -36,8 +36,7 @@
   [./rock_h]
     type = TigerHydraulicMaterialH
     pressure = pressure
-    has_gravity = true
-    gravity_acceleration = 9.81
+    gravity = '0 0 -9.81 '
     compressibility = 1.0e-9
     kf_uo = rock_uo
   [../]
