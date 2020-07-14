@@ -31,77 +31,44 @@ InputParameters
 validParams<TigerPermeabilityCubicLaw>()
 {
   InputParameters params = validParams<TigerPermeability>();
-  params.addParam<Real>("aperture", 0, "Aperture of the fracture (m), just necessary if different from the scaling factor");
+  params.addParam<Real>("aperture", 0, "Aperture of the fracture (m),"
+        " Otherwise the given scaling factor will be used");
+  params.addParam<Real>("reservor_thickness", 1, "Reservoir thickness for "
+        " correcting scaling factor of 1D fractures (one for 2D fractures)");
   params.set<ExecFlagEnum>("execute_on", true) = EXEC_TIMESTEP_BEGIN;
-
-
   params.addClassDescription("Permeability tensor for fractures"
-        " based on the Cubic law");
+        " based on the Cubic law valid only on lower dimensional 2D and 1D. "
+        " It is not allowed to use this object if mesh is 3D and the lower"
+        " dimensionl element is 1D (wells)");
   return params;
 }
 
 TigerPermeabilityCubicLaw::TigerPermeabilityCubicLaw(const InputParameters & parameters)
   : TigerPermeability(parameters),
-  _aperture(getParam<Real>("aperture"))
+  _aperture(getParam<Real>("aperture")),
+  _rt(getParam<Real>("reservor_thickness"))
 {
-  _permeability_type = (TigerPermeability::Permeability_Type() = "isotropic");
 }
 
 RankTwoTensor
-TigerPermeabilityCubicLaw::Permeability(int dim, Real porosity, Real scale_factor) const
+TigerPermeabilityCubicLaw::Permeability(const int & dim, const Real & porosity, const Real & scale_factor) const
 {
+  if (dim == 3)
+    mooseError(name(),": This permeability userobject cannot be used for 3D elements.");
+
   Real effAperture = 0;
-  if(_aperture == 0)
-    effAperture = scale_factor;
-  else
-    effAperture = _aperture;
-  std::vector<Real> k0 = PermeabilityVectorCalculator(porosity, effAperture);
-  return PermeabilityTensorCalculator(dim, k0);
+  effAperture = _aperture == 0 ? (scale_factor/_rt) : _aperture;
 
+  std::vector<Real> k0;
+  PermeabilityVectorCalculator(porosity, effAperture, k0);
+
+  MooseEnum pt("isotropic","isotropic");
+
+  return PermeabilityTensorCalculator(dim, k0, pt);
 }
 
-RankTwoTensor
-TigerPermeabilityCubicLaw::PermeabilityTensorCalculator(int dim, std::vector<Real> k0) const
+void
+TigerPermeabilityCubicLaw::PermeabilityVectorCalculator(const Real & porosity, const Real & scale_factor, std::vector<Real> & k0) const
 {
-
-      RealVectorValue kx;
-      RealVectorValue ky;
-      RealVectorValue kz;
-
-      if (dim == 1)
-      {
-            if (k0.size() != 1)
-              mooseError(name(),": One input value is needed for isotropic distribution of permeability! You provided ", k0.size(), " values.\n");
-            kx = RealVectorValue(k0[0], 0.0, 0.0);
-            ky = RealVectorValue(0.0  , 0.0, 0.0);
-            kz = RealVectorValue(0.0  , 0.0, 0.0);
-
-      }
-      else if (dim == 2)
-      {
-            if (k0.size() != 1)
-              mooseError(name(),": One input value is needed for isotropic distribution of permeability! You provided ", k0.size(), " values.\n");
-            kx = RealVectorValue(k0[0], 0.0  , 0.0);
-            ky = RealVectorValue(0.0  , k0[0], 0.0);
-            kz = RealVectorValue(0.0  , 0.0  , 0.0);
-
-      }
-      else if (dim == 3)
-      {
-            if (k0.size() != 1)
-              mooseError(name(),": One input value is needed for isotropic distribution of permeability! You provided ", k0.size(), " values.\n");
-            kx = RealVectorValue(k0[0], 0.0, 0.0);
-            ky = RealVectorValue(0.0, k0[0], 0.0);
-            kz = RealVectorValue(0.0, 0.0, k0[0]);
-
-      }
-      return RankTwoTensor(kx, ky, kz);
-
-}
-
-std::vector<Real>
-TigerPermeabilityCubicLaw::PermeabilityVectorCalculator(Real porosity, Real effAperture) const
-{
-  std::vector<Real> k0(1,(std::pow(effAperture,2.0) / 12.0));
-  return k0;
+  k0.push_back(std::pow(scale_factor,2.0) / 12.0);
 }

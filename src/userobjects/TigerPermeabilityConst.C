@@ -32,12 +32,10 @@ validParams<TigerPermeabilityConst>()
 {
   InputParameters params = validParams<TigerPermeability>();
   params.addRequiredParam<std::vector<Real>>("k0", "Initial permeability (m^2)");
-  MooseEnum PT("isotropic=1 orthotropic=2 anisotropic=3");
+  MooseEnum PT("isotropic orthotropic anisotropic");
   params.addRequiredParam<MooseEnum>("permeability_type", PT,
         "The permeability distribution type [isotropic, orthotropic, anisotropic].");
   params.set<ExecFlagEnum>("execute_on", true) = EXEC_INITIAL;
-
-
   params.addClassDescription("Permeability tensor based on provided "
         "constant permeability value(s)");
   return params;
@@ -45,106 +43,16 @@ validParams<TigerPermeabilityConst>()
 
 TigerPermeabilityConst::TigerPermeabilityConst(const InputParameters & parameters)
   : TigerPermeability(parameters),
-    _kinit(getParam<std::vector<Real>>("k0"))
+    _kinit(getParam<std::vector<Real>>("k0")),
+    _permeability_type(getParam<MooseEnum>("permeability_type"))
 {
-    _permeability_type = getParam<MooseEnum>("permeability_type");
 }
 
 RankTwoTensor
-TigerPermeabilityConst::Permeability(int dim, Real porosity, Real scale_factor) const
+TigerPermeabilityConst::Permeability(const int & dim, const Real & porosity, const Real & scale_factor) const
 {
-  std::vector<Real> k0 = PermeabilityVectorCalculator(porosity, scale_factor);
-  return  PermeabilityTensorCalculator(dim, _kinit);
+  return  PermeabilityTensorCalculator(dim, _kinit, _permeability_type);
 }
 
-RankTwoTensor
-TigerPermeabilityConst::PermeabilityTensorCalculator(int dim, std::vector<Real> k0) const
-{
-
-      RealVectorValue kx;
-      RealVectorValue ky;
-      RealVectorValue kz;
-
-      if (dim == 1)
-      {
-        switch (_permeability_type)
-        {
-          case 1:
-            if (k0.size() != 1)
-              mooseError(name(),": One input value is needed for isotropic distribution of permeability! You provided ", k0.size(), " values.\n");
-            kx = RealVectorValue(k0[0], 0.0, 0.0);
-            ky = RealVectorValue(0.0  , 0.0, 0.0);
-            kz = RealVectorValue(0.0  , 0.0, 0.0);
-            break;
-          case 2:
-          case 3:
-            mooseError(name(),": One dimensional elements cannot have non-isotropic permeability values.\n");
-            break;
-        }
-      }
-      else if (dim == 2)
-      {
-        switch (_permeability_type)
-        {
-          case 1:
-            if (k0.size() != 1)
-              mooseError(name(),": One input value is needed for isotropic distribution of permeability! You provided ", k0.size(), " values.\n");
-            kx = RealVectorValue(k0[0], 0.0  , 0.0);
-            ky = RealVectorValue(0.0  , k0[0], 0.0);
-            kz = RealVectorValue(0.0  , 0.0  , 0.0);
-            break;
-          case 2:
-            if (k0.size() != 2)
-              mooseError(name(),": Two input values are needed for orthotropic distribution of permeability in two dimensional elements! You provided ", k0.size(), " values.\n");
-            kx = RealVectorValue(k0[0], 0.0  , 0.0);
-            ky = RealVectorValue(0.0  , k0[1], 0.0);
-            kz = RealVectorValue(0.0  , 0.0  , 0.0);
-            break;
-          case 3:
-            if (k0.size() != 4)
-              mooseError(name(),": Four input values are needed for anisotropic distribution of permeability in two dimensional elements! You provided ", k0.size(), " values.\n");
-            kx = RealVectorValue(k0[0], k0[1], 0.0);
-            ky = RealVectorValue(k0[2], k0[3], 0.0);
-            kz = RealVectorValue(0.0  , 0.0  , 0.0);
-            break;
-        }
-      }
-      else if (dim == 3)
-      {
-        switch (_permeability_type)
-        {
-          case 1:
-            if (k0.size() != 1)
-              mooseError(name(),": One input value is needed for isotropic distribution of permeability! You provided ", k0.size(), " values.\n");
-            kx = RealVectorValue(k0[0], 0.0, 0.0);
-            ky = RealVectorValue(0.0, k0[0], 0.0);
-            kz = RealVectorValue(0.0, 0.0, k0[0]);
-            break;
-
-          case 2:
-            if (k0.size() != 3)
-              mooseError(name(),": Three input values are needed for orthotropic distribution of permeability! You provided ", k0.size(), " values.\n");
-            kx = RealVectorValue(k0[0], 0.0, 0.0);
-            ky = RealVectorValue(0.0, k0[1], 0.0);
-            kz = RealVectorValue(0.0, 0.0, k0[2]);
-            break;
-
-          case 3:
-            if (k0.size() != 9)
-              mooseError(name(),": Nine input values are needed for anisotropic distribution of permeability! You provided ", k0.size(), " values.\n");
-            kx = RealVectorValue(k0[0], k0[1], k0[2]);
-            ky = RealVectorValue(k0[3], k0[4], k0[5]);
-            kz = RealVectorValue(k0[6], k0[7], k0[8]);
-            break;
-        }
-      }
-      return RankTwoTensor(kx, ky, kz);
-
-}
-
-std::vector<Real>
-TigerPermeabilityConst::PermeabilityVectorCalculator(Real porosity, Real scale_factor) const
-{
-  std::vector<Real> empty(0, 0.0);
-  return empty;
-}
+void
+TigerPermeabilityConst::PermeabilityVectorCalculator(const Real & porosity, const Real & scale_factor, std::vector<Real> & k0) const {}

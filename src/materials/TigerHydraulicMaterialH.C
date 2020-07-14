@@ -34,7 +34,6 @@ validParams<TigerHydraulicMaterialH>()
 
   params.addRequiredCoupledVar("pressure",
         "Pore pressure nonlinear variable");
-  params.addParam<std::vector<Real>>("permeability_init", "The initial permeability as vector [m2]");
   params.addParam<RealVectorValue>("gravity", RealVectorValue(0,0,0),
         "The gravity acceleration vector (m/s^2)");
   params.addRequiredParam<Real>("compressibility",
