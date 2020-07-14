@@ -19,8 +19,8 @@
 [UserObjects]
   [./rock_uo]
     type =  TigerPermeabilityConst
-    permeability_type = isotropic
-    k0 = '1.0e-10'
+    permeability_type = orthotropic
+    k0 = '3.0e-10 2.0e-10 1.0e-10'
   [../]
 []
 
@@ -36,8 +36,7 @@
   [./rock_h]
     type = TigerHydraulicMaterialH
     pressure = pressure
-    has_gravity = true
-    gravity_acceleration = 9.81
+    gravity = '0 0 -9.81 '
     compressibility = 1.0e-9
     kf_uo = rock_uo
   [../]

@@ -4,6 +4,11 @@
     input = '1d_flux.i'
     exodiff = '1d_flux_out.e'
   [../]
+  [./2D_flux_LCL]
+    type = 'Exodiff'
+    input = '2d_flux_LCL.i'
+    exodiff = '2d_flux_LCL_out.e'
+  [../]
   [./1D_well]
     type = 'Exodiff'
     input = '1d_well.i'

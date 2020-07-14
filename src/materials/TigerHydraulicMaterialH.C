@@ -34,9 +34,8 @@ validParams<TigerHydraulicMaterialH>()
 
   params.addRequiredCoupledVar("pressure",
         "Pore pressure nonlinear variable");
-  params.addParam<bool>("has_gravity", false, "Is the gravity enabled?");
-  params.addParam<Real>("gravity_acceleration", 9.81,
-        "The magnitude of the gravity acceleration (m/s^2)");
+  params.addParam<RealVectorValue>("gravity", RealVectorValue(0,0,0),
+        "The gravity acceleration vector (m/s^2)");
   params.addRequiredParam<Real>("compressibility",
         "The compressibility of the solid porous media (1/Pa)");
   params.addRequiredParam<UserObjectName>("kf_uo",
@@ -58,6 +57,7 @@ TigerHydraulicMaterialH::TigerHydraulicMaterialH(const InputParameters & paramet
     _ddv_dp_phi(declareProperty<RealVectorValue>("d_darcy_velocity_dp_phi")),
     _ddv_dp_gradphi(declareProperty<RankTwoTensor>("d_darcy_velocity_dp_gradphi")),
     _n(getMaterialProperty<Real>("porosity")),
+    _scale_factor(getMaterialProperty<Real>("scale_factor")),
     _rot_mat(getMaterialProperty<RankTwoTensor>("lowerD_rotation_matrix")),
     _rho_f(getMaterialProperty<Real>("fluid_density")),
     _mu_f(getMaterialProperty<Real>("fluid_viscosity")),
@@ -66,27 +66,15 @@ TigerHydraulicMaterialH::TigerHydraulicMaterialH(const InputParameters & paramet
     _drho_dp_f(getMaterialProperty<Real>("fluid_drho_dp")),
     _dmu_dT_f(getMaterialProperty<Real>("fluid_dmu_dT")),
     _dmu_dp_f(getMaterialProperty<Real>("fluid_dmu_dp")),
-    _has_gravity(getParam<bool>("has_gravity")),
+    _g(getParam<RealVectorValue>("gravity")),
     _beta_s(getParam<Real>("compressibility"))
 {
-  Real _g0 = getParam<Real>("gravity_acceleration");
-  if (_has_gravity)
-  {
-    if (_mesh.dimension() == 3)
-      _g = RealVectorValue(0., 0., -_g0);
-    else if (_mesh.dimension() == 2)
-      _g = RealVectorValue(0., -_g0, 0.);
-    else if (_mesh.dimension() == 1)
-      _g = RealVectorValue(-_g0, 0., 0.);
-  }
-  else
-    _g = RealVectorValue(0., 0., 0.);
 }
 
 void
 TigerHydraulicMaterialH::computeQpProperties()
 {
-  _k_vis[_qp] = _kf_uo.PermeabilityTensorCalculator(_current_elem->dim()) / _mu_f[_qp];
+  _k_vis[_qp] = _kf_uo.Permeability(_current_elem->dim(), _n[_qp], _scale_factor[_qp]) / _mu_f[_qp];
   _H_Kernel_dt[_qp] = _beta_s + _beta_f[_qp] * _n[_qp];
   _gravity[_qp] = _g;
 

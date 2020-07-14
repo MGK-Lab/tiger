@@ -21,8 +21,7 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERPERMEABILITYCONST_H
-#define TIGERPERMEABILITYCONST_H
+#pragma once
 
 #include "TigerPermeability.h"
 #include "MooseEnum.h"
@@ -36,6 +35,14 @@ class TigerPermeabilityConst : public TigerPermeability
 {
 public:
   TigerPermeabilityConst(const InputParameters & parameters);
-};
 
-#endif /* TIGERPERMEABILITYCONST_H */
+  RankTwoTensor Permeability(const int & dim, const Real & porosity, const Real & scale_factor) const;
+
+protected:
+  // Unused here, because k0 is constant
+  void PermeabilityVectorCalculator(const Real & porosity, const Real & scale_factor, std::vector<Real> & k0) const;
+
+  // Permeability from user input
+  std::vector<Real> _kinit;
+  MooseEnum _permeability_type;
+};

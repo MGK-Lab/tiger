@@ -63,6 +63,7 @@ protected:
 
   // Imported props from TigerGeometryMaterial
   const MaterialProperty<Real> & _n;
+  const MaterialProperty<Real> & _scale_factor;
   const MaterialProperty<RankTwoTensor> & _rot_mat;
 
   // imported props from TigerFluidMaterial
@@ -75,8 +76,6 @@ protected:
   const MaterialProperty<Real> & _dmu_dp_f;
 
 private:
-  // Gravity activation option
-  bool _has_gravity;
   // Gravity vector
   RealVectorValue _g;
   // Compressibility of the solid phase

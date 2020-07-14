@@ -189,12 +189,7 @@
 
 [Executioner]
   type = Transient
-  [./TimeStepper]
-    type = IterationAdaptiveDT
-    dt = 3600
-    growth_factor = 2
-  [../]
-  dtmax = 31536000
+  dt = 2628000
   end_time = 946080000
   solve_type = NEWTON
 []
