@@ -21,8 +21,7 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERPERMEABILITY_H
-#define TIGERPERMEABILITY_H
+#pragma once
 
 #include "GeneralUserObject.h"
 #include "RankTwoTensor.h"
@@ -42,14 +41,14 @@ public:
   virtual void initialize();
   virtual void finalize();
 
-  /// permeability matrix (m^2)
-  virtual RankTwoTensor PermeabilityTensorCalculator(int dim) const;
-  static MooseEnum Permeability_Type();
+  /// permeability matrix (m^2); called from Material
+  virtual RankTwoTensor Permeability(const int & dim, const Real & porosity, const Real & scale_factor) const = 0;
 
 protected:
-  /// permeability vector (m^2)
-  MooseEnum permeability_type;
-  std::vector<Real> k0;
-};
+  // Creates the permeability tensor as function of input and dimension
+  virtual RankTwoTensor PermeabilityTensorCalculator(const int & dim, const std::vector<Real> & k0, const MooseEnum & _permeability_type) const;
+  // calculate permeability
+  virtual void PermeabilityVectorCalculator(const Real & porosity, const Real & scale_factor, std::vector<Real> & k0) const = 0;
 
-#endif /* TIGERPERMEABILITY_H */
+  enum PT {isotropic, orthotropic, anisotropic};
+};

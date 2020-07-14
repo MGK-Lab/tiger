@@ -31,20 +31,28 @@ InputParameters
 validParams<TigerPermeabilityConst>()
 {
   InputParameters params = validParams<TigerPermeability>();
-  MooseEnum PT("isotropic=1 orthotropic=2 anisotropic=3");
+  params.addRequiredParam<std::vector<Real>>("k0", "Initial permeability (m^2)");
+  MooseEnum PT("isotropic orthotropic anisotropic");
   params.addRequiredParam<MooseEnum>("permeability_type", PT,
         "The permeability distribution type [isotropic, orthotropic, anisotropic].");
-  params.addRequiredParam<std::vector<Real>>("k0", "Initial permeability (m^2)");
-
+  params.set<ExecFlagEnum>("execute_on", true) = EXEC_INITIAL;
   params.addClassDescription("Permeability tensor based on provided "
         "constant permeability value(s)");
   return params;
 }
 
 TigerPermeabilityConst::TigerPermeabilityConst(const InputParameters & parameters)
-  : TigerPermeability(parameters)
+  : TigerPermeability(parameters),
+    _kinit(getParam<std::vector<Real>>("k0")),
+    _permeability_type(getParam<MooseEnum>("permeability_type"))
 {
-  permeability_type = getParam<MooseEnum>("permeability_type");
-  k0.clear();
-  k0 = getParam<std::vector<Real>>("k0");
 }
+
+RankTwoTensor
+TigerPermeabilityConst::Permeability(const int & dim, const Real & porosity, const Real & scale_factor) const
+{
+  return  PermeabilityTensorCalculator(dim, _kinit, _permeability_type);
+}
+
+void
+TigerPermeabilityConst::PermeabilityVectorCalculator(const Real & porosity, const Real & scale_factor, std::vector<Real> & k0) const {}

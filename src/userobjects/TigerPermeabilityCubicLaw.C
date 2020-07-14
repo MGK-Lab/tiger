@@ -31,19 +31,44 @@ InputParameters
 validParams<TigerPermeabilityCubicLaw>()
 {
   InputParameters params = validParams<TigerPermeability>();
-
-  params.addRequiredParam<Real>("apreture", "Apreture of the fracture (m)");
-
+  params.addParam<Real>("aperture", 0, "Aperture of the fracture (m),"
+        " Otherwise the given scaling factor will be used");
+  params.addParam<Real>("reservor_thickness", 1, "Reservoir thickness for "
+        " correcting scaling factor of 1D fractures (one for 2D fractures)");
+  params.set<ExecFlagEnum>("execute_on", true) = EXEC_TIMESTEP_BEGIN;
   params.addClassDescription("Permeability tensor for fractures"
-        " based on the Cubic law");
+        " based on the Cubic law valid only on lower dimensional 2D and 1D. "
+        " It is not allowed to use this object if mesh is 3D and the lower"
+        " dimensionl element is 1D (wells)");
   return params;
 }
 
 TigerPermeabilityCubicLaw::TigerPermeabilityCubicLaw(const InputParameters & parameters)
-  : TigerPermeability(parameters)
+  : TigerPermeability(parameters),
+  _aperture(getParam<Real>("aperture")),
+  _rt(getParam<Real>("reservor_thickness"))
 {
-  permeability_type = (TigerPermeability::Permeability_Type() = "isotropic");
-  Real _apreture = getParam<Real>("apreture");
-  k0.clear();
-  k0.assign(1,(std::pow(_apreture,2.0) / 12.0));
+}
+
+RankTwoTensor
+TigerPermeabilityCubicLaw::Permeability(const int & dim, const Real & porosity, const Real & scale_factor) const
+{
+  if (dim == 3)
+    mooseError(name(),": This permeability userobject cannot be used for 3D elements.");
+
+  Real effAperture = 0;
+  effAperture = _aperture == 0 ? (scale_factor/_rt) : _aperture;
+
+  std::vector<Real> k0;
+  PermeabilityVectorCalculator(porosity, effAperture, k0);
+
+  MooseEnum pt("isotropic","isotropic");
+
+  return PermeabilityTensorCalculator(dim, k0, pt);
+}
+
+void
+TigerPermeabilityCubicLaw::PermeabilityVectorCalculator(const Real & porosity, const Real & scale_factor, std::vector<Real> & k0) const
+{
+  k0.push_back(std::pow(scale_factor,2.0) / 12.0);
 }

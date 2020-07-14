@@ -19,8 +19,8 @@
 [UserObjects]
   [./rock_uo]
     type =  TigerPermeabilityConst
-    permeability_type = isotropic
-    k0 = '1.0e-10'
+    permeability_type = orthotropic
+    k0 = '3.0e-10 2.0e-10 1.0e-10'
   [../]
 []
 
