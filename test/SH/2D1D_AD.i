@@ -80,14 +80,22 @@
 [Materials]
   [./rock_g]
     type = TigerGeometryMaterial
-    porosity = 0.35
     block = '0 1'
   [../]
   [./frac_g]
     type = TigerGeometryMaterial
-    porosity = 1
     block = '2'
     scale_factor = 1.2e-4
+  [../]
+  [./rock_p]
+    type = TigerPorosityMaterial
+    porosity = 0.35
+    block = '0 1'
+  [../]
+  [./frac_p]
+    type = TigerPorosityMaterial
+    porosity = 1
+    block = '2'
   [../]
   [./rock_f]
     type = TigerFluidMaterial

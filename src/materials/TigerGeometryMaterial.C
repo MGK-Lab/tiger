@@ -36,7 +36,6 @@ validParams<TigerGeometryMaterial>()
 {
   InputParameters params = validParams<Material>();
 
-  params.addRequiredParam<Real>("porosity", "Initial porosity of the feature");
   params.addParam<FunctionName>("scale_factor", 1.0, "The scale factor for non-3D "
         "elements ( particularlly lower dimensional elements): if mesh is 3D"
         ", aperture for 2D elements (fractures) and diameter for 1D elements"
@@ -54,9 +53,7 @@ TigerGeometryMaterial::TigerGeometryMaterial(const InputParameters & parameters)
   : Material(parameters),
     _rot_mat(declareProperty<RankTwoTensor>("lowerD_rotation_matrix")),
     _scale_factor(declareProperty<Real>("scale_factor")),
-    _n(declareProperty<Real>("porosity")),
-    _scale_factor0(getFunction("scale_factor")),
-    _n0(getParam<Real>("porosity"))
+    _scale_factor0(getFunction("scale_factor"))
 {
 }
 
@@ -69,8 +66,6 @@ TigerGeometryMaterial::computeQpProperties()
     _rot_mat[_qp] = lowerDRotationMatrix(_current_elem->dim());
   else
     _rot_mat[_qp] = RankTwoTensor::Identity();
-
-  _n[_qp] = _n0;
 }
 
 Real

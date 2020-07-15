@@ -21,35 +21,35 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERGEOMETRYMATERIAL_H
-#define TIGERGEOMETRYMATERIAL_H
+#include "TigerPorosityMaterial.h"
+#include "MooseMesh.h"
+#include <cfloat>
+#include "Function.h"
 
-#include "Material.h"
-#include "RankTwoTensor.h"
-
-class TigerGeometryMaterial;
+registerMooseObject("TigerApp", TigerPorosityMaterial);
 
 template <>
-InputParameters validParams<TigerGeometryMaterial>();
-
-class TigerGeometryMaterial : public Material
+InputParameters
+validParams<TigerPorosityMaterial>()
 {
-public:
-  TigerGeometryMaterial(const InputParameters & parameters);
+  InputParameters params = validParams<Material>();
 
-protected:
-  virtual void computeQpProperties() override;
-  // Calculates rotation matrix for lower dimensional elements
-  RankTwoTensor lowerDRotationMatrix(int dim);
-  // computes scaling factor for lower dimensional elements
-  Real Scaling();
+  params.addRequiredParam<Real>("porosity", "Initial porosity of the feature");
+  params.addClassDescription("Material for introducing geometrical properties "
+        "of defined structural features (e.g unit, fracture and well)");
 
-  // Material for rotation matrix for local cordinates
-  MaterialProperty<RankTwoTensor> & _rot_mat;
-  // scaling factor
-  MaterialProperty<Real> & _scale_factor;
-  // Initial scaling factor
-  const Function & _scale_factor0;
-};
+  return params;
+}
 
-#endif /* TIGERGEOMETRYMATERIAL_H */
+TigerPorosityMaterial::TigerPorosityMaterial(const InputParameters & parameters)
+  : Material(parameters),
+    _n(declareProperty<Real>("porosity")),
+    _n0(getParam<Real>("porosity"))
+{
+}
+
+void
+TigerPorosityMaterial::computeQpProperties()
+{
+  _n[_qp] = _n0;
+}

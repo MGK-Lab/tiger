@@ -25,6 +25,9 @@
 [Materials]
   [./rock_g]
     type = TigerGeometryMaterial
+  [../]
+  [./rock_p]
+    type = TigerPorosityMaterial
     porosity = 1
   [../]
   [./rock_f]

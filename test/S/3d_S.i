@@ -21,13 +21,21 @@
   [../]
   [./rock_g1]
     type = TigerGeometryMaterial
+    block = 'b1 b2'
+  [../]
+  [./rock_p1]
+    type = TigerPorosityMaterial
     porosity = 1
     block = 'b1 b2'
   [../]
   [./rock_g2]
     type = TigerGeometryMaterial
-    porosity = 1
     scale_factor = 0.1
+    block = frac
+  [../]
+  [./rock_p2]
+    type = TigerPorosityMaterial
+    porosity = 1
     block = frac
   [../]
   [./rock_s]
