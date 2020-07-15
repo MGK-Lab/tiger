@@ -41,5 +41,6 @@ protected:
   // calculated porosity
   MaterialProperty<Real> & _n;
   // Initial porosity
-  Real _n0;
+  const VariableValue & _n0;
+  bool _p_e;
 };

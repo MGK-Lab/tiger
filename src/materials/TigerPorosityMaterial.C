@@ -34,9 +34,11 @@ validParams<TigerPorosityMaterial>()
 {
   InputParameters params = validParams<Material>();
 
-  params.addRequiredParam<Real>("porosity", "Initial porosity of the feature");
-  params.addClassDescription("Material for introducing geometrical properties "
-        "of defined structural features (e.g unit, fracture and well)");
+  params.addRequiredCoupledVar("porosity", "porosity (temporal and spatial function)");
+  params.addParam<bool>("porosity_evolotion", false,"if it evoloves by "
+        "deformation, true. Attention, if true, the given porosity should not be"
+        " temporal and displacement variable should be given");
+  params.addClassDescription("Material for defining porosity and its evolotion");
 
   return params;
 }
@@ -44,12 +46,14 @@ validParams<TigerPorosityMaterial>()
 TigerPorosityMaterial::TigerPorosityMaterial(const InputParameters & parameters)
   : Material(parameters),
     _n(declareProperty<Real>("porosity")),
-    _n0(getParam<Real>("porosity"))
+    _n0(coupledValue("porosity")),
+    _p_e(getParam<bool>("porosity_evolotion"))
 {
 }
 
 void
 TigerPorosityMaterial::computeQpProperties()
 {
-  _n[_qp] = _n0;
+  if (!_p_e)
+    _n[_qp] = _n0[_qp];
 }
