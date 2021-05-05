@@ -1,7 +1,17 @@
 [Mesh]
-  type = FileMesh
-  file = 2d_ad.msh
   uniform_refine = 1
+  allow_renumbering = false
+  [mesh]
+    type = FileMeshGenerator
+    file = 2d_ad.msh
+  []
+  [c_side]
+    type = BoundingBoxNodeSetGenerator
+    input = mesh
+    bottom_left = '0.49 0.49 0'
+    top_right = '0.51 0.51 0'
+    new_boundary = 'c'
+  []
 []
 
 [Modules]
@@ -31,6 +41,9 @@
 [Materials]
   [./rock_g]
     type = TigerGeometryMaterial
+  [../]
+  [./rock_p]
+    type = TigerPorosityMaterial
     porosity = 1
   [../]
   [./rock_f]

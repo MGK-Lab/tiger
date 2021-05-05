@@ -1,40 +1,41 @@
 [Mesh]
-  type = GeneratedMesh
-  dim = 2
-  xmin = -0.01
-  xmax = 0.01
-  ymin = 0
-  ymax = 0.75
-  nx = 10
-  ny = 15
-[]
-
-[MeshModifiers]
-  [./AddBlock]
-    type = SubdomainBoundingBox
+  [mesh]
+    type = GeneratedMeshGenerator
+    dim = 2
+    xmin = -0.01
+    xmax = 0.01
+    ymin = 0
+    ymax = 0.75
+    nx = 10
+    ny = 15
+  []
+  [AddBlock]
+    type = SubdomainBoundingBoxGenerator
+    input = mesh
     block_id = 1
     bottom_left = '0 0 0'
     top_right = '0.01 0.75 0'
-  [../]
-  [./AddSideset]
-    type = SideSetsAroundSubdomain
+  []
+  [AddSideset]
+    type = SideSetsAroundSubdomainGenerator
     new_boundary = 7
     block = 0
     normal = '1 0 0'
-    depends_on = AddBlock
-  [../]
-  [./lower]
-    type = MeshSideSet
+    input = AddBlock
+  []
+  [lower]
+    type = MeshSideSetGenerator
     block_id = 2
     boundaries = '7'
-    depends_on = AddSideset
-  [../]
-  [./inject]
-    type = AddExtraNodeset
+    input = AddSideset
+  []
+  [inject]
+    type = BoundingBoxNodeSetGenerator
     new_boundary = inject
-    coord = '0 0.75'
-    tolerance = 1e-3
-  [../]
+    bottom_left = '0 0.749 0'
+    top_right = '0 0.751 0'
+    input = lower
+  []
 []
 
 [Modules]
@@ -50,7 +51,7 @@
 
 [BCs]
   [./inject_s]
-    type = PresetBC
+    type = DirichletBC
     variable = solute
     boundary = inject
     value = 1
@@ -80,14 +81,22 @@
 [Materials]
   [./rock_g]
     type = TigerGeometryMaterial
-    porosity = 0.35
     block = '0 1'
   [../]
   [./frac_g]
     type = TigerGeometryMaterial
-    porosity = 1
     block = '2'
     scale_factor = 1.2e-4
+  [../]
+  [./rock_p]
+    type = TigerPorosityMaterial
+    porosity = 0.35
+    block = '0 1'
+  [../]
+  [./frac_p]
+    type = TigerPorosityMaterial
+    porosity = 1
+    block = '2'
   [../]
   [./rock_f]
     type = TigerFluidMaterial

@@ -21,35 +21,26 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERGEOMETRYMATERIAL_H
-#define TIGERGEOMETRYMATERIAL_H
+#pragma once
 
 #include "Material.h"
-#include "RankTwoTensor.h"
 
-class TigerGeometryMaterial;
+class TigerPorosityMaterial;
 
 template <>
-InputParameters validParams<TigerGeometryMaterial>();
+InputParameters validParams<TigerPorosityMaterial>();
 
-class TigerGeometryMaterial : public Material
+class TigerPorosityMaterial : public Material
 {
 public:
-  TigerGeometryMaterial(const InputParameters & parameters);
+  TigerPorosityMaterial(const InputParameters & parameters);
 
 protected:
   virtual void computeQpProperties() override;
-  // Calculates rotation matrix for lower dimensional elements
-  RankTwoTensor lowerDRotationMatrix(int dim);
-  // computes scaling factor for lower dimensional elements
-  Real Scaling();
 
-  // Material for rotation matrix for local cordinates
-  MaterialProperty<RankTwoTensor> & _rot_mat;
-  // scaling factor
-  MaterialProperty<Real> & _scale_factor;
-  // Initial scaling factor
-  const Function & _scale_factor0;
+  // calculated porosity
+  MaterialProperty<Real> & _n;
+  // Initial porosity
+  const VariableValue & _n0;
+  bool _p_e;
 };
-
-#endif /* TIGERGEOMETRYMATERIAL_H */

@@ -21,35 +21,39 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERGEOMETRYMATERIAL_H
-#define TIGERGEOMETRYMATERIAL_H
+#include "TigerPorosityMaterial.h"
+#include "MooseMesh.h"
+#include <cfloat>
+#include "Function.h"
 
-#include "Material.h"
-#include "RankTwoTensor.h"
-
-class TigerGeometryMaterial;
+registerMooseObject("TigerApp", TigerPorosityMaterial);
 
 template <>
-InputParameters validParams<TigerGeometryMaterial>();
-
-class TigerGeometryMaterial : public Material
+InputParameters
+validParams<TigerPorosityMaterial>()
 {
-public:
-  TigerGeometryMaterial(const InputParameters & parameters);
+  InputParameters params = validParams<Material>();
 
-protected:
-  virtual void computeQpProperties() override;
-  // Calculates rotation matrix for lower dimensional elements
-  RankTwoTensor lowerDRotationMatrix(int dim);
-  // computes scaling factor for lower dimensional elements
-  Real Scaling();
+  params.addRequiredCoupledVar("porosity", "porosity (temporal and spatial function)");
+  params.addParam<bool>("porosity_evolotion", false,"if it evoloves by "
+        "deformation, true. Attention, if true, the given porosity should not be"
+        " temporal and displacement variable should be given");
+  params.addClassDescription("Material for defining porosity and its evolotion");
 
-  // Material for rotation matrix for local cordinates
-  MaterialProperty<RankTwoTensor> & _rot_mat;
-  // scaling factor
-  MaterialProperty<Real> & _scale_factor;
-  // Initial scaling factor
-  const Function & _scale_factor0;
-};
+  return params;
+}
 
-#endif /* TIGERGEOMETRYMATERIAL_H */
+TigerPorosityMaterial::TigerPorosityMaterial(const InputParameters & parameters)
+  : Material(parameters),
+    _n(declareProperty<Real>("porosity")),
+    _n0(coupledValue("porosity")),
+    _p_e(getParam<bool>("porosity_evolotion"))
+{
+}
+
+void
+TigerPorosityMaterial::computeQpProperties()
+{
+  if (!_p_e)
+    _n[_qp] = _n0[_qp];
+}

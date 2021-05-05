@@ -27,8 +27,11 @@
 [Materials]
   [./rock_g]
     type = TigerGeometryMaterial
-    porosity = 0
     scale_factor = 3e-3
+  [../]
+  [./rock_p]
+    type = TigerPorosityMaterial
+    porosity = 0
   [../]
   [./rock_f]
     type = TigerFluidMaterial

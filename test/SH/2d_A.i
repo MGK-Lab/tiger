@@ -32,6 +32,9 @@
   [../]
   [./rock_g]
     type = TigerGeometryMaterial
+  [../]
+  [./rock_p]
+    type = TigerPorosityMaterial
     porosity = 0.5
   [../]
   [./advect_sh]
