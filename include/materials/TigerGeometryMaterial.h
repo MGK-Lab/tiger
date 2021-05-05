@@ -44,12 +44,18 @@ protected:
   // computes scaling factor for lower dimensional elements
   Real Scaling();
 
+  // Gravity vector
+  MaterialProperty<RealVectorValue> & _gravity;
   // Material for rotation matrix for local cordinates
   MaterialProperty<RankTwoTensor> & _rot_mat;
   // scaling factor
   MaterialProperty<Real> & _scale_factor;
   // Initial scaling factor
   const Function & _scale_factor0;
+  
+private:
+  // Gravity vector
+  RealVectorValue _g;
 };
 
 #endif /* TIGERGEOMETRYMATERIAL_H */

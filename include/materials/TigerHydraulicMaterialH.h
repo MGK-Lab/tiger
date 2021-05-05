@@ -48,8 +48,6 @@ protected:
   MaterialProperty<RankTwoTensor> & _k_vis;
   // Hydraulic time derivative coefficient
   MaterialProperty<Real> & _H_Kernel_dt;
-  // Gravity vector
-  MaterialProperty<RealVectorValue> & _gravity;
   // Tiger permeability calculater userobject
   const TigerPermeability & _kf_uo;
   // Dracy velocity
@@ -75,9 +73,9 @@ protected:
   const MaterialProperty<Real> & _dmu_dT_f;
   const MaterialProperty<Real> & _dmu_dp_f;
 
+  const MaterialProperty<RealVectorValue> & _gravity;
+
 private:
-  // Gravity vector
-  RealVectorValue _g;
   // Compressibility of the solid phase
   Real _beta_s;
 };

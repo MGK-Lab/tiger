@@ -36,6 +36,8 @@ validParams<TigerGeometryMaterial>()
 {
   InputParameters params = validParams<Material>();
 
+  params.addParam<RealVectorValue>("gravity", RealVectorValue(0,0,0),
+        "The gravity acceleration vector (m/s^2)");
   params.addParam<FunctionName>("scale_factor", 1.0, "The scale factor for non-3D "
         "elements ( particularlly lower dimensional elements): if mesh is 3D"
         ", aperture for 2D elements (fractures) and diameter for 1D elements"
@@ -51,15 +53,18 @@ validParams<TigerGeometryMaterial>()
 
 TigerGeometryMaterial::TigerGeometryMaterial(const InputParameters & parameters)
   : Material(parameters),
+    _gravity(declareProperty<RealVectorValue>("gravity_vector")),
     _rot_mat(declareProperty<RankTwoTensor>("lowerD_rotation_matrix")),
     _scale_factor(declareProperty<Real>("scale_factor")),
-    _scale_factor0(getFunction("scale_factor"))
+    _scale_factor0(getFunction("scale_factor")),
+    _g(getParam<RealVectorValue>("gravity"))
 {
 }
 
 void
 TigerGeometryMaterial::computeQpProperties()
 {
+  _gravity[_qp] = _g;
   _scale_factor[_qp] = Scaling();
 
   if (_current_elem->dim() < _mesh.dimension())
