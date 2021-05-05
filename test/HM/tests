@@ -1,0 +1,12 @@
+[Tests]
+  [./3D_Mechanics_Static]
+    type = 'Exodiff'
+    input = '3d_M_S.i'
+    exodiff = '3d_M_S_out.e'
+  [../]
+  [./3D_Hydro_Mechanics_Static]
+    type = 'Exodiff'
+    input = '3d_HM_S.i'
+    exodiff = '3d_HM_S_out.e'
+  [../]
+[]
