@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  TIGER - Hydro-thermal sImulator GEothermal Reservoirs                 */
+/*  TIGER - THMC sImulator for GEoscience Research                        */
 /*                                                                        */
 /*  Copyright (C) 2017 by Maziar Gholami Korzani                          */
 /*  Karlsruhe Institute of Technology, Institute of Applied Geosciences   */
@@ -100,15 +100,12 @@ TigerSoluteMaterialS::computeQpProperties()
     // Chemical kernel for calculating the time derivative, n0 is porosity
     _TimeKernelS[_qp] = _n[_qp];
 
-	 RealVectorValue L;
-	 L(0) = _current_elem->hmin();
-	 Real h_n = L.norm();
-
-	_Fo[_qp] = ((_diffusion_molecular * _dt) / (h_n*h_n));
+	 Real h_n = _current_elem->hmin();
+	_Fo[_qp] = _diffusion_molecular * _dt / (h_n*h_n);
 
   _diffusion_factor[_qp] = _diffusion_molecular * _n[_qp] * _formation_factor;
 
-    switch (_at)
+  switch (_at)
   {
     case AT::pure_diffusion:
       _av[_qp].zero();
@@ -128,35 +125,32 @@ TigerSoluteMaterialS::computeQpProperties()
       break;
   }
 
-RankTwoTensor rot_mat_Transpose = RankTwoTensor();
-rot_mat_Transpose = _rot_mat[_qp].transpose();
-RealVectorValue darcyLocal = rot_mat_Transpose * _av[_qp];
+  RealVectorValue darcyLocal = _rot_mat[_qp].transpose() * _av[_qp];
 
  _diffdisp[_qp] = DispersionTensorCalculator(darcyLocal, _disp_l, _disp_t, _current_elem->dim(), _mesh.dimension(), _diffusion_factor[_qp]);
 
 
   if (_current_elem->dim() < _mesh.dimension())
-  _diffdisp[_qp].rotate(_rot_mat[_qp]);
+    _diffdisp[_qp].rotate(_rot_mat[_qp]);
 
- Real lambda = _diffdisp[_qp].trace() / (_current_elem->dim() * _TimeKernelS[_qp]);
+  Real lambda = _diffdisp[_qp].trace() / (_current_elem->dim() * _TimeKernelS[_qp]);
 
   if (_has_PeCr && !_has_supg)
     _supg_uo->PeCrNrsCalculator(lambda, _dt, _current_elem, _av[_qp], (*_Pe)[_qp], (*_Cr)[_qp]);
 
   if (_has_supg)
-    {
-      // should be multiplied by the gradient of the test function to build the Petrov Galerkin P function
-      _supg_uo->SUPGCalculator(lambda, _dt, _current_elem, _av[_qp], _SUPG_p[_qp], (*_Pe)[_qp], (*_Cr)[_qp]);
-      _SUPG_p[_qp] *= _supg_scale;
+  {
+    // should be multiplied by the gradient of the test function to build the Petrov Galerkin P function
+    _supg_uo->SUPGCalculator(lambda, _dt, _current_elem, _av[_qp], _SUPG_p[_qp], (*_Pe)[_qp], (*_Cr)[_qp]);
+    _SUPG_p[_qp] *= _supg_scale;
 
-      if (_SUPG_p[_qp].norm() != 0.0)
-        _SUPG_ind[_qp] = true;
-      else
-        _SUPG_ind[_qp] = false;
-    }
+    if (_SUPG_p[_qp].norm() != 0.0)
+      _SUPG_ind[_qp] = true;
     else
       _SUPG_ind[_qp] = false;
-
+  }
+  else
+    _SUPG_ind[_qp] = false;
 }
 
 RankTwoTensor
