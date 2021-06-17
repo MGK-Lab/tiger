@@ -23,45 +23,34 @@
 
 #pragma once
 
-#include "Material.h"
+#include "Kernel.h"
+#include "RankTwoTensor.h"
 
-class TigerMechanicsMaterialM;
+class TigerHydroMechanicsKernelHM;
 
 template <>
-InputParameters validParams<TigerMechanicsMaterialM>();
+InputParameters validParams<TigerHydroMechanicsKernelHM>();
 
-class TigerMechanicsMaterialM : public Material
+class TigerHydroMechanicsKernelHM : public Kernel
 {
 public:
-  TigerMechanicsMaterialM(const InputParameters & parameters);
+  TigerHydroMechanicsKernelHM(const InputParameters & parameters);
 
 protected:
-  virtual void computeQpProperties() override;
+  virtual Real computeQpResidual() override;
+  virtual Real computeQpJacobian() override;
+  virtual Real computeQpOffDiagJacobian(unsigned int jvar) override;
 
-  // bulk density
-  MaterialProperty<Real> & _rho_b;
-  // biot coefficient for poromechanics
-  MaterialProperty<Real> & _biot;
-
-  // Imported props from TigerGeometryMaterial
-  const MaterialProperty<Real> & _n;
-
-  /// Number of displacements supplied (1 in 1D, 2 in 2D, 3 in 3D)
-  const unsigned int _ndisp;
-
-  /// Gradient of the displacements
-  std::vector<const VariableGradient *> _grad_disp;
-
-  /// Old value of gradient of the displacements
-  std::vector<const VariableGradient *> _grad_disp_old;
-
-  /// The volumetric strain rate at the quadpoints
-  MaterialProperty<Real> & _vol_strain_rate;
-
-  /// The total volumetric strain at the quadpoints
-  MaterialProperty<Real> & _vol_total_strain;
-
-private:
-  const Real _b;
-  const Real _density;
+  const MaterialProperty<Real> & _scale_factor;
+  const MaterialProperty<RankTwoTensor> & _k_vis;
+  const MaterialProperty<Real> & _rho_f;
+  const MaterialProperty<Real> & _drho_dp_f;
+  const MaterialProperty<Real> & _drho_dT_f;
+  const MaterialProperty<Real> & _mu_f;
+  const MaterialProperty<Real> & _dmu_dp_f;
+  const MaterialProperty<Real> & _dmu_dT_f;
+  const MaterialProperty<RealVectorValue> & _g;
+  const MaterialProperty<Real> & _vol_strain_rate;
+  unsigned int _temperature_var;
+  std::vector<unsigned int> _disp;
 };
