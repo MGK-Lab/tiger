@@ -61,7 +61,12 @@ protected:
   /// The total volumetric strain at the quadpoints
   MaterialProperty<Real> & _vol_total_strain;
 
+  const std::string _base_name;
+  const MaterialProperty<RankTwoTensor> & _TenMech_total_strain;
+  const MaterialProperty<RankTwoTensor> * _TenMech_strain_rate;
+
 private:
   const Real _b;
   const Real _density;
+  bool _incremental;
 };

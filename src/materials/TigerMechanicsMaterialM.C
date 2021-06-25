@@ -36,8 +36,12 @@ validParams<TigerMechanicsMaterialM>()
         "specific density of rock for calculating bulk density (kg/m^3)");
   params.addParam<Real>("biot_coefficient", 1.0,
         "Biot's coefficient for poromechanics");
-  params.addRequiredCoupledVar("displacements",
-        "The displacements variables");
+  params.addCoupledVar("disps",
+        "The displacements variables (they are required if the incrimental is false)");
+  params.addRequiredParam<bool>("incremental",
+        "Incremental or total strain approach similar to TensorMechanics Action");
+  params.addParam<std::string>("base_name", "the identical base name provided "
+        "in TensorMechanics Action");
   params.addClassDescription("Mechanics material for mechanics kernels");
 
   return params;
@@ -48,22 +52,31 @@ TigerMechanicsMaterialM::TigerMechanicsMaterialM(const InputParameters & paramet
     _rho_b(declareProperty<Real>("bulk_density")),
     _biot(declareProperty<Real>("biot_coefficient")),
     _n(getMaterialProperty<Real>("porosity")),
+    _ndisp(coupledComponents("disps")),
+    _vol_strain_rate(declareProperty<Real>("volumetric_strain_rate_HM")),
+    _vol_total_strain(declareProperty<Real>("total_volumetric_strain_HM")),
+    _base_name(isParamValid("base_name") ? getParam<std::string>("base_name") + "_" : ""),
+    _TenMech_total_strain(getMaterialProperty<RankTwoTensor>(_base_name + "total_strain")),
     _b(getParam<Real>("biot_coefficient")),
     _density(getParam<Real>("specific_density")),
-    _ndisp(coupledComponents("displacements")),
-    _grad_disp(coupledGradients("displacements")),
-    _vol_strain_rate(declareProperty<Real>("volumetric_strain_rate_HM")),
-    _vol_total_strain(declareProperty<Real>("total_volumetric_strain_HM"))
+    _incremental(getParam<bool>("incremental"))
 {
-  if (_ndisp != _mesh.dimension())
-    paramError("displacements", "The number of variables supplied must match the mesh dimension.");
+  _TenMech_strain_rate = _incremental ?
+              &getMaterialProperty<RankTwoTensor>(_base_name + "strain_rate") : NULL;
 
-  if (_is_transient)
-    _grad_disp_old = coupledGradientsOld("displacements");
+  if (!_incremental && _is_transient)
+  {
+    if (_ndisp != _mesh.dimension())
+      paramError("disps", "The number of displacement variables supplied must "
+                  "match the mesh dimension or they are not supplied at all"
+                  " in the case of total strain approach");
 
-  // set unused dimensions to zero
-  _grad_disp.resize(3, &_grad_zero);
-  _grad_disp_old.resize(3, &_grad_zero);
+    _grad_disp = coupledGradients("disps");
+    _grad_disp_old = coupledGradientsOld("disps");
+    // set unused dimensions to zero
+    _grad_disp.resize(3, &_grad_zero);
+    _grad_disp_old.resize(3, &_grad_zero);
+  }
 }
 
 void
@@ -71,15 +84,17 @@ TigerMechanicsMaterialM::computeQpProperties()
 {
   _rho_b[_qp] = (1.0 - _n[_qp]) * _density;
   _biot[_qp] = _b;
+  _vol_total_strain[_qp] = _TenMech_total_strain[_qp].trace();
 
-  RankTwoTensor A((*_grad_disp[0])[_qp],
-                  (*_grad_disp[1])[_qp],
-                  (*_grad_disp[2])[_qp]); // Deformation gradient
+  if (_incremental && _is_transient)
+    _vol_strain_rate[_qp] = (*_TenMech_strain_rate)[_qp].trace();
 
-  _vol_total_strain[_qp] = A.trace();
 
-  if (_is_transient)
+  if (!_incremental && _is_transient)
   {
+    RankTwoTensor A   ((*_grad_disp[0])[_qp],
+                       (*_grad_disp[1])[_qp],
+                       (*_grad_disp[2])[_qp]); // Deformation gradient
     RankTwoTensor Abar((*_grad_disp_old[0])[_qp],
                        (*_grad_disp_old[1])[_qp],
                        (*_grad_disp_old[2])[_qp]); // Old Deformation gradient
@@ -87,6 +102,4 @@ TigerMechanicsMaterialM::computeQpProperties()
     RankTwoTensor total_strain_increment = 0.5 * (A + A.transpose());
     _vol_strain_rate[_qp] = total_strain_increment.trace() / _dt;
   }
-  else
-    _vol_strain_rate[_qp] = 0.0;
 }
