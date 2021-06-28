@@ -19,6 +19,7 @@
   [./rock_p]
     type = TigerPorosityMaterial
     porosity = 0
+    specific_density = 2600
   [../]
   [./rock_f]
     type = TigerFluidMaterial
@@ -29,7 +30,6 @@
     conductivity_type = isotropic
     advection_type = pure_diffusion
     lambda = 2
-    density = 2600
     specific_heat = 840
   [../]
 []

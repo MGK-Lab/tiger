@@ -25,13 +25,13 @@
   [./matrix_p]
     type = TigerPorosityMaterial
     porosity = 1
+    specific_density = 0
   [../]
   [./matrix_t]
     type = TigerThermalMaterialT
     conductivity_type = isotropic
     advection_type = user_velocity
     lambda = 0
-    density = 0
     specific_heat = 0
     user_velocity = vel
   [../]

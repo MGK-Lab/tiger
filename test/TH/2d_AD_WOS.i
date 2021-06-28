@@ -45,6 +45,7 @@
   [./rock_p]
     type = TigerPorosityMaterial
     porosity = 1
+    specific_density = 1
   [../]
   [./rock_f]
     type = TigerFluidMaterial
@@ -61,7 +62,6 @@
     conductivity_type = isotropic
     mean_calculation_type = arithmetic
     lambda = 1e-4
-    density = 1
     specific_heat = 1
     has_supg = true
     supg_uo = supg

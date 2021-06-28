@@ -22,6 +22,11 @@
       [../]
     [../]
   [../]
+  [./FluidProperties]
+    [./water_uo]
+      type = TigerWaterConst
+    [../]
+  [../]
 []
 
 [Kernels]
@@ -62,6 +67,10 @@
   [./stress]
     type = ComputeLinearElasticStress
   [../]
+  [./rock_f]
+    type = TigerFluidMaterial
+    fp_uo = water_uo
+  [../]
   [./rock_g]
     type = TigerGeometryMaterial
     gravity = '0 -9.8 0'
@@ -69,10 +78,12 @@
   [./rock_p]
     type = TigerPorosityMaterial
     porosity = 0.2
+    specific_density = 2500
   [../]
   [./rock_m]
     type = TigerMechanicsMaterialM
-    specific_density = 2500
+    disps = 'disp_x disp_y disp_z'
+    incremental = false
   [../]
 []
 

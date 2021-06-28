@@ -115,10 +115,12 @@
   [./rock_p]
     type = TigerPorosityMaterial
     porosity = 0.2
+    specific_density = 2500
   [../]
   [./rock_m]
     type = TigerMechanicsMaterialM
-    specific_density = 2500
+    disps = 'disp_x disp_y disp_z'
+    incremental = false
   [../]
   [./rock_f]
     type = TigerFluidMaterial

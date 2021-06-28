@@ -121,11 +121,12 @@
   [./rock_p]
     type = TigerPorosityMaterial
     porosity = 0.2
+    specific_density = 2500
   [../]
   [./rock_m]
     type = TigerMechanicsMaterialM
-    specific_density = 2500
-    displacements = 'disp_x disp_y disp_z'
+    disps = 'disp_x disp_y disp_z'
+    incremental = false
   [../]
   [./rock_f]
     type = TigerFluidMaterial
@@ -149,7 +150,7 @@
 [Executioner]
   type = Transient
   end_time = 100
-  dt = 1
+  dt = 10
   nl_abs_tol = 1e-10
   l_max_its = 20
   automatic_scaling = true

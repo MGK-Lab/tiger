@@ -26,6 +26,7 @@
   [./rock_p1]
     type = TigerPorosityMaterial
     porosity = 1
+    specific_density = 2500
     block = 'b1 b2'
   [../]
   [./rock_g2]
@@ -36,6 +37,7 @@
   [./rock_p2]
     type = TigerPorosityMaterial
     porosity = 1
+    specific_density = 2500
     block = frac
   [../]
   [./rock_s]

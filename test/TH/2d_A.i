@@ -36,6 +36,7 @@
   [./rock_p]
     type = TigerPorosityMaterial
     porosity = 1
+    specific_density = 0
   [../]
   [./advect_th]
     type = TigerThermalMaterialT
@@ -43,7 +44,6 @@
     user_velocity = vel
     conductivity_type = isotropic
     lambda = 0
-    density = 0
     specific_heat = 0
     has_supg = true
     supg_uo = supg

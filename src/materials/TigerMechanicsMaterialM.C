@@ -32,8 +32,6 @@ validParams<TigerMechanicsMaterialM>()
 {
   InputParameters params = validParams<Material>();
 
-  params.addRequiredParam<Real>("specific_density",
-        "specific density of rock for calculating bulk density (kg/m^3)");
   params.addParam<Real>("biot_coefficient", 1.0,
         "Biot's coefficient for poromechanics");
   params.addCoupledVar("disps",
@@ -49,16 +47,13 @@ validParams<TigerMechanicsMaterialM>()
 
 TigerMechanicsMaterialM::TigerMechanicsMaterialM(const InputParameters & parameters)
   : Material(parameters),
-    _rho_b(declareProperty<Real>("bulk_density")),
     _biot(declareProperty<Real>("biot_coefficient")),
-    _n(getMaterialProperty<Real>("porosity")),
     _ndisp(coupledComponents("disps")),
     _vol_strain_rate(declareProperty<Real>("volumetric_strain_rate_HM")),
     _vol_total_strain(declareProperty<Real>("total_volumetric_strain_HM")),
     _base_name(isParamValid("base_name") ? getParam<std::string>("base_name") + "_" : ""),
     _TenMech_total_strain(getMaterialProperty<RankTwoTensor>(_base_name + "total_strain")),
     _b(getParam<Real>("biot_coefficient")),
-    _density(getParam<Real>("specific_density")),
     _incremental(getParam<bool>("incremental"))
 {
   _TenMech_strain_rate = _incremental ?
@@ -82,7 +77,6 @@ TigerMechanicsMaterialM::TigerMechanicsMaterialM(const InputParameters & paramet
 void
 TigerMechanicsMaterialM::computeQpProperties()
 {
-  _rho_b[_qp] = (1.0 - _n[_qp]) * _density;
   _biot[_qp] = _b;
   _vol_total_strain[_qp] = _TenMech_total_strain[_qp].trace();
 

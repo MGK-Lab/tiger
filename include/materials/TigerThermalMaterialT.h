@@ -91,11 +91,14 @@ protected:
   MaterialProperty<RealVectorValue> & _SUPG_p;
 
   // imported props from TigerGeometryMaterial
-  const MaterialProperty<Real> & _n;
   const MaterialProperty<RankTwoTensor> & _rot_mat;
 
+  // imported props from TigerGeometryMaterial
+  const MaterialProperty<Real> & _n;
+  const MaterialProperty<Real> & _rho_m;
+  const MaterialProperty<Real> & _mass_frac;
+
   // imported props from TigerFluidMaterial
-  const MaterialProperty<Real> & _rho_f;
   const MaterialProperty<Real> & _cp_f;
   const MaterialProperty<Real> & _lambda_f;
   const MaterialProperty<Real> & _drho_dT_f;

@@ -34,6 +34,8 @@ validParams<TigerPorosityMaterial>()
 {
   InputParameters params = validParams<Material>();
 
+  params.addRequiredParam<Real>("specific_density",
+        "specific density of rock for calculating bulk density (kg/m^3)");
   params.addRequiredCoupledVar("porosity", "porosity (temporal and spatial function)");
   params.addParam<bool>("porosity_evolotion", false,"if it evoloves by "
         "deformation, true. Attention, if true, the given porosity should not be"
@@ -45,10 +47,25 @@ validParams<TigerPorosityMaterial>()
 
 TigerPorosityMaterial::TigerPorosityMaterial(const InputParameters & parameters)
   : Material(parameters),
+    _rho_b(declareProperty<Real>("bulk_density")),
+    _rho_m(declareProperty<Real>("mixture_density")),
+    _mass_frac(declareProperty<Real>("void_mass_fraction")),
     _n(declareProperty<Real>("porosity")),
     _n0(coupledValue("porosity")),
-    _p_e(getParam<bool>("porosity_evolotion"))
+    _rho_f(getMaterialProperty<Real>("fluid_density")),
+    _p_e(getParam<bool>("porosity_evolotion")),
+    _rho_r(getParam<Real>("specific_density"))
 {
+  if (_p_e)
+  {
+    _biot = &getMaterialProperty<Real>("biot_coefficient");
+    _vol_total_strain = &getMaterialProperty<Real>("total_volumetric_strain_HM");
+  }
+  else
+  {
+    _biot = NULL;
+    _vol_total_strain = NULL;
+  }
 }
 
 void
@@ -56,4 +73,22 @@ TigerPorosityMaterial::computeQpProperties()
 {
   if (!_p_e)
     _n[_qp] = _n0[_qp];
+  else
+  {
+    Real c = log((*_biot)[_qp] / ((*_biot)[_qp] - _n0[_qp]));
+    _n[_qp] = (*_biot)[_qp] + (_n0[_qp] - (*_biot)[_qp]) * exp(c * (1.0 - exp((*_vol_total_strain)[_qp] / c)));
+  }
+
+  _rho_b[_qp] = (1.0 - _n[_qp]) * _rho_r;
+  _rho_m[_qp] = _n[_qp] * _rho_f[_qp] + _rho_b[_qp];
+
+  if (_n[_qp] ==0.0 || _n[_qp] == 1.0)
+    _mass_frac[_qp] =  _n[_qp];
+  else
+  {
+    if ((_rho_r - _rho_f[_qp]) == 0.0 || _rho_m[_qp] == 0.0)
+      mooseError("Rock density and fluid density are either equal or zero");
+    else
+      _mass_frac[_qp] = (_rho_r - _rho_m[_qp]) * _rho_f[_qp] / _rho_m[_qp] / (_rho_r - _rho_f[_qp]);
+  }
 }
