@@ -53,6 +53,3 @@ TigerPermeabilityConst::Permeability(const int & dim, const Real & porosity, con
 {
   return  PermeabilityTensorCalculator(dim, _kinit, _permeability_type);
 }
-
-void
-TigerPermeabilityConst::PermeabilityVectorCalculator(const Real & porosity, const Real & scale_factor, std::vector<Real> & k0) const {}

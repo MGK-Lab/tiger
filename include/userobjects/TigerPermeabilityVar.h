@@ -39,9 +39,6 @@ public:
   RankTwoTensor Permeability(const int & dim, const Real & porosity, const Real & scale_factor) const;
 
 protected:
-  // Unused here, because k0 is constant
-  void PermeabilityVectorCalculator(const Real & porosity, const Real & scale_factor, std::vector<Real> & k0) const;
-
   // Initial permeability from user input
   std::vector<Real> _kinit;
   // Initial porosity from user input
