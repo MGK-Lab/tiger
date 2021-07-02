@@ -21,35 +21,41 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerPermeabilityConst.h"
-#include "MooseError.h"
+#pragma once
 
-registerMooseObject("TigerApp", TigerPermeabilityConst);
+#include "Material.h"
+
+class TigerMechanicsMaterialM;
 
 template <>
-InputParameters
-validParams<TigerPermeabilityConst>()
-{
-  InputParameters params = validParams<TigerPermeability>();
-  params.addRequiredParam<std::vector<Real>>("k0", "Initial permeability (m^2)");
-  MooseEnum PT("isotropic orthotropic anisotropic");
-  params.addRequiredParam<MooseEnum>("permeability_type", PT,
-        "The permeability distribution type [isotropic, orthotropic, anisotropic].");
-  params.set<ExecFlagEnum>("execute_on", true) = EXEC_INITIAL;
-  params.addClassDescription("Permeability tensor based on provided "
-        "constant permeability value(s)");
-  return params;
-}
+InputParameters validParams<TigerMechanicsMaterialM>();
 
-TigerPermeabilityConst::TigerPermeabilityConst(const InputParameters & parameters)
-  : TigerPermeability(parameters),
-    _kinit(getParam<std::vector<Real>>("k0")),
-    _permeability_type(getParam<MooseEnum>("permeability_type"))
+class TigerMechanicsMaterialM : public Material
 {
-}
+public:
+  TigerMechanicsMaterialM(const InputParameters & parameters);
 
-RankTwoTensor
-TigerPermeabilityConst::Permeability(const int & dim, const Real & porosity, const Real & scale_factor) const
-{
-  return  PermeabilityTensorCalculator(dim, _kinit, _permeability_type);
-}
+protected:
+  virtual void computeQpProperties() override;
+
+  // biot coefficient for poromechanics
+  MaterialProperty<Real> & _biot;
+  /// Number of displacements supplied (1 in 1D, 2 in 2D, 3 in 3D)
+  const unsigned int _ndisp;
+  /// Gradient of the displacements
+  std::vector<const VariableGradient *> _grad_disp;
+  /// Old value of gradient of the displacements
+  std::vector<const VariableGradient *> _grad_disp_old;
+  /// The volumetric strain rate at the quadpoints
+  MaterialProperty<Real> & _vol_strain_rate;
+  /// The total volumetric strain at the quadpoints
+  MaterialProperty<Real> & _vol_total_strain;
+
+  const std::string _base_name;
+  const MaterialProperty<RankTwoTensor> & _TenMech_total_strain;
+  const MaterialProperty<RankTwoTensor> * _TenMech_strain_rate;
+
+private:
+  const Real _b;
+  bool _incremental;
+};

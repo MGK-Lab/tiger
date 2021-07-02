@@ -21,35 +21,51 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerPermeabilityConst.h"
+#include "TigerPermeabilityVar.h"
 #include "MooseError.h"
+#include <algorithm>
 
-registerMooseObject("TigerApp", TigerPermeabilityConst);
+registerMooseObject("TigerApp", TigerPermeabilityVar);
 
 template <>
 InputParameters
-validParams<TigerPermeabilityConst>()
+validParams<TigerPermeabilityVar>()
 {
   InputParameters params = validParams<TigerPermeability>();
   params.addRequiredParam<std::vector<Real>>("k0", "Initial permeability (m^2)");
+  params.addRequiredParam<Real>("n0", "Initial porosity");
+  params.addParam<Real>("m", 2, "The power in the denominator of the Kozeny-Carman Eq");
+  params.addParam<Real>("n", 3, "The power in the numerator of the Kozeny-Carman Eq");
   MooseEnum PT("isotropic orthotropic anisotropic");
   params.addRequiredParam<MooseEnum>("permeability_type", PT,
         "The permeability distribution type [isotropic, orthotropic, anisotropic].");
-  params.set<ExecFlagEnum>("execute_on", true) = EXEC_INITIAL;
-  params.addClassDescription("Permeability tensor based on provided "
-        "constant permeability value(s)");
+  params.set<ExecFlagEnum>("execute_on", true) = EXEC_TIMESTEP_BEGIN;
+  params.addClassDescription("Permeability tensor which evoloves by porosity using "
+        "Kozeny-Carman equation based on provided initial permeability and porosity");
   return params;
 }
 
-TigerPermeabilityConst::TigerPermeabilityConst(const InputParameters & parameters)
+TigerPermeabilityVar::TigerPermeabilityVar(const InputParameters & parameters)
   : TigerPermeability(parameters),
     _kinit(getParam<std::vector<Real>>("k0")),
+    _ninit(getParam<Real>("n0")),
+    _n(getParam<Real>("n")),
+    _m(getParam<Real>("m")),
     _permeability_type(getParam<MooseEnum>("permeability_type"))
 {
+  Real c = std::pow(1.0 - _ninit, _m) / std::pow(_ninit, _n);
+  std::transform(_kinit.begin(), _kinit.end(), _kinit.begin(), [c](Real k){ return c * k;});
 }
 
 RankTwoTensor
-TigerPermeabilityConst::Permeability(const int & dim, const Real & porosity, const Real & scale_factor) const
+TigerPermeabilityVar::Permeability(const int & dim, const Real & porosity, const Real & scale_factor) const
 {
-  return  PermeabilityTensorCalculator(dim, _kinit, _permeability_type);
+  if (dim != 3)
+    mooseError(name(),": This permeability userobject can be only used for 3D elements.");
+
+  std::vector<Real> kn(_kinit);
+  Real c = std::pow(porosity, _n) / std::pow(1.0 - porosity, _m);
+  std::transform(kn.begin(), kn.end(), kn.begin(), [c](Real k){ return c * k;});
+
+  return  PermeabilityTensorCalculator(dim, kn, _permeability_type);
 }

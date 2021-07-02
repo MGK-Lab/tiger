@@ -34,8 +34,6 @@ validParams<TigerHydraulicMaterialH>()
 
   params.addRequiredCoupledVar("pressure",
         "Pore pressure nonlinear variable");
-  params.addParam<RealVectorValue>("gravity", RealVectorValue(0,0,0),
-        "The gravity acceleration vector (m/s^2)");
   params.addRequiredParam<Real>("compressibility",
         "The compressibility of the solid porous media (1/Pa)");
   params.addRequiredParam<UserObjectName>("kf_uo",
@@ -50,7 +48,6 @@ TigerHydraulicMaterialH::TigerHydraulicMaterialH(const InputParameters & paramet
     _grad_p(coupledGradient("pressure")),
     _k_vis(declareProperty<RankTwoTensor>("permeability_by_viscosity")),
     _H_Kernel_dt(declareProperty<Real>("H_Kernel_dt_coefficient")),
-    _gravity(declareProperty<RealVectorValue>("gravity_vector")),
     _kf_uo(getUserObject<TigerPermeability>("kf_uo")),
     _dv(declareProperty<RealVectorValue>("darcy_velocity")),
     _ddv_dT(declareProperty<RealVectorValue>("d_darcy_velocity_dT")),
@@ -66,7 +63,7 @@ TigerHydraulicMaterialH::TigerHydraulicMaterialH(const InputParameters & paramet
     _drho_dp_f(getMaterialProperty<Real>("fluid_drho_dp")),
     _dmu_dT_f(getMaterialProperty<Real>("fluid_dmu_dT")),
     _dmu_dp_f(getMaterialProperty<Real>("fluid_dmu_dp")),
-    _g(getParam<RealVectorValue>("gravity")),
+    _gravity(getMaterialProperty<RealVectorValue>("gravity_vector")),
     _beta_s(getParam<Real>("compressibility"))
 {
 }
@@ -76,7 +73,6 @@ TigerHydraulicMaterialH::computeQpProperties()
 {
   _k_vis[_qp] = _kf_uo.Permeability(_current_elem->dim(), _n[_qp], _scale_factor[_qp]) / _mu_f[_qp];
   _H_Kernel_dt[_qp] = _beta_s + _beta_f[_qp] * _n[_qp];
-  _gravity[_qp] = _g;
 
   if (_current_elem->dim() < _mesh.dimension())
     _k_vis[_qp].rotate(_rot_mat[_qp]);

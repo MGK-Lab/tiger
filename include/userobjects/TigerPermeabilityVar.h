@@ -21,35 +21,31 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerPermeabilityConst.h"
-#include "MooseError.h"
+#pragma once
 
-registerMooseObject("TigerApp", TigerPermeabilityConst);
+#include "TigerPermeability.h"
+#include "MooseEnum.h"
+
+class TigerPermeabilityVar;
 
 template <>
-InputParameters
-validParams<TigerPermeabilityConst>()
-{
-  InputParameters params = validParams<TigerPermeability>();
-  params.addRequiredParam<std::vector<Real>>("k0", "Initial permeability (m^2)");
-  MooseEnum PT("isotropic orthotropic anisotropic");
-  params.addRequiredParam<MooseEnum>("permeability_type", PT,
-        "The permeability distribution type [isotropic, orthotropic, anisotropic].");
-  params.set<ExecFlagEnum>("execute_on", true) = EXEC_INITIAL;
-  params.addClassDescription("Permeability tensor based on provided "
-        "constant permeability value(s)");
-  return params;
-}
+InputParameters validParams<TigerPermeabilityVar>();
 
-TigerPermeabilityConst::TigerPermeabilityConst(const InputParameters & parameters)
-  : TigerPermeability(parameters),
-    _kinit(getParam<std::vector<Real>>("k0")),
-    _permeability_type(getParam<MooseEnum>("permeability_type"))
+class TigerPermeabilityVar : public TigerPermeability
 {
-}
+public:
+  TigerPermeabilityVar(const InputParameters & parameters);
 
-RankTwoTensor
-TigerPermeabilityConst::Permeability(const int & dim, const Real & porosity, const Real & scale_factor) const
-{
-  return  PermeabilityTensorCalculator(dim, _kinit, _permeability_type);
-}
+  RankTwoTensor Permeability(const int & dim, const Real & porosity, const Real & scale_factor) const;
+
+protected:
+  // Initial permeability from user input
+  std::vector<Real> _kinit;
+  // Initial porosity from user input
+  const Real _ninit;
+  // parameters for Kozeny-Carman Eq
+  const Real _n;
+  const Real _m;
+
+  MooseEnum _permeability_type;
+};

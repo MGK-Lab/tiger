@@ -91,11 +91,13 @@
   [./rock_p]
     type = TigerPorosityMaterial
     porosity = 0.35
+    specific_density = 2500
     block = '0 1'
   [../]
   [./frac_p]
     type = TigerPorosityMaterial
     porosity = 1
+    specific_density = 2500
     block = '2'
   [../]
   [./rock_f]

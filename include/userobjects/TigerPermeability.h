@@ -47,8 +47,6 @@ public:
 protected:
   // Creates the permeability tensor as function of input and dimension
   virtual RankTwoTensor PermeabilityTensorCalculator(const int & dim, const std::vector<Real> & k0, const MooseEnum & _permeability_type) const;
-  // calculate permeability
-  virtual void PermeabilityVectorCalculator(const Real & porosity, const Real & scale_factor, std::vector<Real> & k0) const = 0;
 
   enum PT {isotropic, orthotropic, anisotropic};
 };

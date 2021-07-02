@@ -60,15 +60,9 @@ TigerPermeabilityCubicLaw::Permeability(const int & dim, const Real & porosity, 
   effAperture = _aperture == 0 ? (scale_factor/_rt) : _aperture;
 
   std::vector<Real> k0;
-  PermeabilityVectorCalculator(porosity, effAperture, k0);
+  k0.push_back(std::pow(scale_factor,2.0) / 12.0);
 
   MooseEnum pt("isotropic","isotropic");
 
   return PermeabilityTensorCalculator(dim, k0, pt);
-}
-
-void
-TigerPermeabilityCubicLaw::PermeabilityVectorCalculator(const Real & porosity, const Real & scale_factor, std::vector<Real> & k0) const
-{
-  k0.push_back(std::pow(scale_factor,2.0) / 12.0);
 }

@@ -27,10 +27,12 @@
 [Materials]
   [./rock_g]
     type = TigerGeometryMaterial
+    gravity = '0 0 -9.81 '
   [../]
   [./rock_p]
     type = TigerPorosityMaterial
     porosity = 0.4
+    specific_density = 2500
   [../]
   [./rock_f]
     type = TigerFluidMaterial
@@ -39,7 +41,6 @@
   [./rock_h]
     type = TigerHydraulicMaterialH
     pressure = pressure
-    gravity = '0 0 -9.81 '
     compressibility = 1.0e-9
     kf_uo = rock_uo
   [../]

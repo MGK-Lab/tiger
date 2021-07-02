@@ -21,35 +21,31 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerPermeabilityConst.h"
-#include "MooseError.h"
+#include "TigerMechanicsGravityM.h"
 
-registerMooseObject("TigerApp", TigerPermeabilityConst);
+registerMooseObject("TigerApp", TigerMechanicsGravityM);
 
-template <>
 InputParameters
-validParams<TigerPermeabilityConst>()
+TigerMechanicsGravityM::validParams()
 {
-  InputParameters params = validParams<TigerPermeability>();
-  params.addRequiredParam<std::vector<Real>>("k0", "Initial permeability (m^2)");
-  MooseEnum PT("isotropic orthotropic anisotropic");
-  params.addRequiredParam<MooseEnum>("permeability_type", PT,
-        "The permeability distribution type [isotropic, orthotropic, anisotropic].");
-  params.set<ExecFlagEnum>("execute_on", true) = EXEC_INITIAL;
-  params.addClassDescription("Permeability tensor based on provided "
-        "constant permeability value(s)");
+  InputParameters params = Kernel::validParams();
+  params.addClassDescription("Apply the gravity for porous materials in Mechanics");
+  params.addParam<bool>("use_displaced_mesh", true, "Displaced mesh defaults to true");
+  params.addRequiredParam<signed int>(
+      "component", "the gravity direction (0 for x, 1 for y, 2 for z)");
   return params;
 }
 
-TigerPermeabilityConst::TigerPermeabilityConst(const InputParameters & parameters)
-  : TigerPermeability(parameters),
-    _kinit(getParam<std::vector<Real>>("k0")),
-    _permeability_type(getParam<MooseEnum>("permeability_type"))
+TigerMechanicsGravityM::TigerMechanicsGravityM(const InputParameters & parameters)
+  : Kernel(parameters),
+    _density(getMaterialProperty<Real>("bulk_density")),
+    _g(getMaterialProperty<RealVectorValue>("gravity_vector")),
+    _component(getParam<signed int>("component"))
 {
 }
 
-RankTwoTensor
-TigerPermeabilityConst::Permeability(const int & dim, const Real & porosity, const Real & scale_factor) const
+Real
+TigerMechanicsGravityM::computeQpResidual()
 {
-  return  PermeabilityTensorCalculator(dim, _kinit, _permeability_type);
+  return _density[_qp] * _test[_i][_qp] * -_g[_qp](_component);
 }

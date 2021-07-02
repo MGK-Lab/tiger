@@ -32,6 +32,7 @@
   [./rock_p]
     type = TigerPorosityMaterial
     porosity = 0
+    specific_density = 2600
   [../]
   [./rock_f]
     type = TigerFluidMaterial
@@ -47,7 +48,6 @@
     type = TigerThermalMaterialT
     conductivity_type = isotropic
     lambda = 2.184
-    density = 2600
     specific_heat = 840
   [../]
 []

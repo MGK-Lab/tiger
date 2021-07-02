@@ -23,6 +23,7 @@
   [./rock_p]
     type = TigerPorosityMaterial
     porosity = 0
+    specific_density = 0.1 #artificial value to reach steady in the transient simulation
   [../]
   [./rock_f]
     type = TigerFluidMaterial
@@ -33,7 +34,6 @@
     advection_type = pure_diffusion
     conductivity_type = isotropic
     lambda = 3
-    density = 0.1 #artificial value to reach steady in the transient simulation
     specific_heat = 0.1 #artificial value to reach steady in the transient simulation
   [../]
 []

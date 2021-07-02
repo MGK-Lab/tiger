@@ -21,35 +21,36 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#include "TigerPermeabilityConst.h"
-#include "MooseError.h"
+#pragma once
 
-registerMooseObject("TigerApp", TigerPermeabilityConst);
+#include "Kernel.h"
+#include "RankTwoTensor.h"
+
+class TigerHydroMechanicsKernelHM;
 
 template <>
-InputParameters
-validParams<TigerPermeabilityConst>()
-{
-  InputParameters params = validParams<TigerPermeability>();
-  params.addRequiredParam<std::vector<Real>>("k0", "Initial permeability (m^2)");
-  MooseEnum PT("isotropic orthotropic anisotropic");
-  params.addRequiredParam<MooseEnum>("permeability_type", PT,
-        "The permeability distribution type [isotropic, orthotropic, anisotropic].");
-  params.set<ExecFlagEnum>("execute_on", true) = EXEC_INITIAL;
-  params.addClassDescription("Permeability tensor based on provided "
-        "constant permeability value(s)");
-  return params;
-}
+InputParameters validParams<TigerHydroMechanicsKernelHM>();
 
-TigerPermeabilityConst::TigerPermeabilityConst(const InputParameters & parameters)
-  : TigerPermeability(parameters),
-    _kinit(getParam<std::vector<Real>>("k0")),
-    _permeability_type(getParam<MooseEnum>("permeability_type"))
+class TigerHydroMechanicsKernelHM : public Kernel
 {
-}
+public:
+  TigerHydroMechanicsKernelHM(const InputParameters & parameters);
 
-RankTwoTensor
-TigerPermeabilityConst::Permeability(const int & dim, const Real & porosity, const Real & scale_factor) const
-{
-  return  PermeabilityTensorCalculator(dim, _kinit, _permeability_type);
-}
+protected:
+  virtual Real computeQpResidual() override;
+  virtual Real computeQpJacobian() override;
+  virtual Real computeQpOffDiagJacobian(unsigned int jvar) override;
+
+  const MaterialProperty<Real> & _scale_factor;
+  const MaterialProperty<RankTwoTensor> & _k_vis;
+  const MaterialProperty<Real> & _rho_f;
+  const MaterialProperty<Real> & _drho_dp_f;
+  const MaterialProperty<Real> & _drho_dT_f;
+  const MaterialProperty<Real> & _mu_f;
+  const MaterialProperty<Real> & _dmu_dp_f;
+  const MaterialProperty<Real> & _dmu_dT_f;
+  const MaterialProperty<RealVectorValue> & _g;
+  const MaterialProperty<Real> & _vol_strain_rate;
+  unsigned int _temperature_var;
+  std::vector<unsigned int> _disp;
+};

@@ -36,6 +36,7 @@
   [./rock_p]
     type = TigerPorosityMaterial
     porosity = 0.5
+    specific_density = 2500
   [../]
   [./advect_sh]
     type = TigerSoluteMaterialS

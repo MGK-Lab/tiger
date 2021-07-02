@@ -38,9 +38,25 @@ public:
 protected:
   virtual void computeQpProperties() override;
 
+  // bulk density
+  MaterialProperty<Real> & _rho_b;
+  // mixture density
+  MaterialProperty<Real> & _rho_m;
+  // void mass fraction
+  MaterialProperty<Real> & _mass_frac;
   // calculated porosity
   MaterialProperty<Real> & _n;
   // Initial porosity
   const VariableValue & _n0;
-  bool _p_e;
+
+  // taken from TigerFluidMaterial
+  const MaterialProperty<Real> & _rho_f;
+
+  // taken from TigerMechanicsMaterialM
+  const MaterialProperty<Real> * _biot;
+  const MaterialProperty<Real> * _vol_total_strain;
+
+private:
+  const bool _p_e;
+  const Real _rho_r;
 };
