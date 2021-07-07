@@ -38,8 +38,11 @@ validParams<TigerPorosityMaterial>()
         "specific density of rock for calculating bulk density (kg/m^3)");
   params.addRequiredCoupledVar("porosity", "porosity (temporal and spatial function)");
   params.addParam<bool>("porosity_evolotion", false,"if it evoloves by "
-        "deformation, true. Attention, if true, the given porosity should not be"
-        " temporal and displacement variable should be given");
+        "deformation, true");
+  MooseEnum ET("exponential fractional", "exponential");
+  params.addParam<MooseEnum>("evolotion_type", ET,
+        "Two approaches to calculate prososity evolution based on total strain"
+        "[exponential, fractional]");
   params.addClassDescription("Material for defining porosity and its evolotion");
 
   return params;
@@ -56,6 +59,12 @@ TigerPorosityMaterial::TigerPorosityMaterial(const InputParameters & parameters)
     _p_e(getParam<bool>("porosity_evolotion")),
     _rho_r(getParam<Real>("specific_density"))
 {
+  MooseEnum ET("exponential", "exponential");
+  if(getParam<MooseEnum>("evolotion_type")==ET)
+    _ev_type = true;
+  else
+    _ev_type = false;
+
   if (_p_e)
   {
     _biot = &getMaterialProperty<Real>("biot_coefficient");
@@ -76,7 +85,13 @@ TigerPorosityMaterial::computeQpProperties()
   else
   {
     Real c = log((*_biot)[_qp] / ((*_biot)[_qp] - _n0[_qp]));
-    _n[_qp] = (*_biot)[_qp] + (_n0[_qp] - (*_biot)[_qp]) * exp(c * (1.0 - exp((*_vol_total_strain)[_qp] / c)));
+    if (_ev_type)
+      _n[_qp] = (*_biot)[_qp] + (_n0[_qp] - (*_biot)[_qp]) * exp(c * (1.0 - exp((*_vol_total_strain)[_qp] / c)));
+    else
+    {
+      _n[_qp] = (_n0[_qp] + (*_vol_total_strain)[_qp]) / (1.0 + (*_vol_total_strain)[_qp]);
+      if (_n[_qp]<0.0) mooseError("negative porosity due to very low volumetric strain");
+    }
   }
 
   _rho_b[_qp] = (1.0 - _n[_qp]) * _rho_r;

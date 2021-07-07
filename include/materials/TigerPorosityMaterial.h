@@ -59,4 +59,5 @@ protected:
 private:
   const bool _p_e;
   const Real _rho_r;
+  bool _ev_type;
 };
