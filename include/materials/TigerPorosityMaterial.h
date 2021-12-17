@@ -38,6 +38,10 @@ public:
 protected:
   virtual void computeQpProperties() override;
 
+  // Coupled temperature
+  const VariableValue & _temp;
+  // Coupled presysure
+  const VariableValue & _pressure;
   // bulk density
   MaterialProperty<Real> & _rho_b;
   // mixture density
@@ -48,6 +52,12 @@ protected:
   MaterialProperty<Real> & _n;
   // Initial porosity
   const VariableValue & _n0;
+  // Volumetric thermal expansion
+  MaterialProperty<Real> & _thermal_expansion_coeff;
+  //Stress free reference temperature for porosity evolution
+  const VariableValue & _stress_free_temperature;
+  //Stress free reference pressure for porosity evolution
+  const VariableValue & _reference_pressure;
 
   // taken from TigerFluidMaterial
   const MaterialProperty<Real> & _rho_f;
@@ -55,9 +65,13 @@ protected:
   // taken from TigerMechanicsMaterialM
   const MaterialProperty<Real> * _biot;
   const MaterialProperty<Real> * _vol_total_strain;
+//taken from TigerHydraulicMaterialH
+  const MaterialProperty<Real> * _solid_bulk;
+
 
 private:
   const bool _p_e;
   const Real _rho_r;
+  Real _alpha_t;
   bool _ev_type;
 };

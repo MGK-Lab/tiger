@@ -40,6 +40,8 @@ protected:
 
   // biot coefficient for poromechanics
   MaterialProperty<Real> & _biot;
+  // Solid bulk modulus
+  MaterialProperty<Real> & _solid_bulk;
   /// Number of displacements supplied (1 in 1D, 2 in 2D, 3 in 3D)
   const unsigned int _ndisp;
   /// Gradient of the displacements
@@ -51,11 +53,13 @@ protected:
   /// The total volumetric strain at the quadpoints
   MaterialProperty<Real> & _vol_total_strain;
 
+
   const std::string _base_name;
   const MaterialProperty<RankTwoTensor> & _TenMech_total_strain;
   const MaterialProperty<RankTwoTensor> * _TenMech_strain_rate;
 
 private:
   const Real _b;
+  const Real _bu;
   bool _incremental;
 };

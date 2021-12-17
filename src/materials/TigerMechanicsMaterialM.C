@@ -34,6 +34,8 @@ validParams<TigerMechanicsMaterialM>()
 
   params.addParam<Real>("biot_coefficient", 1.0,
         "Biot's coefficient for poromechanics");
+  params.addParam<Real>("solid_bulk_modulus", 1e+99,
+        "Solid bulk modulus for poromechanics");
   params.addCoupledVar("disps",
         "The displacements variables (they are required if the incrimental is false)");
   params.addRequiredParam<bool>("incremental",
@@ -48,12 +50,14 @@ validParams<TigerMechanicsMaterialM>()
 TigerMechanicsMaterialM::TigerMechanicsMaterialM(const InputParameters & parameters)
   : Material(parameters),
     _biot(declareProperty<Real>("biot_coefficient")),
+    _solid_bulk(declareProperty<Real>("solid_bulk")),
     _ndisp(coupledComponents("disps")),
     _vol_strain_rate(declareProperty<Real>("volumetric_strain_rate_HM")),
     _vol_total_strain(declareProperty<Real>("total_volumetric_strain_HM")),
     _base_name(isParamValid("base_name") ? getParam<std::string>("base_name") + "_" : ""),
     _TenMech_total_strain(getMaterialProperty<RankTwoTensor>(_base_name + "total_strain")),
     _b(getParam<Real>("biot_coefficient")),
+    _bu(getParam<Real>("solid_bulk_modulus")),
     _incremental(getParam<bool>("incremental"))
 {
   _TenMech_strain_rate = _incremental ?
@@ -78,6 +82,7 @@ void
 TigerMechanicsMaterialM::computeQpProperties()
 {
   _biot[_qp] = _b;
+  _solid_bulk[_qp] = _bu;
   _vol_total_strain[_qp] = _TenMech_total_strain[_qp].trace();
 
   if (_incremental && _is_transient)
