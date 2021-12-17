@@ -123,12 +123,18 @@ TigerPorosityMaterial::computeQpProperties()
     if (_ev_type)
     {
       // Exponential porosity evolution
+    /*  For further details see. Chen, Zhou & Jing - Modeling coupled THM processes of geological
+      porous media with multiphase flow - Computers and Geotechnics 36 (2009) 1308-1329 -
+      DOI: 10.1016/j.compgeo.2009.06.001 */
       _n[_qp] = (*_biot)[_qp] + (_n0[_qp] - (*_biot)[_qp]) * exp(c * (1.0 - expo));
     }
     else
     {
       // Linear porosity evolution
-      _n[_qp] = (_n0[_qp] + (*_vol_total_strain)[_qp]) / (1.0 + (*_vol_total_strain)[_qp]);
+  //    Old formulation
+  //    _n[_qp] = (_n0[_qp] + (*_vol_total_strain)[_qp]) / (1.0 + (*_vol_total_strain)[_qp]);
+  // Make it consistent with Porous flow, but looks physically not correct to me.
+    _n[_qp] = (_n0[_qp] + fluid_component + thermal_component - mech_component);
       if (_n[_qp]<0.0) mooseError("negative porosity due to very low volumetric strain");
     }
   }
