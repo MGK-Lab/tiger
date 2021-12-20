@@ -34,8 +34,8 @@ validParams<TigerPorosityMaterial>()
 {
   InputParameters params = validParams<Material>();
 
-  params.addCoupledVar("temperature", "temperature nonlinear variable");
-  params.addCoupledVar("pressure", "pressure nonlinear variable");
+  params.addCoupledVar("temperature",0, "temperature nonlinear variable");
+  params.addCoupledVar("pressure", 0,"pressure nonlinear variable");
   params.addRequiredParam<Real>("specific_density",
         "specific density of rock for calculating bulk density (kg/m^3)");
   params.addRequiredCoupledVar("porosity", "porosity (temporal and spatial function)");
