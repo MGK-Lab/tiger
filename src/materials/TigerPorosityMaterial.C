@@ -67,13 +67,13 @@ TigerPorosityMaterial::TigerPorosityMaterial(const InputParameters & parameters)
     _mass_frac(declareProperty<Real>("void_mass_fraction")),
     _n(declareProperty<Real>("porosity")),
     _n0(coupledValue("porosity")),
+    _thermal_expansion_coeff(declareProperty<Real>("thermal_expansion_coeff")),
+    _stress_free_temperature(coupledValue("stress_free_temperature")),
+    _reference_pressure(coupledValue("reference_pressure")),
     _rho_f(getMaterialProperty<Real>("fluid_density")),
     _p_e(getParam<bool>("porosity_evolution")),
     _rho_r(getParam<Real>("specific_density")),
-    _alpha_t(getParam<Real>("thermal_expansion_coeff")),
-    _thermal_expansion_coeff(declareProperty<Real>("thermal_expansion_coeff")),
-    _stress_free_temperature(coupledValue("stress_free_temperature")),
-    _reference_pressure(coupledValue("reference_pressure"))
+    _alpha_t(getParam<Real>("thermal_expansion_coeff"))
 {
   MooseEnum ET("exponential", "exponential");
   if(getParam<MooseEnum>("evolution_type")==ET)
