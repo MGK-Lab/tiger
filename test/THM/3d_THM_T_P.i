@@ -150,7 +150,7 @@
     type = TigerPorosityMaterial
     porosity = 0.2
     specific_density = 2500
-    porosity_evolotion = true
+    porosity_evolution = true
     output_properties = 'porosity'
     outputs = exodus
   [../]
