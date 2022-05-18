@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*  TIGER - THMC sImulator for GEoscience Research                        */
 /*                                                                        */
-/*  Copyright (C) 2017 by Maziar Gholami Korzani                          */
+/*  Copyright (C) 2017 by Maziar Gholami Korzani, Robert Egert            */
 /*  Karlsruhe Institute of Technology, Institute of Applied Geosciences   */
 /*  Division of Geothermal Research                                       */
 /*                                                                        */
@@ -23,6 +23,7 @@
 
 #include "TigerMechanicsMaterialM.h"
 #include "MooseMesh.h"
+#include "Function.h"
 
 registerMooseObject("TigerApp", TigerMechanicsMaterialM);
 
@@ -37,11 +38,14 @@ validParams<TigerMechanicsMaterialM>()
   params.addParam<Real>("solid_bulk_modulus", 1e+99,
         "Solid bulk modulus for poromechanics");
   params.addCoupledVar("disps",
-        "The displacements variables (they are required if the incrimental is false)");
+        "The displacements variables (they are required if the incremental is false)");
   params.addRequiredParam<bool>("incremental",
         "Incremental or total strain approach similar to TensorMechanics Action");
   params.addParam<std::string>("base_name", "the identical base name provided "
         "in TensorMechanics Action");
+  params.addParam<std::vector<FunctionName>>("extra_stress_vector",
+        "Vector of values defining the extra stress "
+        "to add, in order 11, 22, 33. Functions can be provided as well.");
   params.addClassDescription("Mechanics material for mechanics kernels");
 
   return params;
@@ -56,6 +60,7 @@ TigerMechanicsMaterialM::TigerMechanicsMaterialM(const InputParameters & paramet
     _vol_total_strain(declareProperty<Real>("total_volumetric_strain_HM")),
     _base_name(isParamValid("base_name") ? getParam<std::string>("base_name") + "_" : ""),
     _TenMech_total_strain(getMaterialProperty<RankTwoTensor>(_base_name + "total_strain")),
+    _TenMech_extra_stress(declareProperty<RankTwoTensor>(_base_name + "extra_stress")),
     _b(getParam<Real>("biot_coefficient")),
     _bu(getParam<Real>("solid_bulk_modulus")),
     _incremental(getParam<bool>("incremental"))
@@ -85,10 +90,26 @@ TigerMechanicsMaterialM::computeQpProperties()
   _solid_bulk[_qp] = _bu;
   _vol_total_strain[_qp] = _TenMech_total_strain[_qp].trace();
 
+// Extra stress can be added and included in TensorMechanics Action
+  const std::vector<FunctionName> & stress_fct(
+      getParam<std::vector<FunctionName>>("extra_stress_vector"));
+  const unsigned num = stress_fct.size();
+  if (!(num == 0 || num == 3))
+    mooseError("Please supply either zero or 3 extra stresses. "
+               "You supplied ", num,".\n");
+
+  _extra_stress.resize(num);
+  for (unsigned i = 0; i < num; ++i)
+    _extra_stress[i] = &getFunctionByName(stress_fct[i]);
+
+  if (_extra_stress.size() == 3)
+    for (unsigned i = 0; i < num; ++i)
+      _TenMech_extra_stress[_qp](i, i) = _extra_stress[i]->value(_t, _q_point[_qp]);
+
   if (_incremental && _is_transient)
     _vol_strain_rate[_qp] = (*_TenMech_strain_rate)[_qp].trace();
 
-
+//
   if (!_incremental && _is_transient)
   {
     RankTwoTensor A   ((*_grad_disp[0])[_qp],

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*  TIGER - THMC sImulator for GEoscience Research                        */
 /*                                                                        */
-/*  Copyright (C) 2017 by Maziar Gholami Korzani                          */
+/*  Copyright (C) 2017 by Maziar Gholami Korzani, Robert Egert            */
 /*  Karlsruhe Institute of Technology, Institute of Applied Geosciences   */
 /*  Division of Geothermal Research                                       */
 /*                                                                        */
@@ -52,11 +52,13 @@ protected:
   MaterialProperty<Real> & _vol_strain_rate;
   /// The total volumetric strain at the quadpoints
   MaterialProperty<Real> & _vol_total_strain;
-
-
+  // The strain and strain rate from Tensormechanics action
   const std::string _base_name;
   const MaterialProperty<RankTwoTensor> & _TenMech_total_strain;
   const MaterialProperty<RankTwoTensor> * _TenMech_strain_rate;
+  // Extra stresses added to TensorMechanics action
+   std::vector<const Function *> _extra_stress;
+   MaterialProperty<RankTwoTensor> & _TenMech_extra_stress;
 
 private:
   const Real _b;
