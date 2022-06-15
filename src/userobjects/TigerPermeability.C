@@ -23,11 +23,10 @@
 
 #include "TigerPermeability.h"
 
-template <>
 InputParameters
-validParams<TigerPermeability>()
+TigerPermeability::validParams()
 {
-  InputParameters params = validParams<GeneralUserObject>();
+  InputParameters params = GeneralUserObject::validParams();
 
   return params;
 }

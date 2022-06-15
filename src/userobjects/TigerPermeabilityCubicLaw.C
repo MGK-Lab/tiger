@@ -51,7 +51,7 @@ TigerPermeabilityCubicLaw::TigerPermeabilityCubicLaw(const InputParameters & par
 }
 
 RankTwoTensor
-TigerPermeabilityCubicLaw::Permeability(const int & dim, const Real & porosity, const Real & scale_factor) const
+TigerPermeabilityCubicLaw::Permeability(const int & dim, const Real & porosity, const Real & scale_factor, const std::vector<Real> kmat) const
 {
   if (dim == 3)
     mooseError(name(),": This permeability userobject cannot be used for 3D elements.");

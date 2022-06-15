@@ -31,7 +31,7 @@ class TigerHydraulicMaterialH : public Material
 public:
 
   static InputParameters validParams();
-  
+
   TigerHydraulicMaterialH(const InputParameters & parameters);
 
 protected:
@@ -46,7 +46,9 @@ protected:
   MaterialProperty<Real> & _H_Kernel_dt;
   // Tiger permeability calculater userobject
   const TigerPermeability & _kf_uo;
-  // Dracy velocity
+  // Permeability vector filled with functions
+  std::vector<const Function *> _perm_vector;
+  // Darcy velocity
   MaterialProperty<RealVectorValue> & _dv;
   // Derivative of Dracy velocity wrt temperature
   MaterialProperty<RealVectorValue> & _ddv_dT;
@@ -74,4 +76,7 @@ protected:
 private:
   // Compressibility of the solid phase
   Real _beta_s;
+  // Permeability vector filled from functional input
+  std::vector<Real> _kinit;
+
 };

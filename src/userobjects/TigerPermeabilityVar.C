@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*  TIGER - THMC sImulator for GEoscience Research                        */
 /*                                                                        */
-/*  Copyright (C) 2017 by Maziar Gholami Korzani                          */
+/*  Copyright (C) 2017 by Maziar Gholami Korzani, Robert Egert            */
 /*  Karlsruhe Institute of Technology, Institute of Applied Geosciences   */
 /*  Division of Geothermal Research                                       */
 /*                                                                        */
@@ -27,11 +27,10 @@
 
 registerMooseObject("TigerApp", TigerPermeabilityVar);
 
-template <>
 InputParameters
-validParams<TigerPermeabilityVar>()
+TigerPermeabilityVar::validParams()
 {
-  InputParameters params = validParams<TigerPermeability>();
+  InputParameters params = TigerPermeability::validParams();
   params.addRequiredParam<std::vector<Real>>("k0", "Initial permeability (m^2)");
   params.addRequiredParam<Real>("n0", "Initial porosity");
   params.addParam<Real>("m", 2, "The power in the denominator of the Kozeny-Carman Eq");
@@ -58,14 +57,28 @@ TigerPermeabilityVar::TigerPermeabilityVar(const InputParameters & parameters)
 }
 
 RankTwoTensor
-TigerPermeabilityVar::Permeability(const int & dim, const Real & porosity, const Real & scale_factor) const
+TigerPermeabilityVar::Permeability(const int & dim, const Real & porosity, const Real & scale_factor, const std::vector<Real> kmat) const
 {
   if (dim != 3)
     mooseError(name(),": This permeability userobject can be only used for 3D elements.");
 
-  std::vector<Real> kn(_kinit);
-  Real c = std::pow(porosity, _n) / std::pow(1.0 - porosity, _m);
-  std::transform(kn.begin(), kn.end(), kn.begin(), [c](Real k){ return c * k;});
+    // Accept permeability either from userobject or TigerHydraulicMaterialH
+    // This enables permeabilities as a function
+    if (size(kmat) > 0)
+      {
+        std::vector<Real> kn(kmat);
+        Real c = std::pow(porosity, _n) / std::pow(1.0 - porosity, _m);
+        std::transform(kn.begin(), kn.end(), kn.begin(), [c](Real k){ return c * k;});
 
-  return  PermeabilityTensorCalculator(dim, kn, _permeability_type);
+        return  PermeabilityTensorCalculator(dim, kn, _permeability_type);
+      }
+      else
+      {
+        std::vector<Real> kn(_kinit);
+        Real c = std::pow(porosity, _n) / std::pow(1.0 - porosity, _m);
+        std::transform(kn.begin(), kn.end(), kn.begin(), [c](Real k){ return c * k;});
+
+        return  PermeabilityTensorCalculator(dim, kn, _permeability_type);
+      }
+
 }

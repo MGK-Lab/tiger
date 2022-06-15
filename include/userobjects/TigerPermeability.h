@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*  TIGER - THMC sImulator for GEoscience Research                        */
 /*                                                                        */
-/*  Copyright (C) 2017 by Maziar Gholami Korzani                          */
+/*  Copyright (C) 2017 by Maziar Gholami Korzani, Robert Egert            */
 /*  Karlsruhe Institute of Technology, Institute of Applied Geosciences   */
 /*  Division of Geothermal Research                                       */
 /*                                                                        */
@@ -26,15 +26,12 @@
 #include "GeneralUserObject.h"
 #include "RankTwoTensor.h"
 
-// Forward Declarations
-class TigerPermeability;
-
-template <>
-InputParameters validParams<TigerPermeability>();
-
 class TigerPermeability : public GeneralUserObject
 {
 public:
+
+  static InputParameters validParams();
+
   TigerPermeability(const InputParameters & parameters);
 
   virtual void execute();
@@ -42,7 +39,7 @@ public:
   virtual void finalize();
 
   /// permeability matrix (m^2); called from Material
-  virtual RankTwoTensor Permeability(const int & dim, const Real & porosity, const Real & scale_factor) const = 0;
+  virtual RankTwoTensor Permeability(const int & dim, const Real & porosity, const Real & scale_factor, const std::vector<Real> kmat) const = 0;
 
 protected:
   // Creates the permeability tensor as function of input and dimension

@@ -30,13 +30,15 @@ InputParameters
 TigerHydraulicMaterialH::validParams()
 {
   InputParameters params = Material::validParams();
-
   params.addRequiredCoupledVar("pressure",
         "Pore pressure nonlinear variable");
   params.addRequiredParam<Real>("compressibility",
         "The compressibility of the solid porous media (1/Pa)");
   params.addRequiredParam<UserObjectName>("kf_uo",
         "The name of the userobject for the permeability calculation");
+  params.addParam<std::vector<FunctionName>>("initial_permeability",
+      "Vector of values defining the initial permebility "
+      "to add, in order 11, 22, 33. Functions can be provided as well.");
   params.addClassDescription("Hydraulic material for hydraulic kernels");
 
   return params;
@@ -70,7 +72,26 @@ TigerHydraulicMaterialH::TigerHydraulicMaterialH(const InputParameters & paramet
 void
 TigerHydraulicMaterialH::computeQpProperties()
 {
-  _k_vis[_qp] = _kf_uo.Permeability(_current_elem->dim(), _n[_qp], _scale_factor[_qp]) / _mu_f[_qp];
+
+  // Initial permeability vector can be given here
+  //Accepts spatial and temporal dependence
+    const std::vector<FunctionName> & perm_fct(
+        getParam<std::vector<FunctionName>>("initial_permeability"));
+    const unsigned num = perm_fct.size();
+    if (!(num == 0 || num == 1 || num == 3 || num == 9))
+      mooseError("Please supply either zero, one, three or nine permeability components. This depends on the choice in the Permeability Userobject.\n"
+                 "You supplied ", num,".\n");
+
+    _perm_vector.resize(num);
+    for (unsigned i = 0; i < num; ++i)
+      _perm_vector[i] = &getFunctionByName(perm_fct[i]);
+
+    _kinit.resize(num);
+      for (unsigned i = 0; i < num; ++i)
+        _kinit[i] = _perm_vector[i]->value(_t, _q_point[_qp]);
+
+  //Stuff pushed into the Userobject
+  _k_vis[_qp] = _kf_uo.Permeability(_current_elem->dim(), _n[_qp], _scale_factor[_qp], _kinit) / _mu_f[_qp];
   _H_Kernel_dt[_qp] = _beta_s + _beta_f[_qp] * _n[_qp];
 
   if (_current_elem->dim() < _mesh.dimension())

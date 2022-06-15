@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*  TIGER - THMC sImulator for GEoscience Research                        */
 /*                                                                        */
-/*  Copyright (C) 2017 by Maziar Gholami Korzani                          */
+/*  Copyright (C) 2017 by Maziar Gholami Korzani, Robert Egert            */
 /*  Karlsruhe Institute of Technology, Institute of Applied Geosciences   */
 /*  Division of Geothermal Research                                       */
 /*                                                                        */
@@ -26,11 +26,10 @@
 
 registerMooseObject("TigerApp", TigerPermeabilityConst);
 
-template <>
 InputParameters
-validParams<TigerPermeabilityConst>()
+TigerPermeabilityConst::validParams()
 {
-  InputParameters params = validParams<TigerPermeability>();
+  InputParameters params = TigerPermeability::validParams();
   params.addRequiredParam<std::vector<Real>>("k0", "Initial permeability (m^2)");
   MooseEnum PT("isotropic orthotropic anisotropic");
   params.addRequiredParam<MooseEnum>("permeability_type", PT,
@@ -49,7 +48,17 @@ TigerPermeabilityConst::TigerPermeabilityConst(const InputParameters & parameter
 }
 
 RankTwoTensor
-TigerPermeabilityConst::Permeability(const int & dim, const Real & porosity, const Real & scale_factor) const
+TigerPermeabilityConst::Permeability(const int & dim, const Real & porosity, const Real & scale_factor, const std::vector<Real> kmat) const
 {
-  return  PermeabilityTensorCalculator(dim, _kinit, _permeability_type);
+
+  // Accept permeability either from userobject or TigerHydraulicMaterialH
+  // This enables permeabilities as a function
+  if (size(kmat) > 0)
+    {
+      return  PermeabilityTensorCalculator(dim, kmat, _permeability_type);
+    }
+    else
+    {
+      return  PermeabilityTensorCalculator(dim, _kinit, _permeability_type);
+    }
 }

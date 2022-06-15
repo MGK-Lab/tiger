@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*  TIGER - THMC sImulator for GEoscience Research                        */
 /*                                                                        */
-/*  Copyright (C) 2017 by Maziar Gholami Korzani                          */
+/*  Copyright (C) 2017 by Maziar Gholami Korzani, Robert Egert            */
 /*  Karlsruhe Institute of Technology, Institute of Applied Geosciences   */
 /*  Division of Geothermal Research                                       */
 /*                                                                        */
@@ -26,17 +26,15 @@
 #include "TigerPermeability.h"
 #include "MooseEnum.h"
 
-class TigerPermeabilityVar;
-
-template <>
-InputParameters validParams<TigerPermeabilityVar>();
-
 class TigerPermeabilityVar : public TigerPermeability
 {
 public:
+
+  static InputParameters validParams();
+
   TigerPermeabilityVar(const InputParameters & parameters);
 
-  RankTwoTensor Permeability(const int & dim, const Real & porosity, const Real & scale_factor) const;
+  RankTwoTensor Permeability(const int & dim, const Real & porosity, const Real & scale_factor, const std::vector<Real> kmat) const;
 
 protected:
   // Initial permeability from user input

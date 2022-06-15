@@ -36,7 +36,7 @@ class TigerPermeabilityCubicLaw : public TigerPermeability
 public:
   TigerPermeabilityCubicLaw(const InputParameters & parameters);
 
-  RankTwoTensor Permeability(const int & dim, const Real & porosity, const Real & scale_factor) const;
+  RankTwoTensor Permeability(const int & dim, const Real & porosity, const Real & scale_factor, const std::vector<Real> kmat) const;
 
 protected:
   // user defined aperture
