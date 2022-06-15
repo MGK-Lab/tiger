@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*  TIGER - THMC sImulator for GEoscience Research                        */
 /*                                                                        */
-/*  Copyright (C) 2017 by Maziar Gholami Korzani                          */
+/*  Copyright (C) 2017 by Maziar Gholami Korzani, Robert Egert            */
 /*  Karlsruhe Institute of Technology, Institute of Applied Geosciences   */
 /*  Division of Geothermal Research                                       */
 /*                                                                        */
@@ -26,11 +26,10 @@
 
 registerMooseObject("TigerApp", TigerHydraulicMaterialH);
 
-template <>
 InputParameters
-validParams<TigerHydraulicMaterialH>()
+TigerHydraulicMaterialH::validParams()
 {
-  InputParameters params = validParams<Material>();
+  InputParameters params = Material::validParams();
 
   params.addRequiredCoupledVar("pressure",
         "Pore pressure nonlinear variable");

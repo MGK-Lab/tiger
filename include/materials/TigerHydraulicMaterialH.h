@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*  TIGER - THMC sImulator for GEoscience Research                        */
 /*                                                                        */
-/*  Copyright (C) 2017 by Maziar Gholami Korzani                          */
+/*  Copyright (C) 2017 by Maziar Gholami Korzani, Robert Egert            */
 /*  Karlsruhe Institute of Technology, Institute of Applied Geosciences   */
 /*  Division of Geothermal Research                                       */
 /*                                                                        */
@@ -21,21 +21,17 @@
 /*  along with this program.  If not, see <http://www.gnu.org/licenses/>  */
 /**************************************************************************/
 
-#ifndef TIGERHYDRAULICMATERIALH_H
-#define TIGERHYDRAULICMATERIALH_H
 
 #include "Material.h"
 #include "RankTwoTensor.h"
 #include "TigerPermeability.h"
 
-class TigerHydraulicMaterialH;
-
-template <>
-InputParameters validParams<TigerHydraulicMaterialH>();
-
 class TigerHydraulicMaterialH : public Material
 {
 public:
+
+  static InputParameters validParams();
+  
   TigerHydraulicMaterialH(const InputParameters & parameters);
 
 protected:
@@ -79,5 +75,3 @@ private:
   // Compressibility of the solid phase
   Real _beta_s;
 };
-
-#endif /* TIGERHYDRAULICMATERIALH_H */
